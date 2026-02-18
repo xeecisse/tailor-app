@@ -59,9 +59,9 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-brand-navy-50 via-brand-orange-50 to-brand-navy-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-purple-200 border-t-purple-600 mb-4"></div>
+          <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-brand-navy-200 border-t-brand-navy mb-4"></div>
           <p className="text-gray-700 font-bold text-lg">Loading dashboard...</p>
         </div>
       </div>
@@ -70,7 +70,7 @@ export default function DashboardPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-8">
+      <div className="min-h-screen bg-gradient-to-br from-brand-navy-50 via-brand-orange-50 to-brand-navy-50 p-8">
         <div className="max-w-4xl mx-auto">
           <div className="p-6 bg-gradient-to-r from-red-50 to-pink-50 border-2 border-red-300 rounded-2xl text-red-700 shadow-lg">
             <div className="flex items-center gap-4">
@@ -146,9 +146,9 @@ export default function DashboardPage() {
       title: 'Total Revenue',
       value: `₦${totalRevenue.toLocaleString()}`,
       icon: DollarSign,
-      gradient: 'from-green-500 via-emerald-500 to-teal-500',
-      bgGradient: 'from-green-50 to-emerald-50',
-      iconBg: 'bg-green-100',
+      gradient: 'from-brand-navy via-brand-orange to-brand-orange-dark',
+      bgGradient: 'from-brand-navy-50 to-brand-orange-50',
+      iconBg: 'bg-brand-navy-100',
       change: '+12.5%',
       changePositive: true,
     },
@@ -156,9 +156,9 @@ export default function DashboardPage() {
       title: 'Expected Revenue',
       value: `₦${expectedRevenue.toLocaleString()}`,
       icon: BarChart3,
-      gradient: 'from-blue-500 via-cyan-500 to-sky-500',
-      bgGradient: 'from-blue-50 to-cyan-50',
-      iconBg: 'bg-blue-100',
+      gradient: 'from-brand-orange via-brand-orange-dark to-brand-navy',
+      bgGradient: 'from-brand-orange-50 to-brand-navy-50',
+      iconBg: 'bg-brand-orange-100',
       change: '+8.2%',
       changePositive: true,
     },
@@ -166,9 +166,9 @@ export default function DashboardPage() {
       title: 'Outstanding Payments',
       value: `₦${outstandingPayments.toLocaleString()}`,
       icon: Clock,
-      gradient: 'from-orange-500 via-amber-500 to-yellow-500',
-      bgGradient: 'from-orange-50 to-amber-50',
-      iconBg: 'bg-orange-100',
+      gradient: 'from-brand-orange via-brand-navy to-brand-orange-dark',
+      bgGradient: 'from-brand-orange-50 to-brand-navy-50',
+      iconBg: 'bg-brand-orange-100',
       change: '-5.3%',
       changePositive: true,
     },
@@ -176,27 +176,27 @@ export default function DashboardPage() {
       title: 'Orders This Month',
       value: ordersCreated,
       icon: Package,
-      gradient: 'from-purple-500 via-violet-500 to-indigo-500',
-      bgGradient: 'from-purple-50 to-violet-50',
-      iconBg: 'bg-purple-100',
+      gradient: 'from-brand-navy via-brand-orange to-brand-navy-dark',
+      bgGradient: 'from-brand-navy-50 to-brand-orange-50',
+      iconBg: 'bg-brand-navy-100',
       change: '+15.7%',
       changePositive: true,
     },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-brand-navy-50 via-brand-orange-50 to-brand-navy-50">
       {/* Enhanced Decorative Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-purple-300 to-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-        <div className="absolute top-40 left-0 w-[500px] h-[500px] bg-gradient-to-br from-blue-300 to-cyan-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
-        <div className="absolute bottom-0 right-1/3 w-[550px] h-[550px] bg-gradient-to-br from-orange-300 to-yellow-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-brand-navy to-brand-orange rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+        <div className="absolute top-40 left-0 w-[500px] h-[500px] bg-gradient-to-br from-brand-orange to-brand-navy rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute bottom-0 right-1/3 w-[550px] h-[550px] bg-gradient-to-br from-brand-navy to-brand-orange rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-5xl font-extrabold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent mb-2">
+          <h1 className="text-5xl font-extrabold bg-gradient-to-r from-brand-navy via-brand-orange to-brand-orange-dark bg-clip-text text-transparent mb-2">
             Dashboard Overview
           </h1>
           <p className="text-gray-600 text-lg font-medium">
@@ -238,9 +238,9 @@ export default function DashboardPage() {
         </div>
 
         {/* Revenue Progress Chart */}
-        <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border-2 border-purple-200">
+        <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border-2 border-brand-navy">
           <div className="flex items-center gap-3 mb-6">
-            <div className="bg-gradient-to-br from-green-500 to-emerald-500 p-3 rounded-xl">
+            <div className="bg-gradient-to-br from-brand-navy to-brand-orange p-3 rounded-xl">
               <TrendingUp size={28} className="text-white" />
             </div>
             <div>
@@ -256,7 +256,7 @@ export default function DashboardPage() {
             </div>
             <div className="relative h-8 bg-gray-200 rounded-full overflow-hidden">
               <div 
-                className="absolute top-0 left-0 h-full bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 rounded-full transition-all duration-1000 ease-out flex items-center justify-end pr-3"
+                className="absolute top-0 left-0 h-full bg-gradient-to-r from-brand-navy via-brand-orange to-brand-orange-dark rounded-full transition-all duration-1000 ease-out flex items-center justify-end pr-3"
                 style={{ width: `${Math.min(revenuePercentage, 100)}%` }}
               >
                 {revenuePercentage > 10 && (
@@ -278,9 +278,9 @@ export default function DashboardPage() {
         {/* Revenue Breakdown & This Month Stats */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Revenue Breakdown */}
-          <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border-2 border-blue-200">
+          <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border-2 border-brand-orange">
             <div className="flex items-center gap-3 mb-6">
-              <div className="bg-gradient-to-br from-blue-500 to-cyan-500 p-3 rounded-xl">
+              <div className="bg-gradient-to-br from-brand-orange to-brand-navy p-3 rounded-xl">
                 <DollarSign size={28} className="text-white" />
               </div>
               <div>
@@ -301,7 +301,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="relative h-6 bg-gray-200 rounded-full overflow-hidden">
                   <div 
-                    className="absolute top-0 left-0 h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-1000"
+                    className="absolute top-0 left-0 h-full bg-gradient-to-r from-brand-navy to-brand-orange rounded-full transition-all duration-1000"
                     style={{ width: `${tailoringPercentage}%` }}
                   ></div>
                 </div>
@@ -319,7 +319,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="relative h-6 bg-gray-200 rounded-full overflow-hidden">
                   <div 
-                    className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full transition-all duration-1000"
+                    className="absolute top-0 left-0 h-full bg-gradient-to-r from-brand-orange to-brand-navy rounded-full transition-all duration-1000"
                     style={{ width: `${inventoryPercentage}%` }}
                   ></div>
                 </div>
@@ -330,7 +330,7 @@ export default function DashboardPage() {
               <div className="pt-4 border-t-2 border-gray-200">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-700 font-bold text-lg">Total This Month</span>
-                  <span className="text-2xl font-extrabold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                  <span className="text-2xl font-extrabold bg-gradient-to-r from-brand-navy to-brand-orange bg-clip-text text-transparent">
                     ₦{(tailoringRevenue + inventoryRevenue).toLocaleString()}
                   </span>
                 </div>
@@ -339,9 +339,9 @@ export default function DashboardPage() {
           </div>
 
           {/* This Month Activity */}
-          <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border-2 border-purple-200">
+          <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border-2 border-brand-navy">
             <div className="flex items-center gap-3 mb-6">
-              <div className="bg-gradient-to-br from-purple-500 to-pink-500 p-3 rounded-xl">
+              <div className="bg-gradient-to-br from-brand-navy to-brand-orange p-3 rounded-xl">
                 <Calendar size={28} className="text-white" />
               </div>
               <div>
@@ -351,15 +351,15 @@ export default function DashboardPage() {
             </div>
 
             <div className="space-y-4">
-              <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-5 border-2 border-purple-200">
+              <div className="bg-gradient-to-br from-brand-navy-50 to-brand-orange-50 rounded-2xl p-5 border-2 border-brand-navy">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="bg-purple-100 p-3 rounded-xl">
-                      <ShoppingBag size={28} className="text-purple-700" />
+                    <div className="bg-brand-navy-100 p-3 rounded-xl">
+                      <ShoppingBag size={28} className="text-brand-navy" />
                     </div>
                     <div>
                       <p className="text-gray-600 text-sm font-semibold">Orders Created</p>
-                      <p className="text-3xl font-extrabold text-purple-700">{ordersCreated}</p>
+                      <p className="text-3xl font-extrabold text-brand-navy">{ordersCreated}</p>
                     </div>
                   </div>
                   <div className="text-right">
@@ -370,15 +370,15 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-5 border-2 border-blue-200">
+              <div className="bg-gradient-to-br from-brand-orange-50 to-brand-navy-50 rounded-2xl p-5 border-2 border-brand-orange">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="bg-blue-100 p-3 rounded-xl">
-                      <ClipboardList size={28} className="text-blue-700" />
+                    <div className="bg-brand-orange-100 p-3 rounded-xl">
+                      <ClipboardList size={28} className="text-brand-orange" />
                     </div>
                     <div>
                       <p className="text-gray-600 text-sm font-semibold">Purchase Orders</p>
-                      <p className="text-3xl font-extrabold text-blue-700">{posCreated}</p>
+                      <p className="text-3xl font-extrabold text-brand-orange">{posCreated}</p>
                     </div>
                   </div>
                   <div className="text-right">
@@ -389,15 +389,15 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl p-5 border-2 border-orange-200">
+              <div className="bg-gradient-to-br from-brand-orange-50 to-brand-navy-50 rounded-2xl p-5 border-2 border-brand-orange">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="bg-orange-100 p-3 rounded-xl">
-                      <CreditCard size={28} className="text-orange-700" />
+                    <div className="bg-brand-orange-100 p-3 rounded-xl">
+                      <CreditCard size={28} className="text-brand-orange" />
                     </div>
                     <div>
                       <p className="text-gray-600 text-sm font-semibold">Outstanding</p>
-                      <p className="text-2xl font-extrabold text-orange-700">₦{outstandingPayments.toLocaleString()}</p>
+                      <p className="text-2xl font-extrabold text-brand-orange">₦{outstandingPayments.toLocaleString()}</p>
                     </div>
                   </div>
                 </div>
@@ -407,9 +407,9 @@ export default function DashboardPage() {
         </div>
 
         {/* Monthly Revenue Trend - Line Chart */}
-        <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border-2 border-green-200">
+        <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border-2 border-brand-navy">
           <div className="flex items-center gap-3 mb-6">
-            <div className="bg-gradient-to-br from-green-500 to-emerald-500 p-3 rounded-xl">
+            <div className="bg-gradient-to-br from-brand-navy to-brand-orange p-3 rounded-xl">
               <TrendingUp size={28} className="text-white" />
             </div>
             <div>
@@ -422,12 +422,12 @@ export default function DashboardPage() {
             <AreaChart data={monthlyRevenueData}>
               <defs>
                 <linearGradient id="colorTailoring" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#a855f7" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#a855f7" stopOpacity={0.1}/>
+                  <stop offset="5%" stopColor="#001f3f" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#001f3f" stopOpacity={0.1}/>
                 </linearGradient>
                 <linearGradient id="colorInventory" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1}/>
+                  <stop offset="5%" stopColor="#ff6b35" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#ff6b35" stopOpacity={0.1}/>
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
@@ -450,7 +450,7 @@ export default function DashboardPage() {
                 type="monotone" 
                 dataKey="tailoring" 
                 stackId="1"
-                stroke="#a855f7" 
+                stroke="#001f3f" 
                 fill="url(#colorTailoring)"
                 name="Tailoring Revenue"
               />
@@ -458,7 +458,7 @@ export default function DashboardPage() {
                 type="monotone" 
                 dataKey="inventory" 
                 stackId="1"
-                stroke="#3b82f6" 
+                stroke="#ff6b35" 
                 fill="url(#colorInventory)"
                 name="Inventory Revenue"
               />
@@ -566,9 +566,9 @@ export default function DashboardPage() {
         </div>
 
         {/* Alerts Section */}
-        <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border-2 border-yellow-200">
+        <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border-2 border-brand-orange">
           <div className="flex items-center gap-3 mb-6">
-            <div className="bg-gradient-to-br from-yellow-500 to-amber-500 p-3 rounded-xl">
+            <div className="bg-gradient-to-br from-brand-orange to-brand-navy p-3 rounded-xl">
               <Bell size={28} className="text-white" />
             </div>
             <div>
@@ -671,9 +671,9 @@ export default function DashboardPage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border-2 border-indigo-200">
+        <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border-2 border-brand-navy">
           <div className="flex items-center gap-3 mb-6">
-            <div className="bg-gradient-to-br from-indigo-500 to-purple-500 p-3 rounded-xl">
+            <div className="bg-gradient-to-br from-brand-navy to-brand-orange p-3 rounded-xl">
               <Zap size={28} className="text-white" />
             </div>
             <div>
@@ -683,19 +683,19 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <button className="bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-2xl p-6 transition-all duration-300 hover:scale-105 transform shadow-lg hover:shadow-xl">
+            <button className="bg-gradient-to-br from-brand-navy to-brand-orange hover:from-brand-navy-dark hover:to-brand-orange-dark text-white rounded-2xl p-6 transition-all duration-300 hover:scale-105 transform shadow-lg hover:shadow-xl">
               <Users size={36} className="mb-2 mx-auto" />
               <span className="text-sm font-bold">Add Client</span>
             </button>
-            <button className="bg-gradient-to-br from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-2xl p-6 transition-all duration-300 hover:scale-105 transform shadow-lg hover:shadow-xl">
+            <button className="bg-gradient-to-br from-brand-orange to-brand-navy hover:from-brand-orange-dark hover:to-brand-navy-dark text-white rounded-2xl p-6 transition-all duration-300 hover:scale-105 transform shadow-lg hover:shadow-xl">
               <ShoppingBag size={36} className="mb-2 mx-auto" />
               <span className="text-sm font-bold">New Order</span>
             </button>
-            <button className="bg-gradient-to-br from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-2xl p-6 transition-all duration-300 hover:scale-105 transform shadow-lg hover:shadow-xl">
+            <button className="bg-gradient-to-br from-brand-navy to-brand-orange hover:from-brand-navy-dark hover:to-brand-orange-dark text-white rounded-2xl p-6 transition-all duration-300 hover:scale-105 transform shadow-lg hover:shadow-xl">
               <Ruler size={36} className="mb-2 mx-auto" />
               <span className="text-sm font-bold">Take Measurement</span>
             </button>
-            <button className="bg-gradient-to-br from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-2xl p-6 transition-all duration-300 hover:scale-105 transform shadow-lg hover:shadow-xl">
+            <button className="bg-gradient-to-br from-brand-orange to-brand-navy hover:from-brand-orange-dark hover:to-brand-navy-dark text-white rounded-2xl p-6 transition-all duration-300 hover:scale-105 transform shadow-lg hover:shadow-xl">
               <Package size={36} className="mb-2 mx-auto" />
               <span className="text-sm font-bold">Manage Inventory</span>
             </button>

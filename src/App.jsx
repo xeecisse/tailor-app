@@ -5,9 +5,21 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import authStore from './stores/authStore';
 
 // Pages
+import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
+import AdminLoginPage from './pages/AdminLoginPage';
+import AdminDashboardPage from './pages/AdminDashboardPage';
+import AdminApplicationsPage from './pages/AdminApplicationsPage';
+import AdminApplicationDetailPage from './pages/AdminApplicationDetailPage';
+import AdminReportsPage from './pages/AdminReportsPage';
+import AdminSubscriptionsPage from './pages/AdminSubscriptionsPage';
 import DashboardPage from './pages/DashboardPage';
+import CustomerDashboardPage from './pages/CustomerDashboardPage';
+import CustomerOrdersPage from './pages/CustomerOrdersPage';
+import CustomerMeasurementsPage from './pages/CustomerMeasurementsPage';
+import CustomerTailorsPage from './pages/CustomerTailorsPage';
+import ConnectTailorPage from './pages/ConnectTailorPage';
 import ClientsPage from './pages/ClientsPage';
 import ClientDetailsPage from './pages/ClientDetailsPage';
 import ClientEditPage from './pages/ClientEditPage';
@@ -23,6 +35,7 @@ import CalendarPage from './pages/CalendarPage';
 import StaffPage from './pages/StaffPage';
 import StaffDetailsPage from './pages/StaffDetailsPage';
 import ReportsPage from './pages/ReportsPage';
+import SubscriptionPage from './pages/SubscriptionPage';
 import MessagesPage from './pages/MessagesPage';
 
 // Components
@@ -31,7 +44,7 @@ import Layout from './components/Layout';
 import NotificationCenter from './components/NotificationCenter';
 
 function App() {
-  const { token, initializeAuth } = authStore();
+  const { token, initializeAuth, role } = authStore();
 
   useEffect(() => {
     initializeAuth();
@@ -42,8 +55,17 @@ function App() {
       <NotificationCenter />
       <Routes>
         {/* Public routes */}
+        <Route path="/" element={token ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+
+        {/* Admin routes */}
+        <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+        <Route path="/admin/applications" element={<AdminApplicationsPage />} />
+        <Route path="/admin/applications/:tailorId" element={<AdminApplicationDetailPage />} />
+        <Route path="/admin/reports" element={<AdminReportsPage />} />
+        <Route path="/admin/subscriptions" element={<AdminSubscriptionsPage />} />
 
         {/* Protected routes */}
         <Route
@@ -52,22 +74,42 @@ function App() {
           }
         >
           <Route element={<Layout />}>
-            <Route path="/" element={<DashboardPage />} />
-            <Route path="/clients" element={<ClientsPage />} />
-            <Route path="/clients/new" element={<ClientEditPage />} />
-            <Route path="/clients/:clientId/edit" element={<ClientEditPage />} />
-            <Route path="/clients/:clientId" element={<ClientDetailsPage />} />
-            <Route path="/measurements" element={<MeasurementsPage />} />
-            <Route path="/measurements/client/:clientId" element={<ClientMeasurementsPage />} />
-            <Route path="/orders" element={<OrdersPage />} />
-            <Route path="/orders/:orderId" element={<OrderDetailsPage />} />
-            <Route path="/inventory" element={<InventoryPage />} />
-            <Route path="/purchase-orders" element={<PurchaseOrdersPage />} />
-            <Route path="/expenses" element={<ExpensesPage />} />
-            <Route path="/calendar" element={<CalendarPage />} />
-            <Route path="/staff" element={<StaffPage />} />
-            <Route path="/staff/:id" element={<StaffDetailsPage />} />
-            <Route path="/reports" element={<ReportsPage />} />
+            {/* Conditional Dashboard */}
+            <Route path="/dashboard" element={role === 'customer' ? <CustomerDashboardPage /> : <DashboardPage />} />
+
+            {/* Customer Routes */}
+            {role === 'customer' && (
+              <>
+                <Route path="/my-orders" element={<CustomerOrdersPage />} />
+                <Route path="/my-measurements" element={<CustomerMeasurementsPage />} />
+                <Route path="/my-tailors" element={<CustomerTailorsPage />} />
+                <Route path="/connect-tailor" element={<ConnectTailorPage />} />
+              </>
+            )}
+
+            {/* Tailor Routes */}
+            {role === 'tailor' && (
+              <>
+                <Route path="/clients" element={<ClientsPage />} />
+                <Route path="/clients/new" element={<ClientEditPage />} />
+                <Route path="/clients/:clientId/edit" element={<ClientEditPage />} />
+                <Route path="/clients/:clientId" element={<ClientDetailsPage />} />
+                <Route path="/measurements" element={<MeasurementsPage />} />
+                <Route path="/measurements/client/:clientId" element={<ClientMeasurementsPage />} />
+                <Route path="/orders" element={<OrdersPage />} />
+                <Route path="/orders/:orderId" element={<OrderDetailsPage />} />
+                <Route path="/inventory" element={<InventoryPage />} />
+                <Route path="/purchase-orders" element={<PurchaseOrdersPage />} />
+                <Route path="/expenses" element={<ExpensesPage />} />
+                <Route path="/calendar" element={<CalendarPage />} />
+                <Route path="/staff" element={<StaffPage />} />
+                <Route path="/staff/:id" element={<StaffDetailsPage />} />
+                <Route path="/reports" element={<ReportsPage />} />
+                <Route path="/subscription" element={<SubscriptionPage />} />
+              </>
+            )}
+
+            {/* Shared Routes */}
             <Route path="/messages" element={<MessagesPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>

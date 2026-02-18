@@ -4,29 +4,33 @@ import axios from 'axios';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const authStore = create((set) => ({
-  tailor: null,
+  user: null,
+  role: null,
   token: localStorage.getItem('sewtrack_token') || null,
   refreshToken: localStorage.getItem('sewtrack_refresh_token') || null,
   isLoading: false,
   error: null,
 
   // Login
-  login: async (email, password) => {
+  login: async (email, password, role) => {
     set({ isLoading: true, error: null });
     try {
       const response = await axios.post(`${API_URL}/auth/login`, {
         email,
         password,
+        role,
       });
 
-      const { token, refreshToken, tailor } = response.data;
+      const { token, refreshToken, user, role: userRole } = response.data;
 
       localStorage.setItem('sewtrack_token', token);
       localStorage.setItem('sewtrack_refresh_token', refreshToken);
+      localStorage.setItem('sewtrack_role', userRole);
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
       set({
-        tailor,
+        user,
+        role: userRole,
         token,
         refreshToken,
         isLoading: false,
@@ -46,13 +50,15 @@ const authStore = create((set) => ({
     try {
       const response = await axios.post(`${API_URL}/auth/signup`, data);
 
-      const { token, tailor } = response.data;
+      const { token, user, role } = response.data;
 
       localStorage.setItem('sewtrack_token', token);
+      localStorage.setItem('sewtrack_role', role);
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
       set({
-        tailor,
+        user,
+        role,
         token,
         isLoading: false,
       });
@@ -96,17 +102,19 @@ const authStore = create((set) => ({
   logout: () => {
     localStorage.removeItem('sewtrack_token');
     localStorage.removeItem('sewtrack_refresh_token');
+    localStorage.removeItem('sewtrack_role');
     delete axios.defaults.headers.common['Authorization'];
-    set({ tailor: null, token: null, refreshToken: null, error: null });
+    set({ user: null, role: null, token: null, refreshToken: null, error: null });
   },
 
   // Initialize auth (check token on app load)
   initializeAuth: () => {
     const token = localStorage.getItem('sewtrack_token');
     const refreshToken = localStorage.getItem('sewtrack_refresh_token');
+    const role = localStorage.getItem('sewtrack_role');
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      set({ token, refreshToken });
+      set({ token, refreshToken, role });
     }
   },
 }));

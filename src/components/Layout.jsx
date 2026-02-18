@@ -24,13 +24,13 @@ import authStore from '../stores/authStore';
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const location = useLocation();
-  const { logout, tailor } = authStore();
+  const { logout, user, role } = authStore();
 
-  const menuItems = [
+  const tailorMenuItems = [
     { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
     { path: '/clients', icon: Users, label: 'Clients' },
     { path: '/measurements', icon: Ruler, label: 'Measurements' },
-    { path: '/orders', icon: ShoppingBag, label: 'Orders' },
+    { path: '/orders', icon: ShoppingBag, label: 'Tailoring Orders' },
     { path: '/inventory', icon: Package, label: 'Inventory' },
     { path: '/purchase-orders', icon: ClipboardList, label: 'Purchase Orders' },
     { path: '/expenses', icon: DollarSign, label: 'Expenses' },
@@ -39,6 +39,15 @@ export default function Layout() {
     { path: '/messages', icon: MessageSquare, label: 'Messages' },
     { path: '/calendar', icon: Calendar, label: 'Calendar' },
   ];
+
+  const customerMenuItems = [
+    { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
+    { path: '/my-orders', icon: ShoppingBag, label: 'My Orders' },
+    { path: '/my-measurements', icon: Ruler, label: 'My Measurements' },
+    { path: '/messages', icon: MessageSquare, label: 'Messages' },
+  ];
+
+  const menuItems = role === 'customer' ? customerMenuItems : tailorMenuItems;
 
   const isActive = (path) => {
     if (path === '/') {
@@ -53,15 +62,13 @@ export default function Layout() {
       <aside
         className={`${
           sidebarOpen ? 'w-64' : 'w-20'
-        } bg-slate-900 text-white transition-all duration-300 flex flex-col`}
+        } bg-brand-navy-dark text-white transition-all duration-300 flex flex-col`}
       >
         {/* Logo/Brand */}
-        <div className="p-6 border-b border-slate-700">
+        <div className="p-6 border-b border-brand-navy">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center font-bold">
-              ST
-            </div>
-            {sidebarOpen && <h1 className="font-bold text-lg">SewTrack</h1>}
+            <img src="/logo.png" alt="SewTrack" className="w-10 h-10 object-contain" />
+            {sidebarOpen && <h1 className="font-bold text-lg text-brand-orange">SewTrack</h1>}
           </div>
         </div>
 
@@ -76,8 +83,8 @@ export default function Layout() {
                     to={item.path}
                     className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                       isActive(item.path)
-                        ? 'bg-blue-600 text-white'
-                        : 'text-gray-300 hover:bg-slate-800'
+                        ? 'bg-brand-orange text-white'
+                        : 'text-gray-300 hover:bg-brand-navy'
                     }`}
                   >
                     <Icon size={20} />
@@ -90,13 +97,13 @@ export default function Layout() {
         </nav>
 
         {/* Bottom Menu */}
-        <div className="p-4 border-t border-slate-700 space-y-2">
+        <div className="p-4 border-t border-brand-navy space-y-2">
           <Link
             to="/profile"
             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
               isActive('/profile')
-                ? 'bg-blue-600 text-white'
-                : 'text-gray-300 hover:bg-slate-800'
+                ? 'bg-brand-orange text-white'
+                : 'text-gray-300 hover:bg-brand-navy'
             }`}
           >
             <Settings size={20} />
@@ -105,7 +112,7 @@ export default function Layout() {
 
           <button
             onClick={logout}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-slate-800 transition-all text-left"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-brand-navy transition-all text-left"
           >
             <LogOut size={20} />
             {sidebarOpen && <span>Logout</span>}
@@ -132,10 +139,10 @@ export default function Layout() {
               ? 'Client Details'
               : menuItems.find((item) => item.path === location.pathname)?.label || 'Dashboard'}
           </h2>
-          {tailor && (
+          {user && (
             <div className="text-sm text-gray-600">
-              <p className="font-medium">{tailor.businessName}</p>
-              <p className="text-xs">{tailor.email}</p>
+              <p className="font-medium">{role === 'customer' ? user.name : user.businessName}</p>
+              <p className="text-xs">{user.email}</p>
             </div>
           )}
         </header>

@@ -25,7 +25,9 @@ import {
   AlertTriangle,
   Eye,
   CreditCard,
-  Trash2
+  Trash2,
+  Sparkles,
+  Play
 } from 'lucide-react';
 
 export default function OrdersPage() {
@@ -292,10 +294,10 @@ export default function OrdersPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-purple-200 border-t-purple-600 mb-4"></div>
-          <p className="text-gray-700 font-bold text-lg">Loading orders...</p>
+          <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-brand-navy-200 border-t-brand-navy-600 mb-4"></div>
+          <p className="text-gray-700 font-bold text-base">Loading orders...</p>
         </div>
       </div>
     );
@@ -312,81 +314,66 @@ export default function OrdersPage() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
-      {/* Enhanced Decorative Background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-purple-300 to-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-        <div className="absolute top-40 left-0 w-[500px] h-[500px] bg-gradient-to-br from-blue-300 to-cyan-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
-        <div className="absolute bottom-0 right-1/3 w-[550px] h-[550px] bg-gradient-to-br from-orange-300 to-yellow-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
-      </div>
-
+    <div className="min-h-screen bg-gray-50">
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-5xl font-extrabold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
+            <h1 className="text-3xl font-extrabold text-brand-navy">
               Orders Management
             </h1>
-            <p className="text-gray-600 mt-2 text-lg font-medium">{totalOrders} total orders</p>
+            <p className="text-gray-600 mt-1 text-base font-medium">{totalOrders} total orders</p>
           </div>
           <button
             onClick={() => setShowForm(!showForm)}
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 hover:from-purple-700 hover:via-pink-700 hover:to-blue-700 text-white px-8 py-4 rounded-2xl font-bold transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 transform"
+            className="inline-flex items-center gap-2 bg-brand-navy hover:bg-brand-navy-dark text-white px-8 py-3 rounded-lg font-bold transition-all duration-300 shadow-md hover:shadow-lg"
           >
-            <Plus size={24} /> New Order
+            <Plus size={20} /> New Order
           </button>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             { 
               label: 'Total Revenue', 
               value: `₦${totalRevenue.toLocaleString()}`, 
               icon: DollarSign,
-              gradient: 'from-green-500 via-emerald-500 to-teal-500',
-              bgGradient: 'from-green-50 to-emerald-50',
-              iconBg: 'bg-green-100',
+              borderColor: 'border-brand-navy',
             },
             { 
               label: 'Pending Orders', 
               value: pendingOrders, 
               icon: Clock,
-              gradient: 'from-yellow-500 via-amber-500 to-orange-500',
-              bgGradient: 'from-yellow-50 to-amber-50',
-              iconBg: 'bg-yellow-100',
+              borderColor: 'border-brand-orange',
             },
             { 
               label: 'In Progress', 
               value: inProgressOrders, 
               icon: Settings,
-              gradient: 'from-orange-500 via-amber-500 to-yellow-500',
-              bgGradient: 'from-orange-50 to-amber-50',
-              iconBg: 'bg-orange-100',
+              borderColor: 'border-brand-navy',
             },
             { 
               label: 'Completed', 
               value: completedOrders, 
               icon: CheckCircle,
-              gradient: 'from-blue-500 via-cyan-500 to-sky-500',
-              bgGradient: 'from-blue-50 to-cyan-50',
-              iconBg: 'bg-blue-100',
+              borderColor: 'border-brand-orange',
             },
           ].map((stat, idx) => {
             const Icon = stat.icon;
             return (
             <div 
               key={idx} 
-              className={`bg-gradient-to-br ${stat.bgGradient} rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 transform border border-white/50 backdrop-blur-sm`}
+              className={`bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-all border-l-4 ${stat.borderColor}`}
             >
               <div className="flex items-start justify-between mb-4">
-                <div className={`${stat.iconBg} p-4 rounded-2xl shadow-md`}>
-                  <Icon size={32} className="text-gray-700" />
+                <div className="bg-gray-100 p-3 rounded-lg">
+                  <Icon size={24} className={stat.borderColor.replace('border-', 'text-')} />
                 </div>
               </div>
               <div>
-                <p className="text-gray-600 text-sm font-semibold mb-1">{stat.label}</p>
-                <p className={`text-3xl font-extrabold bg-gradient-to-r ${stat.gradient} bg-clip-text text-transparent`}>
+                <p className="text-gray-600 text-xs font-semibold mb-1">{stat.label}</p>
+                <p className="text-2xl font-extrabold text-gray-900">
                   {stat.value}
                 </p>
               </div>
@@ -396,31 +383,27 @@ export default function OrdersPage() {
 
         {/* Messages */}
         {error && (
-          <div className="p-5 bg-gradient-to-r from-red-50 to-pink-50 border-2 border-red-300 rounded-2xl text-red-700 flex items-center gap-4 shadow-lg">
-            <div className="bg-red-100 p-3 rounded-xl">
-              <span className="text-2xl">⚠️</span>
-            </div>
-            <span className="font-semibold text-lg">{error}</span>
+          <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-lg text-red-700 flex items-center gap-3 shadow-sm">
+            <AlertTriangle size={20} className="flex-shrink-0" />
+            <span className="font-semibold text-base">{error}</span>
           </div>
         )}
         {message && (
-          <div className="p-5 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-2xl text-green-700 flex items-center gap-4 shadow-lg">
-            <div className="bg-green-100 p-3 rounded-xl">
-              <span className="text-2xl">✅</span>
-            </div>
-            <span className="font-semibold text-lg">{message}</span>
+          <div className="p-4 bg-green-50 border-l-4 border-green-500 rounded-lg text-green-700 flex items-center gap-3 shadow-sm">
+            <CheckCircle size={20} className="flex-shrink-0" />
+            <span className="font-semibold text-base">{message}</span>
           </div>
         )}
 
 
         {/* Create Order Form */}
         {showForm && (
-          <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border-2 border-purple-200">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-gradient-to-br from-purple-500 to-pink-500 p-3 rounded-xl">
-                <span className="text-3xl">✨</span>
+          <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="bg-brand-navy p-3 rounded-lg">
+                <Sparkles size={24} className="text-white" />
               </div>
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              <h2 className="text-2xl font-bold text-brand-navy">
                 Create New Order
               </h2>
             </div>
@@ -429,13 +412,13 @@ export default function OrdersPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <User size={20} /> Select Client *
+                    <User size={18} /> Select Client *
                   </label>
                   <select
                     required
                     value={selectedClient}
                     onChange={(e) => handleClientSelect(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all bg-white"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-brand-navy focus:ring-2 focus:ring-brand-navy focus:ring-opacity-20 outline-none transition-all bg-white text-sm"
                   >
                     <option value="">Choose a client...</option>
                     {clients.map((c) => (
@@ -449,13 +432,13 @@ export default function OrdersPage() {
                 {selectedClient && (
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                      <Ruler size={20} /> Select Measurement *
+                      <Ruler size={18} /> Select Measurement *
                     </label>
                     <select
                       required
                       value={formData.measurementId}
                       onChange={(e) => handleMeasurementSelect(e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all bg-white"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-brand-navy focus:ring-2 focus:ring-brand-navy focus:ring-opacity-20 outline-none transition-all bg-white text-sm"
                     >
                       <option value="">Choose measurement...</option>
                       {filteredMeasurements.map((m) => (
@@ -469,7 +452,7 @@ export default function OrdersPage() {
 
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <DollarSign size={20} /> Price (₦) *
+                    <DollarSign size={18} /> Price (₦) *
                   </label>
                   <input
                     type="number"
@@ -477,32 +460,32 @@ export default function OrdersPage() {
                     required
                     value={formData.price}
                     onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all bg-white"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-brand-navy focus:ring-2 focus:ring-brand-navy focus:ring-opacity-20 outline-none transition-all bg-white text-sm"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <Calendar size={20} /> Expected Delivery Date
+                    <Calendar size={18} /> Expected Delivery Date
                   </label>
                   <input
                     type="date"
                     value={formData.expectedDeliveryDate}
                     onChange={(e) => setFormData({ ...formData, expectedDeliveryDate: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all bg-white"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-brand-navy focus:ring-2 focus:ring-brand-navy focus:ring-opacity-20 outline-none transition-all bg-white text-sm"
                   />
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                  <MessageSquare size={20} /> Notes
+                  <MessageSquare size={18} /> Notes
                 </label>
                 <textarea
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  rows="3"
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all resize-none bg-white"
+                  rows="2"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-brand-navy focus:ring-2 focus:ring-brand-navy focus:ring-opacity-20 outline-none transition-all resize-none bg-white text-sm"
                   placeholder="Add any special notes..."
                 />
               </div>
@@ -529,7 +512,7 @@ export default function OrdersPage() {
                   />
                   <label
                     htmlFor="fabric-images"
-                    className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 cursor-pointer text-white px-6 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl"
+                    className="flex items-center justify-center gap-2 bg-brand-navy hover:bg-brand-navy-dark cursor-pointer text-white px-6 py-3 rounded-lg font-bold transition-all duration-300 shadow-md hover:shadow-lg"
                   >
                     <Camera size={20} /> Select Images
                   </label>
@@ -542,14 +525,14 @@ export default function OrdersPage() {
                           <img
                             src={URL.createObjectURL(file)}
                             alt={`Preview ${index + 1}`}
-                            className="w-full h-32 object-cover rounded-xl border-2 border-purple-200"
+                            className="w-full h-32 object-cover rounded-lg border border-gray-200"
                           />
                           <button
                             type="button"
                             onClick={() => handleRemoveImage(index)}
-                            className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
                           >
-                            <span className="text-lg">✕</span>
+                            <X size={16} />
                           </button>
                           <p className="text-xs text-gray-600 mt-1 truncate">{file.name}</p>
                         </div>
@@ -559,20 +542,20 @@ export default function OrdersPage() {
                 </div>
               </div>
 
-              <div className="flex gap-4">
+              <div className="flex gap-3">
                 <button
                   type="submit"
                   disabled={uploadingImages}
-                  className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-4 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 flex items-center justify-center gap-2 bg-brand-navy hover:bg-brand-navy-dark text-white px-6 py-3 rounded-lg font-bold transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                 >
                   {uploadingImages ? (
                     <>
-                      <div className="inline-block animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                      <div className="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
                       Uploading...
                     </>
                   ) : (
                     <>
-                      <Save size={20} /> Create Order
+                      <Save size={18} /> Create Order
                     </>
                   )}
                 </button>
@@ -582,9 +565,9 @@ export default function OrdersPage() {
                     setShowForm(false);
                     setSelectedImages([]);
                   }}
-                  className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-gray-200 to-gray-300 hover:from-gray-300 hover:to-gray-400 text-gray-700 px-6 py-4 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl"
+                  className="flex-1 flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-bold transition-all duration-300 shadow-md hover:shadow-lg text-sm"
                 >
-                  <span className="text-xl">✕</span> Cancel
+                  <X size={18} /> Cancel
                 </button>
               </div>
             </form>
@@ -592,16 +575,16 @@ export default function OrdersPage() {
         )}
 
         {/* Filter */}
-        <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-4 border-2 border-purple-200">
-          <div className="flex items-center gap-4">
+        <div className="bg-white rounded-lg shadow-sm p-3 border border-gray-200">
+          <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              <Search size={20} className="text-gray-700" />
-              <span className="font-bold text-gray-700">Filter by Status:</span>
+              <Search size={18} className="text-gray-700" />
+              <span className="font-bold text-gray-700 text-sm">Filter by Status:</span>
             </div>
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-4 py-2 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all bg-white font-semibold"
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:border-brand-navy focus:ring-2 focus:ring-brand-navy focus:ring-opacity-20 outline-none transition-all bg-white font-semibold text-sm"
             >
               <option value="">All Statuses</option>
               <option value="pending">Pending</option>
@@ -615,10 +598,10 @@ export default function OrdersPage() {
 
         {/* Orders Grid */}
         {orders.length === 0 ? (
-          <div className="text-center py-20 bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-dashed border-purple-300 shadow-xl">
+          <div className="text-center py-20 bg-white rounded-lg border border-gray-200 shadow-sm">
             <Package size={80} className="mx-auto mb-6 text-gray-400" />
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">No orders yet</h3>
-            <p className="text-gray-600 text-lg">Create your first order to get started</p>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">No orders yet</h3>
+            <p className="text-gray-600 text-base">Create your first order to get started</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -631,35 +614,30 @@ export default function OrdersPage() {
               return (
                 <div
                   key={order._id}
-                  className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-purple-200 hover:border-purple-300 group transform hover:scale-105"
+                  className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all overflow-hidden border-l-4 border-brand-navy"
                 >
                   {/* Card Header */}
-                  <div className={`bg-gradient-to-r ${statusConfig.gradient} p-6 text-white relative overflow-hidden`}>
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
-                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12"></div>
-                    
-                    <div className="relative z-10">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <StatusIcon size={28} className="text-white" />
-                          <span className="text-sm font-bold opacity-90">#{order.orderNumber}</span>
-                        </div>
-                        <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
-                          <span className="text-xs font-bold capitalize">{order.status.replace('_', ' ')}</span>
-                        </div>
+                  <div className="bg-brand-navy p-6 text-white">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <StatusIcon size={24} className="text-white" />
+                        <span className="text-sm font-bold">#{order.orderNumber}</span>
                       </div>
-                      <h3 className="text-xl font-bold mb-1">{order.clientId?.name || 'N/A'}</h3>
-                      <p className="text-sm opacity-90">{order.attireType}</p>
+                      <div className="bg-white/20 px-3 py-1 rounded-full">
+                        <span className="text-xs font-bold capitalize">{order.status.replace('_', ' ')}</span>
+                      </div>
                     </div>
+                    <h3 className="text-lg font-bold mb-1">{order.clientId?.name || 'N/A'}</h3>
+                    <p className="text-sm opacity-90">{order.attireType}</p>
                   </div>
 
                   {/* Card Body */}
                   <div className="p-6 space-y-4">
                     {/* Price */}
-                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-4 border-2 border-green-200">
+                    <div className="bg-green-50 rounded-lg p-4 border-l-4 border-green-500">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <DollarSign size={20} className="text-gray-700" />
+                          <DollarSign size={20} className="text-green-700" />
                           <span className="text-sm font-semibold text-gray-600">Total Price</span>
                         </div>
                         <span className="text-2xl font-extrabold text-green-700">
@@ -669,11 +647,11 @@ export default function OrdersPage() {
                     </div>
 
                     {/* Payment Status */}
-                    <div className={`bg-gradient-to-br ${paymentConfig.bg} rounded-2xl p-4 border-2 ${paymentConfig.text.replace('text-', 'border-')}-200`}>
+                    <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-brand-navy">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <PaymentIcon size={20} className={paymentConfig.text} />
-                          <span className={`text-sm font-bold ${paymentConfig.text} capitalize`}>
+                          <PaymentIcon size={20} className="text-brand-navy" />
+                          <span className="text-sm font-bold text-brand-navy capitalize">
                             {order.paymentStatus}
                           </span>
                         </div>
@@ -681,7 +659,7 @@ export default function OrdersPage() {
                       {order.amountRemaining > 0 && (
                         <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-200">
                           <span className="text-xs text-gray-600 font-semibold">Amount Due:</span>
-                          <span className={`text-lg font-bold ${paymentConfig.text}`}>
+                          <span className="text-lg font-bold text-brand-navy">
                             ₦{order.amountRemaining?.toLocaleString()}
                           </span>
                         </div>
@@ -712,7 +690,7 @@ export default function OrdersPage() {
 
                     {/* Notes */}
                     {order.notes && (
-                      <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-200 p-3 rounded-xl">
+                      <div className="bg-amber-50 border-l-4 border-amber-500 p-3 rounded-lg">
                         <div className="flex items-start gap-2">
                           <MessageSquare size={18} className="text-amber-700 flex-shrink-0 mt-0.5" />
                           <p className="text-xs text-gray-700 font-medium">{order.notes}</p>
@@ -722,10 +700,10 @@ export default function OrdersPage() {
                   </div>
 
                   {/* Card Actions */}
-                  <div className="bg-gray-50 p-4 border-t-2 border-gray-100 flex gap-2">
+                  <div className="bg-gray-50 p-4 border-t border-gray-200 flex gap-2">
                     <button
                       onClick={() => navigate(`/orders/${order._id}`)}
-                      className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-3 py-2.5 rounded-xl transition-all text-sm font-bold shadow-md hover:shadow-lg transform hover:scale-105"
+                      className="flex-1 flex items-center justify-center gap-2 bg-brand-navy hover:bg-brand-navy-dark text-white px-3 py-2.5 rounded-lg transition-all text-sm font-bold shadow-sm hover:shadow-md"
                     >
                       <Eye size={18} /> View
                     </button>
@@ -733,16 +711,16 @@ export default function OrdersPage() {
                     {order.status === 'pending' && (
                       <button
                         onClick={() => handleStatusChange(order._id, 'in_progress')}
-                        className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-3 py-2.5 rounded-xl transition-all text-sm font-bold shadow-md hover:shadow-lg transform hover:scale-105"
+                        className="flex-1 flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white px-3 py-2.5 rounded-lg transition-all text-sm font-bold shadow-sm hover:shadow-md"
                       >
-                        <span className="text-lg">▶️</span> Start
+                        <Play size={18} /> Start
                       </button>
                     )}
                     
                     {order.paymentStatus !== 'paid' && (
                       <button
                         onClick={() => setPaymentForm(order._id)}
-                        className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-3 py-2.5 rounded-xl transition-all text-sm font-bold shadow-md hover:shadow-lg transform hover:scale-105"
+                        className="flex-1 flex items-center justify-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white px-3 py-2.5 rounded-lg transition-all text-sm font-bold shadow-sm hover:shadow-md"
                       >
                         <CreditCard size={18} /> Pay
                       </button>
@@ -750,7 +728,7 @@ export default function OrdersPage() {
                     
                     <button
                       onClick={() => handleDeleteOrder(order._id)}
-                      className="flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-3 py-2.5 rounded-xl transition-all text-sm font-bold shadow-md hover:shadow-lg transform hover:scale-105"
+                      className="flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white px-3 py-2.5 rounded-lg transition-all text-sm font-bold shadow-sm hover:shadow-md"
                     >
                       <Trash2 size={18} />
                     </button>
@@ -765,12 +743,12 @@ export default function OrdersPage() {
         {/* Payment Modal */}
         {paymentForm && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div className="bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl p-8 max-w-md w-full border-2 border-purple-300">
+            <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full border border-gray-200">
               <div className="flex items-center gap-3 mb-6">
-                <div className="bg-gradient-to-br from-purple-500 to-pink-500 p-3 rounded-xl">
+                <div className="bg-brand-navy p-3 rounded-lg">
                   <CreditCard size={28} className="text-white" />
                 </div>
-                <h3 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                <h3 className="text-2xl font-bold text-brand-navy">
                   Record Payment
                 </h3>
               </div>
@@ -785,7 +763,7 @@ export default function OrdersPage() {
                     step="100"
                     value={paymentData.amount}
                     onChange={(e) => setPaymentData({ ...paymentData, amount: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all bg-white"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-brand-navy focus:ring-2 focus:ring-brand-navy focus:ring-opacity-20 outline-none transition-all bg-white"
                     placeholder="Enter amount"
                   />
                 </div>
@@ -797,7 +775,7 @@ export default function OrdersPage() {
                   <select
                     value={paymentData.method}
                     onChange={(e) => setPaymentData({ ...paymentData, method: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all bg-white"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-brand-navy focus:ring-2 focus:ring-brand-navy focus:ring-opacity-20 outline-none transition-all bg-white"
                   >
                     <option value="cash">Cash</option>
                     <option value="transfer">Bank Transfer</option>
@@ -813,7 +791,7 @@ export default function OrdersPage() {
                     value={paymentData.note}
                     onChange={(e) => setPaymentData({ ...paymentData, note: e.target.value })}
                     rows="2"
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all resize-none bg-white"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-brand-navy focus:ring-2 focus:ring-brand-navy focus:ring-opacity-20 outline-none transition-all resize-none bg-white"
                     placeholder="Add a note..."
                   />
                 </div>
@@ -821,7 +799,7 @@ export default function OrdersPage() {
                 <div className="flex gap-3 pt-4">
                   <button
                     onClick={() => handleAddPayment(paymentForm)}
-                    className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl"
+                    className="flex-1 flex items-center justify-center gap-2 bg-brand-navy hover:bg-brand-navy-dark text-white px-6 py-3 rounded-lg font-bold transition-all duration-300 shadow-md hover:shadow-lg"
                   >
                     <Save size={20} /> Save Payment
                   </button>
@@ -830,9 +808,9 @@ export default function OrdersPage() {
                       setPaymentForm(null);
                       setPaymentData({ amount: '', method: 'cash', note: '' });
                     }}
-                    className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-gray-200 to-gray-300 hover:from-gray-300 hover:to-gray-400 text-gray-700 px-6 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl"
+                    className="flex-1 flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-bold transition-all duration-300 shadow-md hover:shadow-lg"
                   >
-                    <span className="text-xl">✕</span> Cancel
+                    <X size={20} /> Cancel
                   </button>
                 </div>
               </div>
@@ -840,29 +818,6 @@ export default function OrdersPage() {
           </div>
         )}
       </div>
-
-      <style>{`
-        @keyframes blob {
-          0%, 100% {
-            transform: translate(0, 0) scale(1);
-          }
-          33% {
-            transform: translate(30px, -50px) scale(1.1);
-          }
-          66% {
-            transform: translate(-20px, 20px) scale(0.9);
-          }
-        }
-        .animate-blob {
-          animation: blob 7s infinite;
-        }
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
-      `}</style>
     </div>
   );
 }

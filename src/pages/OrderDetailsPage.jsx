@@ -228,7 +228,7 @@ export default function OrderDetailsPage() {
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             <div>
-              <h1 className="text-5xl font-extrabold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
+              <h1 className="text-3xl font-extrabold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
                 Order #{order?.orderNumber}
               </h1>
               <p className="text-gray-600 mt-2 text-lg font-medium">
@@ -315,7 +315,7 @@ export default function OrderDetailsPage() {
               <div className="bg-gradient-to-br from-purple-500 to-pink-500 p-3 rounded-xl">
                 <Settings size={28} className="text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">Update Order Status</h2>
+              <h2 className="text-lg font-bold text-gray-900">Update Order Status</h2>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
@@ -349,7 +349,7 @@ export default function OrderDetailsPage() {
               <div className="bg-gradient-to-br from-purple-500 to-pink-500 p-3 rounded-xl">
                 <CreditCard size={28} className="text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">Record Payment</h2>
+              <h2 className="text-lg font-bold text-gray-900">Record Payment</h2>
             </div>
 
             <form onSubmit={handleAddPayment} className="space-y-6">
@@ -431,7 +431,7 @@ export default function OrderDetailsPage() {
                 <div className="bg-gradient-to-br from-blue-500 to-cyan-500 p-3 rounded-xl">
                   <User size={28} className="text-white" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900">Client Information</h2>
+                <h2 className="text-lg font-bold text-gray-900">Client Information</h2>
               </div>
 
               <div className="space-y-4">
@@ -475,7 +475,7 @@ export default function OrderDetailsPage() {
                 <div className="bg-gradient-to-br from-purple-500 to-pink-500 p-3 rounded-xl">
                   <ClipboardList size={28} className="text-white" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900">Order Details</h2>
+                <h2 className="text-lg font-bold text-gray-900">Order Details</h2>
               </div>
 
               <div className="space-y-4">
@@ -530,7 +530,7 @@ export default function OrderDetailsPage() {
                 <div className="bg-gradient-to-br from-green-500 to-emerald-500 p-3 rounded-xl">
                   <DollarSign size={28} className="text-white" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900">Financial Summary</h2>
+                <h2 className="text-lg font-bold text-gray-900">Financial Summary</h2>
               </div>
 
               <div className="space-y-4">
@@ -559,7 +559,7 @@ export default function OrderDetailsPage() {
                   <div className="bg-gradient-to-br from-purple-500 to-pink-500 p-3 rounded-xl">
                     <FileText size={28} className="text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-900">Payment History</h2>
+                  <h2 className="text-lg font-bold text-gray-900">Payment History</h2>
                 </div>
 
                 <div className="space-y-3">
@@ -604,7 +604,7 @@ export default function OrderDetailsPage() {
                   <div className="bg-gradient-to-br from-blue-500 to-cyan-500 p-3 rounded-xl">
                     <Ruler size={28} className="text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-900">Measurements</h2>
+                  <h2 className="text-lg font-bold text-gray-900">Measurements</h2>
                 </div>
                 
                 {measurement ? (
@@ -673,7 +673,7 @@ export default function OrderDetailsPage() {
               <div className="bg-gradient-to-br from-green-500 to-emerald-500 p-3 rounded-xl">
                 <PartyPopper size={32} className="text-white" />
               </div>
-              <h3 className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+              <h3 className="text-lg font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
                 Order {pendingStatus === 'completed' ? 'Completed' : 'Delivered'}!
               </h3>
             </div>
