@@ -5,8 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { BarChart3, TrendingUp, Users, ShoppingBag } from 'lucide-react';
 import axios from 'axios';
 import AdminSidebar from '../components/AdminSidebar';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+import { API_URL } from '../lib/api';
 
 export default function AdminReportsPage() {
   const navigate = useNavigate();

@@ -5,8 +5,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { CheckCircle, XCircle, Clock, Eye } from 'lucide-react';
 import axios from 'axios';
 import AdminSidebar from '../components/AdminSidebar';
+import { API_URL } from '../lib/api';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export default function AdminApplicationsPage() {
   const navigate = useNavigate();

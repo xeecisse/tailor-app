@@ -17,8 +17,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import AdminSidebar from '../components/AdminSidebar';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+import { API_URL } from '../lib/api';
 
 export default function AdminDashboardPage() {
   const navigate = useNavigate();
