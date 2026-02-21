@@ -1,650 +1,771 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { 
-  Plus, 
-  DollarSign, 
-  Clock, 
-  Truck, 
-  CheckCircle, 
-  Package, 
-  User, 
-  Calendar, 
-  MessageSquare, 
-  Trash2, 
-  AlertTriangle, 
-  CheckCircle2, 
+import {
+  Plus,
   Search,
+  Trash2,
+  X,
   ShoppingCart,
   Save,
-  X,
-  Sparkles,
-  FileText
+  AlertCircle,
+  CheckCircle,
+  Package,
+  Minus,
+  Printer,
+  TrendingUp,
+  DollarSign,
+  Receipt,
 } from 'lucide-react';
-import { purchaseOrderAPI, clientAPI, inventoryAPI } from '../lib/api';
+import { inventoryAPI, clientAPI } from '../lib/api';
 
-export default function PurchaseOrdersPage() {
-  const navigate = useNavigate();
-  const [pos, setPos] = useState([]);
-  const [clients, setClients] = useState([]);
+export default function POSPage() {
+  // State Management
   const [items, setItems] = useState([]);
+  const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
-  const [showForm, setShowForm] = useState(false);
-  const [filterStatus, setFilterStatus] = useState('');
-  const [selectedItems, setSelectedItems] = useState([]);
   
-  const [formData, setFormData] = useState({
-    clientId: '',
-    items: [],
-    expectedDeliveryDate: '',
-    notes: '',
-  });
+  // Cart State
+  const [cartItems, setCartItems] = useState([]);
+  const [selectedCustomer, setSelectedCustomer] = useState('walk-in');
+  const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
+  const [discount, setDiscount] = useState(0);
+  const [paymentMethod, setPaymentMethod] = useState('cash');
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  
+  // Search & Filter
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  // Sales History & Revenue
+  const [completedSales, setCompletedSales] = useState([]);
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [lastSale, setLastSale] = useState(null);
 
   useEffect(() => {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    fetchPOs();
-  }, [filterStatus]);
-
   const fetchData = async () => {
     try {
       setLoading(true);
       setError('');
-      const [posRes, clientsRes, itemsRes] = await Promise.all([
-        purchaseOrderAPI.getAll(),
-        clientAPI.getAll('active'),
-        inventoryAPI.getItems(),
-      ]);
-
-      setPos(posRes.data.purchaseOrders || []);
-      setClients(clientsRes.data.clients);
-      setItems(itemsRes.data.items);
+      await Promise.all([fetchItems(), fetchClients()]);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load data');
+      console.error('Error fetching data:', err);
+      setError('Failed to load data');
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchPOs = async () => {
+  const fetchItems = async () => {
     try {
-      const res = await purchaseOrderAPI.getAll(filterStatus || undefined);
-      setPos(res.data.purchaseOrders || []);
+      const response = await inventoryAPI.getItems(undefined, 'active');
+      setItems(response.data.items || []);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch purchase orders');
+      console.error('Error fetching items:', err);
+      throw err;
     }
   };
 
-  const handleAddItem = (itemId) => {
-    const item = items.find(i => i.id === itemId);
-    if (item && !selectedItems.find(si => si.itemId === itemId)) {
-      setSelectedItems([...selectedItems, {
-        itemId: item.id,
-        name: item.name,
-        quantity: 1,
-        unitPrice: item.sellingPrice,
-      }]);
-    }
-  };
-
-  const handleUpdateItemQuantity = (itemId, quantity) => {
-    setSelectedItems(selectedItems.map(item => 
-      item.itemId === itemId ? { ...item, quantity: parseInt(quantity) || 1 } : item
-    ));
-  };
-
-  const handleRemoveItem = (itemId) => {
-    setSelectedItems(selectedItems.filter(item => item.itemId !== itemId));
-  };
-
-  const calculateTotal = () => {
-    return selectedItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
-  };
-
-  const handleCreatePO = async (e) => {
-    e.preventDefault();
-    setError('');
-
-    if (!formData.clientId || selectedItems.length === 0) {
-      setError('Please select a client and add at least one item');
-      return;
-    }
-
+  const fetchClients = async () => {
     try {
-      await purchaseOrderAPI.create({
-        clientId: formData.clientId,
-        items: selectedItems,
-        expectedDeliveryDate: formData.expectedDeliveryDate,
-        notes: formData.notes,
-      });
-
-      setMessage('Purchase order created successfully');
-      setShowForm(false);
-      setFormData({
-        clientId: '',
-        items: [],
-        expectedDeliveryDate: '',
-        notes: '',
-      });
-      setSelectedItems([]);
-      fetchPOs();
-      setTimeout(() => setMessage(''), 3000);
+      const response = await clientAPI.getAll('active');
+      setClients(response.data.clients || []);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to create purchase order');
+      console.error('Error fetching clients:', err);
+      throw err;
     }
   };
 
-  const handleStatusChange = async (poId, newStatus) => {
-    try {
-      await purchaseOrderAPI.updateStatus(poId, newStatus);
-      setMessage(`Purchase order status updated to ${newStatus}`);
-      fetchPOs();
-      setTimeout(() => setMessage(''), 3000);
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update status');
+  // Cart Functions
+  const addToCart = (item) => {
+    const existingItem = cartItems.find(ci => ci._id === item._id);
+    if (existingItem) {
+      if (existingItem.quantity < item.quantity) {
+        setCartItems(cartItems.map(ci =>
+          ci._id === item._id ? { ...ci, quantity: ci.quantity + 1 } : ci
+        ));
+      }
+    } else {
+      setCartItems([...cartItems, { ...item, quantity: 1, price: item.sellingPrice }]);
     }
   };
 
-  const handleDeletePO = async (poId) => {
-    if (window.confirm('Delete this purchase order?')) {
-      try {
-        await purchaseOrderAPI.delete(poId);
-        setMessage('Purchase order deleted successfully');
-        fetchPOs();
-        setTimeout(() => setMessage(''), 3000);
-      } catch (err) {
-        setError(err.response?.data?.message || 'Failed to delete purchase order');
+  const updateQuantity = (itemId, quantity) => {
+    if (quantity <= 0) {
+      removeFromCart(itemId);
+    } else {
+      const item = items.find(i => i._id === itemId);
+      if (quantity <= item.quantity) {
+        setCartItems(cartItems.map(ci =>
+          ci._id === itemId ? { ...ci, quantity } : ci
+        ));
       }
     }
   };
 
-  const getStatusConfig = (status) => {
-    switch (status) {
-      case 'delivered':
-        return { icon: CheckCircle, gradient: 'from-green-500 to-emerald-500', bg: 'from-green-50 to-emerald-50', text: 'text-green-700', label: 'Delivered' };
-      case 'in_transit':
-        return { icon: Truck, gradient: 'from-blue-500 to-cyan-500', bg: 'from-blue-50 to-cyan-50', text: 'text-blue-700', label: 'In Transit' };
-      case 'pending':
-        return { icon: Clock, gradient: 'from-yellow-500 to-amber-500', bg: 'from-yellow-50 to-amber-50', text: 'text-yellow-700', label: 'Pending' };
-      default:
-        return { icon: FileText, gradient: 'from-gray-500 to-gray-600', bg: 'from-gray-50 to-gray-100', text: 'text-gray-700', label: status };
+  const removeFromCart = (itemId) => {
+    setCartItems(cartItems.filter(ci => ci._id !== itemId));
+  };
+
+  const calculateSubtotal = () => {
+    return cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  };
+
+  const calculateTotal = () => {
+    const subtotal = calculateSubtotal();
+    return subtotal - discount;
+  };
+
+  const handleCompleteSale = async () => {
+    if (cartItems.length === 0) {
+      setError('Cart is empty');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError('');
+
+      // Create sale record
+      const saleData = {
+        customerId: selectedCustomer === 'walk-in' ? null : selectedCustomer,
+        customerName: selectedCustomer === 'walk-in' ? 'Walk-in Customer' : 
+          clients.find(c => c._id === selectedCustomer)?.name || 'Unknown',
+        items: cartItems.map(item => ({
+          itemId: item._id,
+          itemName: item.name,
+          quantity: item.quantity,
+          unitPrice: item.price,
+          subtotal: item.price * item.quantity,
+        })),
+        subtotal: calculateSubtotal(),
+        discount,
+        total: calculateTotal(),
+        paymentMethod,
+        status: 'completed',
+        timestamp: new Date().toISOString(),
+      };
+
+      // TODO: Call sales API to save the transaction
+      // await salesAPI.create(saleData);
+
+      // Add to completed sales
+      setCompletedSales([...completedSales, saleData]);
+      setLastSale(saleData);
+      setShowReceipt(true);
+
+      setMessage('Sale completed successfully!');
+      setCartItems([]);
+      setDiscount(0);
+      setSelectedCustomer('walk-in');
+      setPaymentMethod('cash');
+      setShowPaymentModal(false);
+      
+      setTimeout(() => setMessage(''), 3000);
+    } catch (err) {
+      console.error('Error completing sale:', err);
+      setError(err.response?.data?.message || 'Failed to complete sale');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const getPaymentConfig = (status) => {
-    switch (status) {
-      case 'paid':
-        return { icon: CheckCircle2, gradient: 'from-green-500 to-emerald-500', bg: 'from-green-50 to-emerald-50', text: 'text-green-700', label: 'Paid' };
-      case 'partial':
-        return { icon: AlertTriangle, gradient: 'from-yellow-500 to-amber-500', bg: 'from-yellow-50 to-amber-50', text: 'text-yellow-700', label: 'Partial' };
-      default:
-        return { icon: X, gradient: 'from-red-500 to-pink-500', bg: 'from-red-50 to-pink-50', text: 'text-red-700', label: 'Unpaid' };
-    }
+  const handlePrintReceipt = () => {
+    if (!lastSale) return;
+    
+    const printWindow = window.open('', '', 'height=600,width=400');
+    const receiptHTML = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Receipt</title>
+        <style>
+          body { font-family: monospace; margin: 0; padding: 20px; }
+          .receipt { max-width: 300px; margin: 0 auto; }
+          .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+          .header h2 { margin: 0; font-size: 18px; }
+          .header p { margin: 5px 0; font-size: 12px; }
+          .items { margin: 20px 0; }
+          .item { display: flex; justify-content: space-between; margin: 8px 0; font-size: 12px; }
+          .item-name { flex: 1; }
+          .item-price { text-align: right; }
+          .divider { border-top: 1px dashed #000; margin: 10px 0; }
+          .totals { margin: 15px 0; }
+          .total-row { display: flex; justify-content: space-between; margin: 5px 0; font-size: 12px; }
+          .total-amount { display: flex; justify-content: space-between; margin: 10px 0; font-size: 14px; font-weight: bold; border-top: 2px solid #000; padding-top: 10px; }
+          .footer { text-align: center; margin-top: 20px; font-size: 11px; }
+          .payment-method { text-align: center; margin: 10px 0; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="receipt">
+          <div class="header">
+            <h2>SewTrack Store</h2>
+            <p>Receipt</p>
+            <p>${new Date(lastSale.timestamp).toLocaleString()}</p>
+          </div>
+          
+          <div class="items">
+            <div style="font-weight: bold; font-size: 12px; margin-bottom: 10px;">
+              <div style="display: flex; justify-content: space-between;">
+                <span>Item</span>
+                <span>Qty</span>
+                <span>Price</span>
+              </div>
+            </div>
+            ${lastSale.items.map(item => `
+              <div class="item">
+                <div style="flex: 1;">
+                  <div>${item.itemName}</div>
+                  <div style="font-size: 10px; color: #666;">₦${item.unitPrice.toLocaleString()}</div>
+                </div>
+                <div style="width: 30px; text-align: center;">${item.quantity}</div>
+                <div style="width: 60px; text-align: right;">₦${item.subtotal.toLocaleString()}</div>
+              </div>
+            `).join('')}
+          </div>
+          
+          <div class="divider"></div>
+          
+          <div class="totals">
+            <div class="total-row">
+              <span>Subtotal:</span>
+              <span>₦${lastSale.subtotal.toLocaleString()}</span>
+            </div>
+            ${lastSale.discount > 0 ? `
+              <div class="total-row">
+                <span>Discount:</span>
+                <span>-₦${lastSale.discount.toLocaleString()}</span>
+              </div>
+            ` : ''}
+            <div class="total-amount">
+              <span>Total:</span>
+              <span>₦${lastSale.total.toLocaleString()}</span>
+            </div>
+          </div>
+          
+          <div class="payment-method">
+            <strong>Payment: ${lastSale.paymentMethod.toUpperCase().replace('_', ' ')}</strong>
+          </div>
+          
+          <div class="divider"></div>
+          
+          <div class="footer">
+            <p>Customer: ${lastSale.customerName}</p>
+            <p>Thank you for your purchase!</p>
+            <p style="margin-top: 20px;">--- END OF RECEIPT ---</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    printWindow.document.write(receiptHTML);
+    printWindow.document.close();
+    printWindow.print();
   };
 
-  if (loading) {
+  const filteredItems = items.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesSearch;
+  });
+
+  // Revenue calculations
+  const totalRevenue = completedSales.reduce((sum, sale) => sum + sale.total, 0);
+  const totalSales = completedSales.length;
+  const totalDiscount = completedSales.reduce((sum, sale) => sum + sale.discount, 0);
+  const averageTransaction = totalSales > 0 ? totalRevenue / totalSales : 0;
+
+  if (loading && items.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-brand-navy-50 via-brand-orange-50 to-brand-navy-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-purple-200 border-t-purple-600 mb-4"></div>
-          <p className="text-gray-700 font-bold text-lg">Loading purchase orders...</p>
+          <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-brand-navy-200 border-t-brand-navy mb-4"></div>
+          <p className="text-gray-700 font-bold text-lg">Loading POS...</p>
         </div>
       </div>
     );
   }
 
-  const totalPOs = pos.length;
-  const pendingPOs = pos.filter(p => p.status === 'pending').length;
-  const inTransitPOs = pos.filter(p => p.status === 'in_transit').length;
-  const deliveredPOs = pos.filter(p => p.status === 'delivered').length;
-  const totalRevenue = pos.reduce((sum, p) => sum + (p.totalAmount || 0), 0);
-
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
-      {/* Enhanced Decorative Background */}
+    <div className="min-h-screen bg-gradient-to-br from-brand-navy-50 via-brand-orange-50 to-brand-navy-50">
+      {/* Decorative Background Blobs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-purple-300 to-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-        <div className="absolute top-40 left-0 w-[500px] h-[500px] bg-gradient-to-br from-blue-300 to-cyan-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
-        <div className="absolute bottom-0 right-1/3 w-[550px] h-[550px] bg-gradient-to-br from-orange-300 to-yellow-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-brand-navy to-brand-orange rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+        <div className="absolute top-40 left-0 w-[500px] h-[500px] bg-gradient-to-br from-brand-orange to-brand-navy rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute bottom-0 right-1/3 w-[550px] h-[550px] bg-gradient-to-br from-brand-navy to-brand-orange rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-          <div>
-            <h1 className="text-5xl font-extrabold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
-              Purchase Orders
+      <div className="relative z-10">
+      <div className="relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-5xl font-extrabold bg-gradient-to-r from-brand-navy via-brand-orange to-brand-orange-dark bg-clip-text text-transparent mb-2">
+              Point of Sale
             </h1>
-            <p className="text-gray-600 mt-2 text-lg font-medium">{totalPOs} total purchase orders</p>
+            <p className="text-gray-600 text-lg font-medium">
+              Sell inventory items to customers and track revenue
+            </p>
           </div>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 hover:from-purple-700 hover:via-pink-700 hover:to-blue-700 text-white px-8 py-4 rounded-2xl font-bold transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 transform"
-          >
-            <Plus size={24} /> New Purchase Order
-          </button>
-        </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[
-            { 
-              label: 'Total Revenue', 
-              value: `₦${totalRevenue.toLocaleString()}`, 
-              icon: DollarSign,
-              gradient: 'from-green-500 via-emerald-500 to-teal-500',
-              bgGradient: 'from-green-50 to-emerald-50',
-              iconBg: 'bg-green-100',
-            },
-            { 
-              label: 'Pending', 
-              value: pendingPOs, 
-              icon: Clock,
-              gradient: 'from-yellow-500 via-amber-500 to-orange-500',
-              bgGradient: 'from-yellow-50 to-amber-50',
-              iconBg: 'bg-yellow-100',
-            },
-            { 
-              label: 'In Transit', 
-              value: inTransitPOs, 
-              icon: Truck,
-              gradient: 'from-blue-500 via-cyan-500 to-sky-500',
-              bgGradient: 'from-blue-50 to-cyan-50',
-              iconBg: 'bg-blue-100',
-            },
-            { 
-              label: 'Delivered', 
-              value: deliveredPOs, 
-              icon: CheckCircle,
-              gradient: 'from-purple-500 via-violet-500 to-indigo-500',
-              bgGradient: 'from-purple-50 to-violet-50',
-              iconBg: 'bg-purple-100',
-            },
-          ].map((stat, idx) => {
-            const Icon = stat.icon;
-            return (
-              <div 
-                key={idx} 
-                className={`bg-gradient-to-br ${stat.bgGradient} rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 transform border border-white/50 backdrop-blur-sm`}
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className={`${stat.iconBg} p-4 rounded-2xl shadow-md`}>
-                    <Icon size={32} className="text-gray-700" />
-                  </div>
-                </div>
-                <div>
-                  <p className="text-gray-600 text-sm font-semibold mb-1">{stat.label}</p>
-                  <p className={`text-3xl font-extrabold bg-gradient-to-r ${stat.gradient} bg-clip-text text-transparent`}>
-                    {stat.value}
-                  </p>
+          {/* Revenue Dashboard */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            <div className="bg-gradient-to-br from-brand-navy-50 to-brand-orange-50 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 transform border border-white/50 backdrop-blur-sm">
+              <div className="flex items-start justify-between mb-4">
+                <div className="bg-brand-navy-100 p-3 md:p-4 rounded-xl md:rounded-2xl shadow-md">
+                  <DollarSign size={24} className="md:w-8 md:h-8 text-brand-navy" />
                 </div>
               </div>
-            );
-          })}
-        </div>
+              <div>
+                <p className="text-gray-600 text-xs md:text-sm font-semibold mb-1">Total Revenue</p>
+                <p className="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-brand-navy via-brand-orange to-brand-orange-dark bg-clip-text text-transparent">
+                  ₦{totalRevenue.toLocaleString()}
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-brand-orange-50 to-brand-navy-50 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 transform border border-white/50 backdrop-blur-sm">
+              <div className="flex items-start justify-between mb-4">
+                <div className="bg-brand-orange-100 p-3 md:p-4 rounded-xl md:rounded-2xl shadow-md">
+                  <ShoppingCart size={24} className="md:w-8 md:h-8 text-brand-orange" />
+                </div>
+              </div>
+              <div>
+                <p className="text-gray-600 text-xs md:text-sm font-semibold mb-1">Total Sales</p>
+                <p className="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-brand-orange via-brand-orange-dark to-brand-navy bg-clip-text text-transparent">
+                  {totalSales}
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-brand-navy-50 to-brand-orange-50 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 transform border border-white/50 backdrop-blur-sm">
+              <div className="flex items-start justify-between mb-4">
+                <div className="bg-brand-navy-100 p-3 md:p-4 rounded-xl md:rounded-2xl shadow-md">
+                  <TrendingUp size={24} className="md:w-8 md:h-8 text-brand-navy" />
+                </div>
+              </div>
+              <div>
+                <p className="text-gray-600 text-xs md:text-sm font-semibold mb-1">Avg Transaction</p>
+                <p className="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-brand-navy to-brand-orange bg-clip-text text-transparent">
+                  ₦{averageTransaction.toLocaleString()}
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-brand-orange-50 to-brand-navy-50 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 transform border border-white/50 backdrop-blur-sm">
+              <div className="flex items-start justify-between mb-4">
+                <div className="bg-brand-orange-100 p-3 md:p-4 rounded-xl md:rounded-2xl shadow-md">
+                  <Receipt size={24} className="md:w-8 md:h-8 text-brand-orange" />
+                </div>
+              </div>
+              <div>
+                <p className="text-gray-600 text-xs md:text-sm font-semibold mb-1">Total Discount</p>
+                <p className="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-brand-orange to-brand-navy bg-clip-text text-transparent">
+                  ₦{totalDiscount.toLocaleString()}
+                </p>
+              </div>
+            </div>
+          </div>
 
         {/* Messages */}
         {error && (
-          <div className="p-5 bg-gradient-to-r from-red-50 to-pink-50 border-2 border-red-300 rounded-2xl text-red-700 flex items-center gap-4 shadow-lg">
-            <div className="bg-red-100 p-3 rounded-xl">
-              <AlertTriangle size={24} />
-            </div>
-            <span className="font-semibold text-lg">{error}</span>
+          <div className="mb-4 p-4 bg-gradient-to-r from-red-50 to-pink-50 border-2 border-red-300 rounded-2xl text-red-700 flex items-center gap-3 shadow-lg">
+            <AlertCircle size={18} className="flex-shrink-0" />
+            <span className="text-sm flex-1">{error}</span>
+            <button onClick={() => setError('')} className="text-red-700 hover:text-red-900">
+              <X size={18} />
+            </button>
           </div>
         )}
+
         {message && (
-          <div className="p-5 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-2xl text-green-700 flex items-center gap-4 shadow-lg">
-            <div className="bg-green-100 p-3 rounded-xl">
-              <CheckCircle2 size={24} />
-            </div>
-            <span className="font-semibold text-lg">{message}</span>
+          <div className="mb-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-2xl text-green-700 flex items-center gap-3 shadow-lg">
+            <CheckCircle size={18} className="flex-shrink-0" />
+            <span className="text-sm flex-1">{message}</span>
+            <button onClick={() => setMessage('')} className="text-green-700 hover:text-green-900">
+              <X size={18} />
+            </button>
           </div>
         )}
 
-
-        {/* Create PO Form */}
-        {showForm && (
-          <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border-2 border-purple-200">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-gradient-to-br from-purple-500 to-pink-500 p-3 rounded-xl">
-                <Sparkles size={28} className="text-white" />
-              </div>
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                Create Purchase Order
-              </h2>
+        {/* Main Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* LEFT SECTION - Products Grid */}
+          <div className="lg:col-span-3 space-y-4">
+            {/* Search Bar */}
+            <div className="relative">
+              <Search size={18} className="absolute left-3 top-3 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search product name..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border-2 border-white/50 rounded-xl md:rounded-2xl focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/20 outline-none transition-all bg-white/80 backdrop-blur-sm text-sm shadow-md"
+              />
             </div>
 
-            <form onSubmit={handleCreatePO} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <User size={20} /> Select Client *
-                  </label>
-                  <select
-                    required
-                    value={formData.clientId}
-                    onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all bg-white"
-                  >
-                    <option value="">Choose a client...</option>
-                    {clients.map((c) => (
-                      <option key={c._id} value={c._id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
+            {/* Products Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredItems.length === 0 ? (
+                <div className="col-span-full bg-white/80 backdrop-blur-sm rounded-2xl md:rounded-3xl p-12 text-center shadow-lg border-2 border-white/50">
+                  <Package size={48} className="mx-auto mb-4 text-gray-300" />
+                  <p className="text-gray-500 text-sm">No products found</p>
                 </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <Calendar size={20} /> Expected Delivery Date
-                  </label>
-                  <input
-                    type="date"
-                    value={formData.expectedDeliveryDate}
-                    onChange={(e) => setFormData({ ...formData, expectedDeliveryDate: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all bg-white"
-                  />
-                </div>
-              </div>
-
-              {/* Add Items */}
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                  <Package size={20} /> Add Items
-                </label>
-                <select
-                  onChange={(e) => {
-                    handleAddItem(e.target.value);
-                    e.target.value = '';
-                  }}
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all bg-white"
-                >
-                  <option value="">Select item to add...</option>
-                  {items.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.name} - ₦{item.sellingPrice?.toLocaleString()}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Selected Items */}
-              {selectedItems.length > 0 && (
-                <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-2xl border-2 border-purple-200">
-                  <p className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-4">
-                    <ShoppingCart size={24} /> Selected Items
-                  </p>
-                  <div className="space-y-3">
-                    {selectedItems.map((item) => (
-                      <div key={item.itemId} className="bg-white rounded-xl p-4 flex items-center gap-4">
-                        <div className="flex-1">
-                          <p className="font-bold text-gray-900">{item.name}</p>
-                          <p className="text-sm text-gray-600">₦{item.unitPrice.toLocaleString()} each</p>
+              ) : (
+                filteredItems.map((item) => {
+                  const inCart = cartItems.find(ci => ci._id === item._id);
+                  return (
+                    <div
+                      key={item._id}
+                      className="bg-white/80 backdrop-blur-sm rounded-2xl md:rounded-3xl p-4 shadow-lg hover:shadow-2xl transition-all border-2 border-white/50 hover:scale-105 transform"
+                    >
+                      {/* Stock Badge */}
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <p className="text-xs text-gray-500 font-semibold">SKU</p>
+                          <p className="text-sm font-bold text-gray-900">{item.name}</p>
                         </div>
-                        <input
-                          type="number"
-                          min="1"
-                          value={item.quantity}
-                          onChange={(e) => handleUpdateItemQuantity(item.itemId, e.target.value)}
-                          className="w-20 px-3 py-2 border-2 border-gray-300 rounded-lg focus:border-purple-500 outline-none"
-                        />
-                        <p className="font-bold text-purple-700 w-32 text-right">
-                          ₦{(item.quantity * item.unitPrice).toLocaleString()}
-                        </p>
+                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${
+                          item.quantity > 10 ? 'bg-green-100 text-green-700' :
+                          item.quantity > 0 ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-red-100 text-red-700'
+                        }`}>
+                          {item.quantity} in stock
+                        </span>
+                      </div>
+
+                      {/* Category */}
+                      <p className="text-xs text-gray-500 mb-3">{item.category || 'Uncategorized'}</p>
+
+                      {/* Price */}
+                      <div className="mb-4 pb-4 border-t-2 border-gray-200 pt-4">
+                        <p className="text-xs text-gray-500 font-semibold mb-1">Price</p>
+                        <p className="text-2xl font-bold bg-gradient-to-r from-brand-navy to-brand-orange bg-clip-text text-transparent">₦{item.sellingPrice?.toLocaleString()}</p>
+                      </div>
+
+                      {/* Add to Cart Button */}
+                      <button
+                        onClick={() => addToCart(item)}
+                        disabled={item.quantity === 0}
+                        className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl font-semibold text-sm transition-all transform hover:scale-105 ${
+                          item.quantity === 0
+                            ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                            : inCart
+                            ? 'bg-gradient-to-br from-brand-navy to-brand-orange hover:from-brand-navy-dark hover:to-brand-orange-dark text-white shadow-lg'
+                            : 'bg-gradient-to-br from-brand-orange to-brand-navy hover:from-brand-orange-dark hover:to-brand-navy-dark text-white shadow-lg'
+                        }`}
+                      >
+                        <ShoppingCart size={16} />
+                        {inCart ? 'In Cart' : 'Add to Cart'}
+                      </button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+
+          {/* RIGHT SECTION - Shopping Cart */}
+          <div className="lg:col-span-1">
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl md:rounded-3xl shadow-lg p-6 sticky top-6 max-h-[calc(100vh-100px)] overflow-y-auto border-2 border-white/50">
+              <h3 className="text-lg font-bold bg-gradient-to-r from-brand-navy to-brand-orange bg-clip-text text-transparent mb-6">Current Sale</h3>
+
+              {/* Customer Selection */}
+              <div className="mb-6 pb-6 border-b-2 border-gray-200">
+                <label className="text-xs font-bold text-gray-600 uppercase mb-2 block">Customer</label>
+                <div className="relative">
+                  <button
+                    onClick={() => setShowCustomerDropdown(!showCustomerDropdown)}
+                    className="w-full px-3 py-2 border-2 border-white/50 rounded-xl text-left text-sm font-semibold text-gray-900 hover:border-brand-navy transition-all bg-white/50 backdrop-blur-sm"
+                  >
+                    {selectedCustomer === 'walk-in' ? 'Walk-in Customer' : 
+                      clients.find(c => c._id === selectedCustomer)?.name || 'Select Customer'}
+                  </button>
+                  {showCustomerDropdown && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-white/90 backdrop-blur-sm border-2 border-white/50 rounded-xl shadow-lg z-10 max-h-48 overflow-y-auto">
+                      <button
+                        onClick={() => {
+                          setSelectedCustomer('walk-in');
+                          setShowCustomerDropdown(false);
+                        }}
+                        className="w-full text-left px-3 py-2 hover:bg-brand-navy/10 text-sm border-b border-gray-200 last:border-b-0 transition-all"
+                      >
+                        Walk-in Customer
+                      </button>
+                      {clients.map(client => (
                         <button
-                          type="button"
-                          onClick={() => handleRemoveItem(item.itemId)}
-                          className="text-red-600 hover:bg-red-50 p-2 rounded-lg transition-all"
+                          key={client._id}
+                          onClick={() => {
+                            setSelectedCustomer(client._id);
+                            setShowCustomerDropdown(false);
+                          }}
+                          className="w-full text-left px-3 py-2 hover:bg-brand-navy/10 text-sm border-b border-gray-200 last:border-b-0 transition-all"
                         >
-                          <Trash2 size={20} />
+                          {client.name}
                         </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Cart Items */}
+              <div className="mb-6 pb-6 border-b-2 border-gray-200">
+                <p className="text-xs font-bold text-gray-600 uppercase mb-3">Cart ({cartItems.length})</p>
+                {cartItems.length === 0 ? (
+                  <div className="text-center py-8">
+                    <ShoppingCart size={40} className="mx-auto mb-2 text-gray-300" />
+                    <p className="text-gray-500 text-sm">Your cart is empty</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {cartItems.map((item) => (
+                      <div key={item._id} className="bg-gradient-to-br from-brand-navy-50 to-brand-orange-50 p-2 rounded-lg border-2 border-white/50">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1">
+                            <p className="text-xs font-bold text-gray-900">{item.name}</p>
+                            <p className="text-xs text-gray-600">₦{item.price?.toLocaleString()}</p>
+                          </div>
+                          <button
+                            onClick={() => removeFromCart(item._id)}
+                            className="text-red-600 hover:text-red-700 transition-all"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => updateQuantity(item._id, item.quantity - 1)}
+                            className="p-1 bg-white hover:bg-gray-100 rounded text-xs border border-gray-200"
+                          >
+                            <Minus size={12} />
+                          </button>
+                          <input
+                            type="number"
+                            min="1"
+                            value={item.quantity}
+                            onChange={(e) => updateQuantity(item._id, parseInt(e.target.value))}
+                            className="w-12 px-2 py-1 border-2 border-white/50 rounded text-xs text-center bg-white/50"
+                          />
+                          <button
+                            onClick={() => updateQuantity(item._id, item.quantity + 1)}
+                            className="p-1 bg-white hover:bg-gray-100 rounded text-xs border border-gray-200"
+                          >
+                            <Plus size={12} />
+                          </button>
+                          <span className="ml-auto text-xs font-bold text-gray-900">
+                            ₦{(item.price * item.quantity).toLocaleString()}
+                          </span>
+                        </div>
                       </div>
                     ))}
                   </div>
-                  <div className="mt-4 pt-4 border-t-2 border-purple-200 flex justify-between items-center">
-                    <span className="text-lg font-bold text-gray-900">Total Amount:</span>
-                    <span className="text-3xl font-extrabold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                      ₦{calculateTotal().toLocaleString()}
-                    </span>
-                  </div>
-                </div>
-              )}
+                )}
+              </div>
 
-              {/* Notes */}
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                  <MessageSquare size={20} /> Notes
-                </label>
-                <textarea
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  rows="3"
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all resize-none bg-white"
-                  placeholder="Add any special notes..."
+              {/* Discount */}
+              <div className="mb-6 pb-6 border-b-2 border-gray-200">
+                <label className="text-xs font-bold text-gray-600 uppercase mb-2 block">Discount (₦)</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={discount}
+                  onChange={(e) => setDiscount(Math.max(0, parseFloat(e.target.value) || 0))}
+                  className="w-full px-3 py-2 border-2 border-white/50 rounded-xl text-sm font-semibold text-gray-900 focus:border-brand-navy outline-none bg-white/50 backdrop-blur-sm"
                 />
               </div>
 
-              <div className="flex gap-4">
-                <button
-                  type="submit"
-                  className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-4 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+              {/* Totals */}
+              <div className="mb-6 pb-6 border-b-2 border-gray-200 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Subtotal:</span>
+                  <span className="font-semibold text-gray-900">₦{calculateSubtotal().toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Discount:</span>
+                  <span className="font-semibold text-gray-900">-₦{discount.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-lg">
+                  <span className="font-bold text-gray-900">Total:</span>
+                  <span className="font-bold bg-gradient-to-r from-brand-navy to-brand-orange bg-clip-text text-transparent">₦{calculateTotal().toLocaleString()}</span>
+                </div>
+              </div>
+
+              {/* Payment Method */}
+              <div className="mb-6 pb-6 border-b-2 border-gray-200">
+                <label className="text-xs font-bold text-gray-600 uppercase mb-2 block">Payment Method</label>
+                <select
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                  className="w-full px-3 py-2 border-2 border-white/50 rounded-xl text-sm font-semibold text-gray-900 focus:border-brand-navy outline-none bg-white/50 backdrop-blur-sm"
                 >
-                  <Save size={20} /> Create Purchase Order
+                  <option value="cash">Cash</option>
+                  <option value="pos">POS</option>
+                  <option value="bank_transfer">Bank Transfer</option>
+                </select>
+              </div>
+
+              {/* Complete Sale Button */}
+              <button
+                onClick={() => setShowPaymentModal(true)}
+                disabled={cartItems.length === 0}
+                className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all transform hover:scale-105 ${
+                  cartItems.length === 0
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-gradient-to-br from-brand-navy to-brand-orange hover:from-brand-navy-dark hover:to-brand-orange-dark text-white shadow-lg hover:shadow-xl'
+                }`}
+              >
+                <Save size={18} />
+                Complete Sale
+              </button>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+
+        {/* Payment Confirmation Modal */}
+        {showPaymentModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white/90 backdrop-blur-sm rounded-2xl md:rounded-3xl shadow-2xl max-w-md w-full p-6 border-2 border-white/50">
+              <h2 className="text-xl font-bold bg-gradient-to-r from-brand-navy to-brand-orange bg-clip-text text-transparent mb-4">Confirm Sale</h2>
+
+              <div className="space-y-3 mb-6 pb-6 border-b-2 border-gray-200">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Items:</span>
+                  <span className="font-semibold text-gray-900">{cartItems.length}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Subtotal:</span>
+                  <span className="font-semibold text-gray-900">₦{calculateSubtotal().toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Discount:</span>
+                  <span className="font-semibold text-gray-900">-₦{discount.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-lg">
+                  <span className="font-bold text-gray-900">Total:</span>
+                  <span className="font-bold bg-gradient-to-r from-brand-navy to-brand-orange bg-clip-text text-transparent">₦{calculateTotal().toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Payment:</span>
+                  <span className="font-semibold text-gray-900 capitalize">{paymentMethod.replace('_', ' ')}</span>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowPaymentModal(false)}
+                  className="flex-1 px-4 py-2 border-2 border-white/50 rounded-xl font-bold text-gray-900 hover:bg-gray-50 transition-all"
+                >
+                  Cancel
                 </button>
                 <button
-                  type="button"
-                  onClick={() => setShowForm(false)}
-                  className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-gray-200 to-gray-300 hover:from-gray-300 hover:to-gray-400 text-gray-700 px-6 py-4 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl"
+                  onClick={handleCompleteSale}
+                  disabled={loading}
+                  className="flex-1 px-4 py-2 bg-gradient-to-br from-brand-navy to-brand-orange hover:from-brand-navy-dark hover:to-brand-orange-dark disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl font-bold transition-all shadow-lg"
                 >
-                  <X size={20} /> Cancel
+                  {loading ? 'Processing...' : 'Complete'}
                 </button>
               </div>
-            </form>
+            </div>
           </div>
         )}
 
-        {/* Filter */}
-        <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-4 border-2 border-purple-200">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Search size={24} />
-              <span className="font-bold text-gray-700">Filter by Status:</span>
-            </div>
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-4 py-2 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all bg-white font-semibold"
-            >
-              <option value="">All Statuses</option>
-              <option value="pending">Pending</option>
-              <option value="in_transit">In Transit</option>
-              <option value="delivered">Delivered</option>
-            </select>
-          </div>
-        </div>
-
-
-        {/* Purchase Orders Grid */}
-        {pos.length === 0 ? (
-          <div className="text-center py-20 bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-dashed border-purple-300 shadow-xl">
-            <FileText size={80} className="mx-auto mb-6 text-gray-400" />
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">No purchase orders yet</h3>
-            <p className="text-gray-600 text-lg">Create your first purchase order to get started</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {pos.map((po) => {
-              const statusConfig = getStatusConfig(po.status);
-              const paymentConfig = getPaymentConfig(po.paymentStatus);
-              const StatusIcon = statusConfig.icon;
-              const PaymentIcon = paymentConfig.icon;
-              
-              return (
-                <div
-                  key={po._id}
-                  className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-purple-200 hover:border-purple-300 group transform hover:scale-105"
+        {/* Receipt Modal */}
+        {showReceipt && lastSale && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white/90 backdrop-blur-sm rounded-2xl md:rounded-3xl shadow-2xl max-w-md w-full p-6 border-2 border-white/50 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold bg-gradient-to-r from-brand-navy to-brand-orange bg-clip-text text-transparent">Receipt</h2>
+                <button
+                  onClick={() => setShowReceipt(false)}
+                  className="text-gray-500 hover:text-gray-700"
                 >
-                  {/* Card Header */}
-                  <div className={`bg-gradient-to-r ${statusConfig.gradient} p-6 text-white relative overflow-hidden`}>
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
-                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12"></div>
-                    
-                    <div className="relative z-10">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <StatusIcon size={28} className="text-white" />
-                          <span className="text-sm font-bold opacity-90">#{po.poNumber}</span>
-                        </div>
-                        <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
-                          <span className="text-xs font-bold capitalize">{statusConfig.label}</span>
-                        </div>
-                      </div>
-                      <h3 className="text-xl font-bold mb-1">{po.clientId?.name || 'N/A'}</h3>
-                      <p className="text-sm opacity-90">{po.items?.length || 0} items</p>
-                    </div>
+                  <X size={24} />
+                </button>
+              </div>
+
+              {/* Receipt Content */}
+              <div className="bg-gradient-to-br from-brand-navy-50 to-brand-orange-50 p-4 rounded-xl mb-6 font-mono text-sm border-2 border-white/50">
+                <div className="text-center mb-4 pb-4 border-b-2 border-gray-300">
+                  <p className="font-bold text-lg text-gray-900">SewTrack Store</p>
+                  <p className="text-xs text-gray-600">Receipt</p>
+                  <p className="text-xs text-gray-600">{new Date(lastSale.timestamp).toLocaleString()}</p>
+                </div>
+
+                {/* Items */}
+                <div className="mb-4">
+                  <div className="text-xs font-bold mb-2 flex justify-between text-gray-900">
+                    <span>Item</span>
+                    <span>Qty</span>
+                    <span>Price</span>
                   </div>
-
-                  {/* Card Body */}
-                  <div className="p-6 space-y-4">
-                    {/* Total Amount */}
-                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-4 border-2 border-green-200">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <DollarSign size={24} className="text-green-600" />
-                          <span className="text-sm font-semibold text-gray-600">Total Amount</span>
-                        </div>
-                        <span className="text-2xl font-extrabold text-green-700">
-                          ₦{po.totalAmount?.toLocaleString()}
-                        </span>
+                  {lastSale.items.map((item, idx) => (
+                    <div key={idx} className="text-xs mb-2">
+                      <div className="flex justify-between text-gray-900">
+                        <span className="flex-1">{item.itemName}</span>
+                        <span className="w-8 text-center">{item.quantity}</span>
+                        <span className="w-16 text-right">₦{item.subtotal.toLocaleString()}</span>
                       </div>
+                      <div className="text-gray-600 text-xs">₦{item.unitPrice.toLocaleString()} each</div>
                     </div>
+                  ))}
+                </div>
 
-                    {/* Payment Status */}
-                    <div className={`bg-gradient-to-br ${paymentConfig.bg} rounded-2xl p-4 border-2 ${paymentConfig.text.replace('text-', 'border-')}-200`}>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <PaymentIcon size={24} className={paymentConfig.text} />
-                          <span className={`text-sm font-bold ${paymentConfig.text} capitalize`}>
-                            {paymentConfig.label}
-                          </span>
-                        </div>
-                      </div>
-                      {po.amountRemaining > 0 && (
-                        <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-200">
-                          <span className="text-xs text-gray-600 font-semibold">Amount Due:</span>
-                          <span className={`text-lg font-bold ${paymentConfig.text}`}>
-                            ₦{po.amountRemaining?.toLocaleString()}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Items List */}
-                    <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-4 border-2 border-blue-200">
-                      <p className="text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                        <Package size={20} /> Items
-                      </p>
-                      <div className="space-y-1">
-                        {po.items?.slice(0, 3).map((item, idx) => (
-                          <div key={idx} className="text-xs text-gray-700 flex justify-between">
-                            <span>{item.name}</span>
-                            <span className="font-bold">x{item.quantity}</span>
-                          </div>
-                        ))}
-                        {po.items?.length > 3 && (
-                          <p className="text-xs text-gray-500 italic">+{po.items.length - 3} more items</p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Delivery Date */}
-                    {po.expectedDeliveryDate && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Calendar size={20} />
-                        <span className="font-semibold">
-                          Delivery: {new Date(po.expectedDeliveryDate).toLocaleDateString('en-US', { 
-                            month: 'short', 
-                            day: 'numeric', 
-                            year: 'numeric' 
-                          })}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Notes */}
-                    {po.notes && (
-                      <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-200 p-3 rounded-xl">
-                        <div className="flex items-start gap-2">
-                          <MessageSquare size={18} className="text-amber-600 flex-shrink-0 mt-0.5" />
-                          <p className="text-xs text-gray-700 font-medium">{po.notes}</p>
-                        </div>
-                      </div>
-                    )}
+                <div className="border-t-2 border-gray-300 pt-3 mb-3">
+                  <div className="flex justify-between text-xs mb-1 text-gray-900">
+                    <span>Subtotal:</span>
+                    <span>₦{lastSale.subtotal.toLocaleString()}</span>
                   </div>
-
-                  {/* Card Actions */}
-                  <div className="bg-gray-50 p-4 border-t-2 border-gray-100 flex gap-2">
-                    {po.status === 'pending' && (
-                      <button
-                        onClick={() => handleStatusChange(po._id, 'in_transit')}
-                        className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-3 py-2.5 rounded-xl transition-all text-sm font-bold shadow-md hover:shadow-lg transform hover:scale-105"
-                      >
-                        <Truck size={18} /> Ship
-                      </button>
-                    )}
-                    
-                    {po.status === 'in_transit' && (
-                      <button
-                        onClick={() => handleStatusChange(po._id, 'delivered')}
-                        className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-3 py-2.5 rounded-xl transition-all text-sm font-bold shadow-md hover:shadow-lg transform hover:scale-105"
-                      >
-                        <CheckCircle size={18} /> Deliver
-                      </button>
-                    )}
-                    
-                    <button
-                      onClick={() => handleDeletePO(po._id)}
-                      className="flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-3 py-2.5 rounded-xl transition-all text-sm font-bold shadow-md hover:shadow-lg transform hover:scale-105"
-                    >
-                      <Trash2 size={18} />
-                    </button>
+                  {lastSale.discount > 0 && (
+                    <div className="flex justify-between text-xs mb-1 text-gray-900">
+                      <span>Discount:</span>
+                      <span>-₦{lastSale.discount.toLocaleString()}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between font-bold text-sm border-t-2 border-gray-300 pt-2 text-gray-900">
+                    <span>Total:</span>
+                    <span>₦{lastSale.total.toLocaleString()}</span>
                   </div>
                 </div>
-              );
-            })}
+
+                <div className="text-center text-xs mb-3 pb-3 border-b-2 border-gray-300">
+                  <p className="font-bold text-gray-900">Payment: {lastSale.paymentMethod.toUpperCase().replace('_', ' ')}</p>
+                </div>
+
+                <div className="text-center text-xs text-gray-600">
+                  <p>Customer: {lastSale.customerName}</p>
+                  <p className="mt-2">Thank you for your purchase!</p>
+                  <p className="mt-3">--- END OF RECEIPT ---</p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <button
+                  onClick={handlePrintReceipt}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-br from-brand-navy to-brand-orange hover:from-brand-navy-dark hover:to-brand-orange-dark text-white rounded-xl font-bold transition-all shadow-lg"
+                >
+                  <Printer size={18} />
+                  Print Receipt
+                </button>
+                <button
+                  onClick={() => setShowReceipt(false)}
+                  className="flex-1 px-4 py-2 border-2 border-white/50 rounded-xl font-bold text-gray-900 hover:bg-gray-50 transition-all"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
-
-      <style>{`
-        @keyframes blob {
-          0%, 100% {
-            transform: translate(0, 0) scale(1);
-          }
-          33% {
-            transform: translate(30px, -50px) scale(1.1);
-          }
-          66% {
-            transform: translate(-20px, 20px) scale(0.9);
-          }
-        }
-        .animate-blob {
-          animation: blob 7s infinite;
-        }
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
-      `}</style>
     </div>
   );
 }

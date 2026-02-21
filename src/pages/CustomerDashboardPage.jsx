@@ -160,6 +160,20 @@ export default function CustomerDashboardPage() {
           </Link>
         </div>
       </div>
+
+      {/* Connect to Tailor Card */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <h2 className="text-xl font-bold text-brand-navy mb-4">Connect to a New Tailor</h2>
+        <p className="text-gray-600 text-sm mb-6">Enter the business code provided by your tailor to connect</p>
+        <ConnectTailorForm />
+      </div>
+
+      {/* Connect to Tailor Card */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <h2 className="text-xl font-bold text-brand-navy mb-4">Connect to a New Tailor</h2>
+        <p className="text-gray-600 text-sm mb-6">Enter the business code provided by your tailor to connect</p>
+        <ConnectTailorForm />
+      </div>
     </div>
   );
 }

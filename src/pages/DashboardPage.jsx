@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { dashboardAPI } from '../lib/api';
+import authStore from '../stores/authStore';
 import {
   BarChart,
   Bar,
@@ -37,7 +39,12 @@ import {
 } from 'lucide-react';
 
 export default function DashboardPage() {
+  const navigate = useNavigate();
+  const { tailor } = authStore();
   const [overview, setOverview] = useState(null);
+  const [monthlyRevenueData, setMonthlyRevenueData] = useState([]);
+  const [weeklyOrdersData, setWeeklyOrdersData] = useState([]);
+  const [categoryRevenueData, setCategoryRevenueData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -45,8 +52,34 @@ export default function DashboardPage() {
     const fetchDashboard = async () => {
       try {
         setLoading(true);
-        const response = await dashboardAPI.getOverview();
-        setOverview(response.data.overview);
+        const [overviewRes, topAttireRes, monthlyTrendRes, weeklyOrdersRes] = await Promise.all([
+          dashboardAPI.getOverview(),
+          dashboardAPI.getTopAttires(),
+          dashboardAPI.getMonthlyTrend(),
+          dashboardAPI.getWeeklyOrders(),
+        ]);
+        
+        setOverview(overviewRes.data.overview);
+        
+        // Transform top attires data for category revenue chart
+        if (topAttireRes.data.topAttires && topAttireRes.data.topAttires.length > 0) {
+          const categoryData = topAttireRes.data.topAttires.map(attire => ({
+            category: attire.name,
+            revenue: attire.revenue,
+            orders: attire.count,
+          }));
+          setCategoryRevenueData(categoryData);
+        }
+        
+        // Set monthly revenue data from API
+        if (monthlyTrendRes.data.monthlyData) {
+          setMonthlyRevenueData(monthlyTrendRes.data.monthlyData);
+        }
+
+        // Set weekly orders data from API
+        if (weeklyOrdersRes.data.weeklyData) {
+          setWeeklyOrdersData(weeklyOrdersRes.data.weeklyData);
+        }
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load dashboard');
       } finally {
@@ -98,31 +131,7 @@ export default function DashboardPage() {
     : 50;
   const inventoryPercentage = 100 - tailoringPercentage;
 
-  // Sample data for charts - In production, this would come from the API
-  const monthlyRevenueData = [
-    { month: 'Jan', tailoring: 45000, inventory: 28000, total: 73000 },
-    { month: 'Feb', tailoring: 52000, inventory: 31000, total: 83000 },
-    { month: 'Mar', tailoring: 48000, inventory: 35000, total: 83000 },
-    { month: 'Apr', tailoring: 61000, inventory: 42000, total: 103000 },
-    { month: 'May', tailoring: 55000, inventory: 38000, total: 93000 },
-    { month: 'Jun', tailoring: 67000, inventory: 45000, total: 112000 },
-  ];
-
-  const weeklyOrdersData = [
-    { week: 'Week 1', orders: 12, completed: 10 },
-    { week: 'Week 2', orders: 15, completed: 13 },
-    { week: 'Week 3', orders: 18, completed: 15 },
-    { week: 'Week 4', orders: 14, completed: 12 },
-  ];
-
-  const categoryRevenueData = [
-    { category: 'Kaftan', revenue: 45000, orders: 15 },
-    { category: 'Agbada', revenue: 38000, orders: 12 },
-    { category: 'Senator', revenue: 32000, orders: 18 },
-    { category: 'Iro & Buba', revenue: 28000, orders: 10 },
-    { category: 'Boubou', revenue: 25000, orders: 9 },
-    { category: 'Others', revenue: 42000, orders: 20 },
-  ];
+  // Weekly orders data is now fetched from API
 
   // Custom tooltip for charts
   const CustomTooltip = ({ active, payload, label }) => {
@@ -194,6 +203,26 @@ export default function DashboardPage() {
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        {/* Welcome Brand Section */}
+        <div className="bg-white/80 backdrop-blur-lg rounded-2xl md:rounded-3xl p-4 md:p-6 border-2 border-gray-100 shadow-lg mb-8">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-brand-navy to-brand-orange rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
+              <span className="text-lg md:text-xl font-bold text-white">
+                {tailor?.businessName?.charAt(0).toUpperCase() || 'S'}
+              </span>
+            </div>
+            <div>
+              <p className="text-xs md:text-sm font-semibold text-gray-600 uppercase tracking-wide">Welcome to</p>
+              <h2 className="text-lg md:text-2xl font-bold bg-gradient-to-r from-brand-navy via-brand-orange to-brand-orange-dark bg-clip-text text-transparent">
+                {tailor?.businessName || 'SewTrack'}
+              </h2>
+              <p className="text-gray-600 text-xs md:text-sm mt-0.5 font-medium">
+                {tailor?.ownerName ? `Managed by ${tailor.ownerName}` : 'Your Tailoring Business Management System'}
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-5xl font-extrabold bg-gradient-to-r from-brand-navy via-brand-orange to-brand-orange-dark bg-clip-text text-transparent mb-2">
@@ -205,20 +234,20 @@ export default function DashboardPage() {
         </div>
 
         {/* Main Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {stats.map((stat, idx) => {
             const Icon = stat.icon;
             return (
             <div 
               key={idx} 
-              className={`bg-gradient-to-br ${stat.bgGradient} rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 transform border border-white/50 backdrop-blur-sm`}
+              className={`bg-gradient-to-br ${stat.bgGradient} rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 transform border border-white/50 backdrop-blur-sm`}
             >
               <div className="flex items-start justify-between mb-4">
-                <div className={`${stat.iconBg} p-4 rounded-2xl shadow-md`}>
-                  <Icon size={32} className="text-gray-700" />
+                <div className={`${stat.iconBg} p-3 md:p-4 rounded-xl md:rounded-2xl shadow-md`}>
+                  <Icon size={24} className="md:w-8 md:h-8 text-gray-700" />
                 </div>
                 {stat.change && (
-                  <div className={`px-3 py-1 rounded-full text-xs font-bold ${
+                  <div className={`px-2 md:px-3 py-1 rounded-full text-xs font-bold ${
                     stat.changePositive 
                       ? 'bg-green-100 text-green-700' 
                       : 'bg-red-100 text-red-700'
@@ -228,8 +257,8 @@ export default function DashboardPage() {
                 )}
               </div>
               <div>
-                <p className="text-gray-600 text-sm font-semibold mb-1">{stat.title}</p>
-                <p className={`text-3xl font-extrabold bg-gradient-to-r ${stat.gradient} bg-clip-text text-transparent`}>
+                <p className="text-gray-600 text-xs md:text-sm font-semibold mb-1">{stat.title}</p>
+                <p className={`text-2xl md:text-3xl font-extrabold bg-gradient-to-r ${stat.gradient} bg-clip-text text-transparent`}>
                   {stat.value}
                 </p>
               </div>
@@ -237,69 +266,246 @@ export default function DashboardPage() {
           )})}
         </div>
 
-        {/* Revenue Progress Chart */}
-        <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border-2 border-brand-navy">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="bg-gradient-to-br from-brand-navy to-brand-orange p-3 rounded-xl">
-              <TrendingUp size={28} className="text-white" />
+        {/* Quick Actions */}
+        <div className="bg-white/80 backdrop-blur-lg rounded-2xl md:rounded-3xl shadow-2xl p-4 md:p-8 border-2 border-brand-navy">
+          <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
+            <div className="bg-gradient-to-br from-brand-navy to-brand-orange p-2 md:p-3 rounded-lg md:rounded-xl">
+              <Zap size={20} className="md:w-7 md:h-7 text-white" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Revenue Progress</h2>
-              <p className="text-gray-600 text-sm">Current vs Expected Revenue</p>
+              <h2 className="text-lg md:text-2xl font-bold text-gray-900">Quick Actions</h2>
+              <p className="text-gray-600 text-xs md:text-sm">Common tasks at your fingertips</p>
             </div>
           </div>
 
-          <div className="space-y-4">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-gray-700 font-semibold">₦{totalRevenue.toLocaleString()}</span>
-              <span className="text-gray-500 text-sm">of ₦{expectedRevenue.toLocaleString()}</span>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
+            <button onClick={() => navigate('/clients')} className="bg-gradient-to-br from-brand-navy to-brand-orange hover:from-brand-navy-dark hover:to-brand-orange-dark text-white rounded-lg md:rounded-2xl p-3 md:p-6 transition-all duration-300 hover:scale-105 transform shadow-lg hover:shadow-xl cursor-pointer">
+              <Users size={24} className="md:w-9 md:h-9 mb-1 md:mb-2 mx-auto" />
+              <span className="text-xs md:text-sm font-bold">Add Client</span>
+            </button>
+            <button onClick={() => navigate('/orders')} className="bg-gradient-to-br from-brand-orange to-brand-navy hover:from-brand-orange-dark hover:to-brand-navy-dark text-white rounded-lg md:rounded-2xl p-3 md:p-6 transition-all duration-300 hover:scale-105 transform shadow-lg hover:shadow-xl cursor-pointer">
+              <ShoppingBag size={24} className="md:w-9 md:h-9 mb-1 md:mb-2 mx-auto" />
+              <span className="text-xs md:text-sm font-bold">New Order</span>
+            </button>
+            <button onClick={() => navigate('/measurements')} className="bg-gradient-to-br from-brand-navy to-brand-orange hover:from-brand-navy-dark hover:to-brand-orange-dark text-white rounded-lg md:rounded-2xl p-3 md:p-6 transition-all duration-300 hover:scale-105 transform shadow-lg hover:shadow-xl cursor-pointer">
+              <Ruler size={24} className="md:w-9 md:h-9 mb-1 md:mb-2 mx-auto" />
+              <span className="text-xs md:text-sm font-bold">Take Measurement</span>
+            </button>
+            <button onClick={() => navigate('/orders')} className="bg-gradient-to-br from-brand-orange to-brand-navy hover:from-brand-orange-dark hover:to-brand-navy-dark text-white rounded-lg md:rounded-2xl p-3 md:p-6 transition-all duration-300 hover:scale-105 transform shadow-lg hover:shadow-xl cursor-pointer">
+              <Package size={24} className="md:w-9 md:h-9 mb-1 md:mb-2 mx-auto" />
+              <span className="text-xs md:text-sm font-bold">Manage Inventory</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Business Code Card */}
+        <div className="bg-gradient-to-br from-brand-orange to-brand-navy rounded-3xl shadow-2xl p-8 border-2 border-brand-orange">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="bg-white/20 p-3 rounded-xl">
+              <Users size={28} className="text-white" />
             </div>
-            <div className="relative h-8 bg-gray-200 rounded-full overflow-hidden">
+            <div>
+              <h2 className="text-2xl font-bold text-white">Your Business Code</h2>
+              <p className="text-white/80 text-sm">Share this code with customers to connect</p>
+            </div>
+          </div>
+
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+            <p className="text-white/70 text-sm mb-3">Unique Business Code</p>
+            <div className="flex items-center gap-4">
+              <div className="flex-1">
+                <p className="text-4xl font-bold text-white tracking-widest">{overview?.businessCode || 'N/A'}</p>
+              </div>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(overview?.businessCode || '');
+                  alert('Code copied to clipboard!');
+                }}
+                className="bg-white text-brand-orange hover:bg-gray-100 font-bold py-3 px-6 rounded-xl transition-all shadow-lg hover:shadow-xl"
+              >
+                Copy
+              </button>
+            </div>
+            <p className="text-white/60 text-xs mt-4">
+              Customers can use this code to connect to your business and place orders
+            </p>
+          </div>
+        </div>
+
+        {/* Alerts Section */}
+        <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border-2 border-brand-orange">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="bg-gradient-to-br from-brand-orange to-brand-navy p-3 rounded-xl">
+              <Bell size={28} className="text-white" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">Alerts & Notifications</h2>
+              <p className="text-gray-600 text-sm">Important items requiring attention</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Low Stock Alert */}
+            {overview?.alerts?.lowStockCount > 0 ? (
+              <div
+                onClick={() => navigate('/inventory')}
+                className="bg-gradient-to-br from-yellow-50 to-amber-50 border-2 border-yellow-300 rounded-2xl p-5 hover:shadow-lg hover:scale-105 transition-all text-left cursor-pointer"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="bg-yellow-100 p-3 rounded-xl">
+                    <Package size={28} className="text-yellow-700" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-yellow-900 mb-1">Low Stock Alert</p>
+                    <p className="text-2xl font-extrabold text-yellow-700 mb-1">
+                      {overview.alerts.lowStockCount}
+                    </p>
+                    <p className="text-xs text-yellow-600">items need restocking</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 rounded-2xl p-5">
+                <div className="flex items-start gap-3">
+                  <div className="bg-green-100 p-3 rounded-xl">
+                    <span className="text-3xl">✅</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-green-900 mb-1">Stock Levels</p>
+                    <p className="text-xs text-green-600">All items well stocked</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Pending Order Payments */}
+            {overview?.alerts?.pendingOrderPayments > 0 ? (
+              <div
+                onClick={() => navigate('/reports')}
+                className="bg-gradient-to-br from-red-50 to-pink-50 border-2 border-red-300 rounded-2xl p-5 hover:shadow-lg hover:scale-105 transition-all text-left cursor-pointer"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="bg-red-100 p-3 rounded-xl">
+                    <DollarSign size={28} className="text-red-700" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-red-900 mb-1">Pending Payments</p>
+                    <p className="text-2xl font-extrabold text-red-700 mb-1">
+                      {overview.alerts.pendingOrderPayments}
+                    </p>
+                    <p className="text-xs text-red-600">orders awaiting payment</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 rounded-2xl p-5">
+                <div className="flex items-start gap-3">
+                  <div className="bg-green-100 p-3 rounded-xl">
+                    <span className="text-3xl">✅</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-green-900 mb-1">Order Payments</p>
+                    <p className="text-xs text-green-600">All payments up to date</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Pending PO Payments */}
+            {overview?.alerts?.pendingPOPayments > 0 ? (
+              <div className="bg-gradient-to-br from-orange-50 to-amber-50 border-2 border-orange-300 rounded-2xl p-5 hover:shadow-lg transition-all">
+                <div className="flex items-start gap-3">
+                  <div className="bg-orange-100 p-3 rounded-xl">
+                    <ClipboardList size={28} className="text-orange-700" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-orange-900 mb-1">PO Payments Due</p>
+                    <p className="text-2xl font-extrabold text-orange-700 mb-1">
+                      {overview.alerts.pendingPOPayments}
+                    </p>
+                    <p className="text-xs text-orange-600">purchase orders need payment</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 rounded-2xl p-5">
+                <div className="flex items-start gap-3">
+                  <div className="bg-green-100 p-3 rounded-xl">
+                    <span className="text-3xl">✅</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-green-900 mb-1">PO Payments</p>
+                    <p className="text-xs text-green-600">All payments settled</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Revenue Progress Chart */}
+        <div className="bg-white/80 backdrop-blur-lg rounded-2xl md:rounded-3xl shadow-2xl p-4 md:p-8 border-2 border-brand-navy">
+          <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
+            <div className="bg-gradient-to-br from-brand-navy to-brand-orange p-2 md:p-3 rounded-lg md:rounded-xl">
+              <TrendingUp size={20} className="md:w-7 md:h-7 text-white" />
+            </div>
+            <div>
+              <h2 className="text-lg md:text-2xl font-bold text-gray-900">Revenue Progress</h2>
+              <p className="text-gray-600 text-xs md:text-sm">Current vs Expected Revenue</p>
+            </div>
+          </div>
+
+          <div className="space-y-3 md:space-y-4">
+            <div className="flex justify-between items-center mb-2 text-xs md:text-base">
+              <span className="text-gray-700 font-semibold">₦{totalRevenue.toLocaleString()}</span>
+              <span className="text-gray-500 text-xs md:text-sm">of ₦{expectedRevenue.toLocaleString()}</span>
+            </div>
+            <div className="relative h-6 md:h-8 bg-gray-200 rounded-full overflow-hidden">
               <div 
-                className="absolute top-0 left-0 h-full bg-gradient-to-r from-brand-navy via-brand-orange to-brand-orange-dark rounded-full transition-all duration-1000 ease-out flex items-center justify-end pr-3"
+                className="absolute top-0 left-0 h-full bg-gradient-to-r from-brand-navy via-brand-orange to-brand-orange-dark rounded-full transition-all duration-1000 ease-out flex items-center justify-end pr-2 md:pr-3"
                 style={{ width: `${Math.min(revenuePercentage, 100)}%` }}
               >
                 {revenuePercentage > 10 && (
-                  <span className="text-white font-bold text-sm">{revenuePercentage.toFixed(1)}%</span>
+                  <span className="text-white font-bold text-xs md:text-sm">{revenuePercentage.toFixed(1)}%</span>
                 )}
               </div>
             </div>
-            <div className="flex justify-between text-sm">
+            <div className="flex justify-between text-xs md:text-sm">
               <span className="text-gray-600 flex items-center gap-1">
-                <DollarSign size={16} /> Total Revenue
+                <DollarSign size={14} className="md:w-4 md:h-4" /> Total Revenue
               </span>
               <span className="text-gray-600 flex items-center gap-1">
-                <TrendingUp size={16} /> Expected Revenue
+                <TrendingUp size={14} className="md:w-4 md:h-4" /> Expected Revenue
               </span>
             </div>
           </div>
         </div>
 
         {/* Revenue Breakdown & This Month Stats */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           {/* Revenue Breakdown */}
-          <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border-2 border-brand-orange">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-gradient-to-br from-brand-orange to-brand-navy p-3 rounded-xl">
-                <DollarSign size={28} className="text-white" />
+          <div className="bg-white/80 backdrop-blur-lg rounded-2xl md:rounded-3xl shadow-2xl p-4 md:p-8 border-2 border-brand-orange">
+            <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
+              <div className="bg-gradient-to-br from-brand-orange to-brand-navy p-2 md:p-3 rounded-lg md:rounded-xl">
+                <DollarSign size={20} className="md:w-7 md:h-7 text-white" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">Revenue Breakdown</h2>
-                <p className="text-gray-600 text-sm">This Month's Income Sources</p>
+                <h2 className="text-lg md:text-2xl font-bold text-gray-900">Revenue Breakdown</h2>
+                <p className="text-gray-600 text-xs md:text-sm">This Month's Income Sources</p>
               </div>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-4 md:space-y-6">
               {/* Tailoring Revenue */}
               <div>
                 <div className="flex justify-between items-center mb-2">
                   <div className="flex items-center gap-2">
-                    <Scissors size={20} className="text-gray-700" />
-                    <span className="text-gray-700 font-semibold">Tailoring</span>
+                    <Scissors size={16} className="md:w-5 md:h-5 text-gray-700" />
+                    <span className="text-gray-700 font-semibold text-sm md:text-base">Tailoring</span>
                   </div>
-                  <span className="text-gray-900 font-bold">₦{tailoringRevenue.toLocaleString()}</span>
+                  <span className="text-gray-900 font-bold text-sm md:text-base">₦{tailoringRevenue.toLocaleString()}</span>
                 </div>
-                <div className="relative h-6 bg-gray-200 rounded-full overflow-hidden">
+                <div className="relative h-4 md:h-6 bg-gray-200 rounded-full overflow-hidden">
                   <div 
                     className="absolute top-0 left-0 h-full bg-gradient-to-r from-brand-navy to-brand-orange rounded-full transition-all duration-1000"
                     style={{ width: `${tailoringPercentage}%` }}
@@ -312,12 +518,12 @@ export default function DashboardPage() {
               <div>
                 <div className="flex justify-between items-center mb-2">
                   <div className="flex items-center gap-2">
-                    <Package size={20} className="text-gray-700" />
-                    <span className="text-gray-700 font-semibold">Inventory Sales</span>
+                    <Package size={16} className="md:w-5 md:h-5 text-gray-700" />
+                    <span className="text-gray-700 font-semibold text-sm md:text-base">Inventory Sales</span>
                   </div>
-                  <span className="text-gray-900 font-bold">₦{inventoryRevenue.toLocaleString()}</span>
+                  <span className="text-gray-900 font-bold text-sm md:text-base">₦{inventoryRevenue.toLocaleString()}</span>
                 </div>
-                <div className="relative h-6 bg-gray-200 rounded-full overflow-hidden">
+                <div className="relative h-4 md:h-6 bg-gray-200 rounded-full overflow-hidden">
                   <div 
                     className="absolute top-0 left-0 h-full bg-gradient-to-r from-brand-orange to-brand-navy rounded-full transition-all duration-1000"
                     style={{ width: `${inventoryPercentage}%` }}
@@ -327,10 +533,10 @@ export default function DashboardPage() {
               </div>
 
               {/* Total */}
-              <div className="pt-4 border-t-2 border-gray-200">
+              <div className="pt-3 md:pt-4 border-t-2 border-gray-200">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-700 font-bold text-lg">Total This Month</span>
-                  <span className="text-2xl font-extrabold bg-gradient-to-r from-brand-navy to-brand-orange bg-clip-text text-transparent">
+                  <span className="text-gray-700 font-bold text-sm md:text-lg">Total This Month</span>
+                  <span className="text-xl md:text-2xl font-extrabold bg-gradient-to-r from-brand-navy to-brand-orange bg-clip-text text-transparent">
                     ₦{(tailoringRevenue + inventoryRevenue).toLocaleString()}
                   </span>
                 </div>
@@ -562,143 +768,6 @@ export default function DashboardPage() {
                 />
               </BarChart>
             </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Alerts Section */}
-        <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border-2 border-brand-orange">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="bg-gradient-to-br from-brand-orange to-brand-navy p-3 rounded-xl">
-              <Bell size={28} className="text-white" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">Alerts & Notifications</h2>
-              <p className="text-gray-600 text-sm">Important items requiring attention</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Low Stock Alert */}
-            {overview?.alerts?.lowStockCount > 0 ? (
-              <div className="bg-gradient-to-br from-yellow-50 to-amber-50 border-2 border-yellow-300 rounded-2xl p-5 hover:shadow-lg transition-all">
-                <div className="flex items-start gap-3">
-                  <div className="bg-yellow-100 p-3 rounded-xl">
-                    <Package size={28} className="text-yellow-700" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-yellow-900 mb-1">Low Stock Alert</p>
-                    <p className="text-2xl font-extrabold text-yellow-700 mb-1">
-                      {overview.alerts.lowStockCount}
-                    </p>
-                    <p className="text-xs text-yellow-600">items need restocking</p>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 rounded-2xl p-5">
-                <div className="flex items-start gap-3">
-                  <div className="bg-green-100 p-3 rounded-xl">
-                    <span className="text-3xl">✅</span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-green-900 mb-1">Stock Levels</p>
-                    <p className="text-xs text-green-600">All items well stocked</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Pending Order Payments */}
-            {overview?.alerts?.pendingOrderPayments > 0 ? (
-              <div className="bg-gradient-to-br from-red-50 to-pink-50 border-2 border-red-300 rounded-2xl p-5 hover:shadow-lg transition-all">
-                <div className="flex items-start gap-3">
-                  <div className="bg-red-100 p-3 rounded-xl">
-                    <DollarSign size={28} className="text-red-700" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-red-900 mb-1">Pending Payments</p>
-                    <p className="text-2xl font-extrabold text-red-700 mb-1">
-                      {overview.alerts.pendingOrderPayments}
-                    </p>
-                    <p className="text-xs text-red-600">orders awaiting payment</p>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 rounded-2xl p-5">
-                <div className="flex items-start gap-3">
-                  <div className="bg-green-100 p-3 rounded-xl">
-                    <span className="text-3xl">✅</span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-green-900 mb-1">Order Payments</p>
-                    <p className="text-xs text-green-600">All payments up to date</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Pending PO Payments */}
-            {overview?.alerts?.pendingPOPayments > 0 ? (
-              <div className="bg-gradient-to-br from-orange-50 to-amber-50 border-2 border-orange-300 rounded-2xl p-5 hover:shadow-lg transition-all">
-                <div className="flex items-start gap-3">
-                  <div className="bg-orange-100 p-3 rounded-xl">
-                    <ClipboardList size={28} className="text-orange-700" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-orange-900 mb-1">PO Payments Due</p>
-                    <p className="text-2xl font-extrabold text-orange-700 mb-1">
-                      {overview.alerts.pendingPOPayments}
-                    </p>
-                    <p className="text-xs text-orange-600">purchase orders need payment</p>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 rounded-2xl p-5">
-                <div className="flex items-start gap-3">
-                  <div className="bg-green-100 p-3 rounded-xl">
-                    <span className="text-3xl">✅</span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-green-900 mb-1">PO Payments</p>
-                    <p className="text-xs text-green-600">All payments settled</p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border-2 border-brand-navy">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="bg-gradient-to-br from-brand-navy to-brand-orange p-3 rounded-xl">
-              <Zap size={28} className="text-white" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">Quick Actions</h2>
-              <p className="text-gray-600 text-sm">Common tasks at your fingertips</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <button className="bg-gradient-to-br from-brand-navy to-brand-orange hover:from-brand-navy-dark hover:to-brand-orange-dark text-white rounded-2xl p-6 transition-all duration-300 hover:scale-105 transform shadow-lg hover:shadow-xl">
-              <Users size={36} className="mb-2 mx-auto" />
-              <span className="text-sm font-bold">Add Client</span>
-            </button>
-            <button className="bg-gradient-to-br from-brand-orange to-brand-navy hover:from-brand-orange-dark hover:to-brand-navy-dark text-white rounded-2xl p-6 transition-all duration-300 hover:scale-105 transform shadow-lg hover:shadow-xl">
-              <ShoppingBag size={36} className="mb-2 mx-auto" />
-              <span className="text-sm font-bold">New Order</span>
-            </button>
-            <button className="bg-gradient-to-br from-brand-navy to-brand-orange hover:from-brand-navy-dark hover:to-brand-orange-dark text-white rounded-2xl p-6 transition-all duration-300 hover:scale-105 transform shadow-lg hover:shadow-xl">
-              <Ruler size={36} className="mb-2 mx-auto" />
-              <span className="text-sm font-bold">Take Measurement</span>
-            </button>
-            <button className="bg-gradient-to-br from-brand-orange to-brand-navy hover:from-brand-orange-dark hover:to-brand-navy-dark text-white rounded-2xl p-6 transition-all duration-300 hover:scale-105 transform shadow-lg hover:shadow-xl">
-              <Package size={36} className="mb-2 mx-auto" />
-              <span className="text-sm font-bold">Manage Inventory</span>
-            </button>
           </div>
         </div>
       </div>

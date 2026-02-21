@@ -20,7 +20,8 @@ import {
   Scissors,
   Gem,
   Box,
-  CheckCircle
+  CheckCircle,
+  Plus
 } from 'lucide-react';
 
 export default function InventoryPage() {
@@ -195,10 +196,10 @@ export default function InventoryPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-brand-navy-50 via-brand-orange-50 to-brand-navy-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-brand-navy-200 border-t-brand-navy-600 mb-4"></div>
-          <p className="text-gray-700 font-bold text-base">Loading inventory...</p>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-3 border-slate-300 border-t-[#001f3f] mb-3"></div>
+          <p className="text-gray-600 font-semibold text-sm">Loading inventory...</p>
         </div>
       </div>
     );
@@ -206,59 +207,58 @@ export default function InventoryPage() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-brand-navy-50 via-brand-orange-50 to-brand-navy-100">
-      {/* Enhanced Decorative Background */}
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-50 to-slate-100">
+      {/* Subtle Decorative Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-brand-navy-300 to-brand-orange-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-        <div className="absolute top-40 left-0 w-[500px] h-[500px] bg-gradient-to-br from-brand-navy-300 to-brand-navy-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
-        <div className="absolute bottom-0 right-1/3 w-[550px] h-[550px] bg-gradient-to-br from-brand-orange-300 to-brand-orange-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-[#001f3f]/5 to-[#ff6b35]/5 rounded-full mix-blend-multiply filter blur-3xl opacity-40"></div>
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-[#001f3f]/5 to-[#ff6b35]/5 rounded-full mix-blend-multiply filter blur-3xl opacity-40"></div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         {/* Welcome Guide Modal */}
         {showWelcomeGuide && categories.length === 0 && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-3xl shadow-2xl p-6 max-w-2xl w-full border-4 border-brand-navy-300">
+            <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-2xl w-full border border-slate-200">
               <div className="text-center mb-4">
-                <div className="inline-block bg-gradient-to-br from-brand-navy-600 to-brand-orange-600 p-3 rounded-full mb-3">
-                  <Package size={40} className="text-white" />
+                <div className="inline-block bg-gradient-to-br from-[#001f3f] to-[#ff6b35] p-3 rounded-full mb-3">
+                  <Package size={32} className="text-white" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome to Inventory Management! 👋</h2>
-                <p className="text-gray-600 text-base">Let's get you started in 2 simple steps</p>
+                <h2 className="text-xl font-bold text-gray-900 mb-1">Welcome to Inventory Management 👋</h2>
+                <p className="text-gray-600 text-sm">Let's get you started in 2 simple steps</p>
               </div>
 
-              <div className="space-y-4 mb-6">
-                <div className="flex gap-3 p-4 bg-gradient-to-br from-brand-navy-50 to-brand-navy-100 rounded-2xl border-2 border-brand-navy-200">
-                  <div className="flex-shrink-0 w-10 h-10 bg-brand-navy-600 text-white rounded-full flex items-center justify-center font-bold text-lg">
+              <div className="space-y-3 mb-5">
+                <div className="flex gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                  <div className="flex-shrink-0 w-8 h-8 bg-[#001f3f] text-white rounded-full flex items-center justify-center font-bold text-sm">
                     1
                   </div>
                   <div>
-                    <h3 className="font-bold text-base text-gray-900 mb-1">Create Categories First</h3>
-                    <p className="text-gray-700 text-sm">
-                      Think of categories as folders to organize your items. Examples: "Fabrics", "Buttons", "Threads", "Ready-made Clothes"
+                    <h3 className="font-semibold text-sm text-gray-900 mb-0.5">Create Categories First</h3>
+                    <p className="text-gray-600 text-xs">
+                      Think of categories as folders to organize your items. Examples: "Fabrics", "Buttons", "Threads"
                     </p>
                   </div>
                 </div>
 
-                <div className="flex gap-3 p-4 bg-gradient-to-br from-brand-orange-50 to-brand-orange-100 rounded-2xl border-2 border-brand-orange-200">
-                  <div className="flex-shrink-0 w-10 h-10 bg-brand-orange-600 text-white rounded-full flex items-center justify-center font-bold text-lg">
+                <div className="flex gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                  <div className="flex-shrink-0 w-8 h-8 bg-[#ff6b35] text-white rounded-full flex items-center justify-center font-bold text-sm">
                     2
                   </div>
                   <div>
-                    <h3 className="font-bold text-base text-gray-900 mb-1">Add Items to Categories</h3>
-                    <p className="text-gray-700 text-sm">
-                      After creating categories, add your actual items. Example: "Ankara Fabric" goes in "Fabrics" category
+                    <h3 className="font-semibold text-sm text-gray-900 mb-0.5">Add Items to Categories</h3>
+                    <p className="text-gray-600 text-xs">
+                      After creating categories, add your actual items. Example: "Ankara Fabric" goes in "Fabrics"
                     </p>
                   </div>
                 </div>
 
-                <div className="p-4 bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-2xl border-2 border-yellow-200">
+                <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
                   <div className="flex items-start gap-2">
-                    <AlertTriangle size={20} className="text-yellow-700 flex-shrink-0 mt-0.5" />
+                    <AlertTriangle size={16} className="text-amber-700 flex-shrink-0 mt-0.5" />
                     <div>
-                      <h3 className="font-bold text-base text-gray-900 mb-1">💡 Pro Tip</h3>
-                      <p className="text-gray-700 text-sm">
-                        Set your selling price higher than cost price to make profit. The app will calculate your profit margin automatically!
+                      <h3 className="font-semibold text-sm text-gray-900 mb-0.5">💡 Pro Tip</h3>
+                      <p className="text-gray-700 text-xs">
+                        Set your selling price higher than cost price to make profit. The app will calculate your margin automatically!
                       </p>
                     </div>
                   </div>
@@ -272,13 +272,13 @@ export default function InventoryPage() {
                     setActiveTab('categories');
                     setShowCategoryForm(true);
                   }}
-                  className="flex-1 bg-gradient-to-r from-brand-navy-600 to-brand-orange-600 hover:from-brand-navy-700 hover:to-brand-orange-700 text-white px-6 py-3 rounded-lg font-bold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 text-sm"
+                  className="flex-1 bg-gradient-to-r from-[#001f3f] to-[#ff6b35] hover:from-[#001a2e] hover:to-[#e55a24] text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg text-sm"
                 >
                   Let's Start! Create First Category
                 </button>
                 <button
                   onClick={closeWelcomeGuide}
-                  className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-bold transition-all text-sm"
+                  className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-gray-700 rounded-lg font-semibold transition-all text-sm"
                 >
                   Skip
                 </button>
@@ -288,13 +288,13 @@ export default function InventoryPage() {
         )}
 
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <h1 className="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-brand-navy-700 via-brand-orange-600 to-brand-navy-600 bg-clip-text text-transparent mb-2">
+              <h1 className="text-2xl font-bold text-[#001f3f] mb-1">
                 Inventory Management
               </h1>
-              <p className="text-gray-600 text-sm md:text-base font-medium">
+              <p className="text-gray-600 text-sm font-medium">
                 Track your materials and supplies
               </p>
             </div>
@@ -308,9 +308,9 @@ export default function InventoryPage() {
                   }
                   setShowCategoryForm(true);
                 }}
-                className="flex items-center gap-2 bg-white hover:bg-gray-50 text-brand-navy-600 px-5 py-2 rounded-lg font-bold border-2 border-brand-navy-300 transition-all duration-300 shadow-md hover:shadow-lg text-sm"
+                className="flex items-center gap-2 bg-gradient-to-r from-[#001f3f] to-[#ff6b35] hover:from-[#001a2e] hover:to-[#e55a24] text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg text-sm"
               >
-                <Tag size={18} /> Category
+                <Tag size={16} /> Category
               </button>
               <button
                 onClick={() => {
@@ -321,131 +321,133 @@ export default function InventoryPage() {
                   }
                   setShowItemForm(true);
                 }}
-                className="flex items-center gap-2 bg-gradient-to-r from-brand-navy-600 to-brand-orange-600 hover:from-brand-navy-700 hover:to-brand-orange-700 text-white px-5 py-2 rounded-lg font-bold transition-all duration-300 shadow-lg hover:shadow-xl text-sm"
+                className="flex items-center gap-2 bg-gradient-to-r from-[#001f3f] to-[#ff6b35] hover:from-[#001a2e] hover:to-[#e55a24] text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg text-sm"
               >
-                <Package size={18} /> Add Item
+                <Plus size={16} /> Add Item
               </button>
             </div>
           </div>
         </div>
 
-        {/* Stats Cards - Simplified */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
           {[
             { 
               label: 'Total Items', 
               value: items.length, 
               icon: Package,
-              color: 'brand-navy',
+              bgColor: 'bg-blue-50',
+              textColor: 'text-[#001f3f]',
+              borderColor: 'border-blue-200'
             },
             { 
               label: 'Categories', 
               value: categories.length, 
               icon: Tag,
-              color: 'brand-orange',
+              bgColor: 'bg-orange-50',
+              textColor: 'text-[#ff6b35]',
+              borderColor: 'border-orange-200'
             },
             { 
               label: 'Total Value', 
               value: `₦${totalValue.toLocaleString()}`, 
               icon: DollarSign,
-              color: 'green',
+              bgColor: 'bg-green-50',
+              textColor: 'text-green-700',
+              borderColor: 'border-green-200'
             },
             { 
               label: 'Low Stock', 
               value: lowStockItems.length, 
               icon: AlertTriangle,
-              color: 'red',
+              bgColor: 'bg-red-50',
+              textColor: 'text-red-700',
+              borderColor: 'border-red-200'
             },
           ].map((stat, idx) => {
             const Icon = stat.icon;
-            const colorClasses = {
-              'brand-navy': 'from-brand-navy-500 to-brand-navy-600 bg-brand-navy-50',
-              'brand-orange': 'from-brand-orange-500 to-brand-orange-600 bg-brand-orange-50',
-              green: 'from-green-500 to-green-600 bg-green-50',
-              red: 'from-red-500 to-red-600 bg-red-50',
-            };
             return (
             <div 
               key={idx} 
-              className={`${colorClasses[stat.color].split(' ')[1]} rounded-2xl p-4 shadow-md hover:shadow-lg transition-all duration-300 border border-white`}
+              className={`${stat.bgColor} rounded-lg p-3 shadow-sm hover:shadow-md transition-all duration-300 border ${stat.borderColor}`}
             >
               <div className="flex items-center justify-between mb-2">
-                <Icon size={20} className="text-gray-700" />
+                <Icon size={18} className={stat.textColor} />
               </div>
               <p className="text-gray-600 text-xs font-semibold mb-1">{stat.label}</p>
-              <p className={`text-xl font-extrabold bg-gradient-to-r ${colorClasses[stat.color].split(' ')[0]} bg-clip-text text-transparent`}>
+              <p className={`text-lg font-bold ${stat.textColor}`}>
                 {stat.value}
               </p>
             </div>
           )})}
         </div>
 
-        {/* Messages - Simplified */}
+        {/* Messages */}
         {error && (
           <div className="p-3 bg-red-50 border-l-4 border-red-500 rounded-lg text-red-700 flex items-center gap-2 shadow-sm text-sm">
-            <AlertTriangle size={18} className="text-red-500 flex-shrink-0" />
+            <AlertTriangle size={16} className="text-red-500 flex-shrink-0" />
             <span className="font-medium">{error}</span>
           </div>
         )}
         {message && (
           <div className="p-3 bg-green-50 border-l-4 border-green-500 rounded-lg text-green-700 flex items-center gap-2 shadow-sm text-sm">
-            <CheckCircle size={18} className="text-green-500 flex-shrink-0" />
+            <CheckCircle size={16} className="text-green-500 flex-shrink-0" />
             <span className="font-medium">{message}</span>
           </div>
         )}
 
-        {/* Low Stock Alert - Simplified */}
+        {/* Low Stock Alert */}
         {lowStockItems.length > 0 && (
-          <div className="p-3 bg-yellow-50 border-l-4 border-yellow-500 rounded-lg shadow-sm">
+          <div className="p-3 bg-amber-50 border-l-4 border-amber-500 rounded-lg shadow-sm">
             <div className="flex items-start gap-2">
-              <AlertTriangle size={18} className="text-yellow-600 flex-shrink-0 mt-0.5" />
+              <AlertTriangle size={16} className="text-amber-600 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-bold text-yellow-900 text-sm">
+                <p className="font-semibold text-amber-900 text-sm">
                   {lowStockItems.length} {lowStockItems.length === 1 ? 'item is' : 'items are'} running low
                 </p>
-                <p className="text-xs text-yellow-700 mt-1">Consider restocking soon</p>
+                <p className="text-xs text-amber-700 mt-0.5">Consider restocking soon</p>
               </div>
             </div>
           </div>
         )}
 
-        {/* Simple Tabs */}
-        <div className="flex gap-2 bg-white rounded-lg p-1 shadow-sm border border-gray-200">
+        {/* Tabs */}
+        <div className="flex gap-2 bg-white rounded-lg p-1 shadow-sm border border-slate-200">
           <button
             onClick={() => setActiveTab('items')}
-            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-bold transition-all text-sm ${
+            className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-semibold transition-all text-sm ${
               activeTab === 'items'
-                ? 'bg-gradient-to-r from-brand-navy-600 to-brand-orange-600 text-white shadow-md'
-                : 'text-gray-600 hover:bg-gray-50'
+                ? 'bg-gradient-to-r from-[#001f3f] to-[#ff6b35] text-white shadow-md'
+                : 'text-gray-600 hover:bg-slate-50'
             }`}
           >
-            <Package size={16} /> Items ({items.length})
+            <Package size={14} /> Items ({items.length})
           </button>
           <button
             onClick={() => setActiveTab('categories')}
-            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-bold transition-all text-sm ${
+            className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-semibold transition-all text-sm ${
               activeTab === 'categories'
-                ? 'bg-gradient-to-r from-brand-navy-600 to-brand-orange-600 text-white shadow-md'
-                : 'text-gray-600 hover:bg-gray-50'
+                ? 'bg-gradient-to-r from-[#001f3f] to-[#ff6b35] text-white shadow-md'
+                : 'text-gray-600 hover:bg-slate-50'
             }`}
           >
-            <Tag size={16} /> Categories ({categories.length})
+            <Tag size={14} /> Categories ({categories.length})
           </button>
         </div>
 
         {/* Items Tab */}
         {activeTab === 'items' && (
-          <div className="space-y-6">
-            {/* Filter Bar - Simplified */}
+          <div className="space-y-4">
+            {/* Filter Bar */}
             {categories.length > 0 && (
-              <div className="bg-white rounded-lg shadow-sm p-3 border border-gray-200">
+              <div className="bg-white rounded-lg shadow-sm p-3 border border-slate-200">
                 <div className="flex items-center gap-2">
-                  <Search size={16} className="text-gray-500" />
+                  <Search size={14} className="text-gray-500" />
                   <span className="text-xs font-semibold text-gray-700">Filter:</span>
                   <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:border-brand-navy-500 focus:ring-2 focus:ring-brand-navy-100 outline-none transition-all bg-white text-xs"
+                    className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:border-[#001f3f] focus:ring-2 focus:ring-[#001f3f]/10 outline-none transition-all bg-white text-xs"
                   >
                     <option value="">All Categories</option>
                     {categories.map((c) => (
@@ -461,32 +463,32 @@ export default function InventoryPage() {
             {/* Item Form Modal */}
             {showItemForm && (
               <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-                  <div className="sticky top-0 bg-gradient-to-r from-brand-navy-600 to-brand-orange-600 p-4 text-white">
+                <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                  <div className="sticky top-0 bg-gradient-to-r from-[#001f3f] to-[#ff6b35] p-4 text-white">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Package size={24} />
+                        <Package size={20} />
                         <div>
-                          <h2 className="text-xl font-bold">Add New Item</h2>
+                          <h2 className="text-lg font-bold">Add New Item</h2>
                           <p className="text-xs opacity-90">Fill in the details below</p>
                         </div>
                       </div>
                       <button
                         onClick={() => setShowItemForm(false)}
-                        className="p-2 hover:bg-white/20 rounded-lg transition-all"
+                        className="p-1 hover:bg-white/20 rounded-lg transition-all"
                       >
-                        <X size={20} />
+                        <X size={18} />
                       </button>
                     </div>
                   </div>
 
                 {categories.length === 0 && (
-                  <div className="mb-6 p-4 bg-yellow-50 border-2 border-yellow-300 rounded-xl">
-                    <div className="flex items-start gap-3">
-                      <AlertTriangle size={20} className="text-yellow-700 flex-shrink-0 mt-0.5" />
+                  <div className="mb-4 p-3 bg-amber-50 border-l-4 border-amber-500 m-4">
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle size={16} className="text-amber-700 flex-shrink-0 mt-0.5" />
                       <div>
-                        <p className="font-bold text-yellow-900 mb-1">No categories yet!</p>
-                        <p className="text-sm text-yellow-700">
+                        <p className="font-semibold text-amber-900 text-sm mb-1">No categories yet!</p>
+                        <p className="text-xs text-amber-700">
                           You need to create at least one category first. 
                           <button 
                             onClick={() => {
@@ -494,7 +496,7 @@ export default function InventoryPage() {
                               setActiveTab('categories');
                               setShowCategoryForm(true);
                             }}
-                            className="underline font-bold ml-1 hover:text-yellow-900"
+                            className="underline font-semibold ml-1 hover:text-amber-900"
                           >
                             Click here to create a category
                           </button>
@@ -504,7 +506,7 @@ export default function InventoryPage() {
                   </div>
                 )}
 
-                <form onSubmit={handleAddItem} className="space-y-6 p-4">
+                <form onSubmit={handleAddItem} className="space-y-4 p-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="md:col-span-2">
                       <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
@@ -700,9 +702,9 @@ export default function InventoryPage() {
                       setActiveTab('categories');
                       setShowCategoryForm(true);
                     }}
-                    className="inline-flex items-center gap-2 bg-gradient-to-r from-brand-navy-600 to-brand-navy-700 hover:from-brand-navy-700 hover:to-brand-navy-800 text-white px-6 py-3 rounded-lg font-bold transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 transform text-sm"
+                    className="inline-flex items-center gap-2 bg-gradient-to-r from-brand-orange-500 to-brand-orange-600 hover:from-brand-orange-600 hover:to-brand-orange-700 text-white px-6 py-3 rounded-lg font-bold transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 transform text-sm"
                   >
-                    <Tag size={20} /> Create a Category First
+                    <Tag size={20} /> Create Your First Category
                   </button>
                 ) : (
                   <button
@@ -714,73 +716,77 @@ export default function InventoryPage() {
                 )}
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {filteredItems.map((item) => {
-                  const ItemIcon = getCategoryIcon(item.categoryType);
-                  return (
-                  <div
-                    key={item._id}
-                    className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-200"
-                  >
-                    {/* Card Header - Simplified */}
-                    <div className={`${
-                      item.isLowStock 
-                        ? 'bg-gradient-to-r from-red-500 to-red-600' 
-                        : 'bg-gradient-to-r from-brand-navy-600 to-brand-orange-600'
-                    } p-3 text-white`}>
-                      <div className="flex items-center justify-between mb-2">
-                        <ItemIcon size={20} className="text-white" />
-                        {item.isLowStock && (
-                          <span className="bg-white/20 px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                            <AlertTriangle size={10} /> Low
-                          </span>
-                        )}
-                      </div>
-                      <h3 className="text-base font-bold">{item.name}</h3>
-                      <p className="text-xs opacity-90">{item.categoryName}</p>
-                    </div>
-
-                    {/* Card Body - Simplified */}
-                    <div className="p-3 space-y-2">
-                      {/* Stock */}
-                      <div className="flex items-center justify-between p-2 bg-brand-navy-50 rounded-lg">
-                        <span className="text-xs font-semibold text-gray-600">Stock</span>
-                        <span className="text-lg font-bold text-brand-navy-700">
-                          {item.quantity} {item.unit}
-                        </span>
-                      </div>
-
-                      {/* Prices */}
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="p-2 bg-green-50 rounded-lg">
-                          <p className="text-xs text-gray-600 mb-1">Cost</p>
-                          <p className="text-xs font-bold text-green-700">₦{item.costPrice?.toLocaleString()}</p>
-                        </div>
-                        <div className="p-2 bg-brand-orange-50 rounded-lg">
-                          <p className="text-xs text-gray-600 mb-1">Selling</p>
-                          <p className="text-xs font-bold text-brand-orange-700">₦{item.sellingPrice?.toLocaleString()}</p>
-                        </div>
-                      </div>
-
-                      {item.profitMargin > 0 && (
-                        <div className="p-2 bg-yellow-50 rounded-lg flex items-center justify-between">
-                          <span className="text-xs text-gray-600">Profit Margin</span>
-                          <span className="text-xs font-bold text-yellow-700">{item.profitMargin?.toFixed(1)}%</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Card Actions - Simplified */}
-                    <div className="p-2 bg-gray-50 border-t border-gray-200">
-                      <button
-                        onClick={() => handleDeleteItem(item._id)}
-                        className="w-full flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg transition-all text-xs font-bold"
+              <div className="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-gradient-to-r from-brand-navy-600 to-brand-orange-600 text-white">
+                      <th className="px-4 py-3 text-left text-sm font-bold">Item Name</th>
+                      <th className="px-4 py-3 text-left text-sm font-bold">Category</th>
+                      <th className="px-4 py-3 text-center text-sm font-bold">Stock</th>
+                      <th className="px-4 py-3 text-right text-sm font-bold">Cost Price</th>
+                      <th className="px-4 py-3 text-right text-sm font-bold">Selling Price</th>
+                      <th className="px-4 py-3 text-center text-sm font-bold">Profit Margin</th>
+                      <th className="px-4 py-3 text-center text-sm font-bold">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredItems.map((item, idx) => (
+                      <tr 
+                        key={item._id}
+                        className={`border-t border-gray-200 hover:bg-gray-50 transition-all ${
+                          item.isLowStock ? 'bg-red-50' : idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                        }`}
                       >
-                        <Trash2 size={14} /> Delete
-                      </button>
-                    </div>
-                  </div>
-                )})}
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            {item.isLowStock && (
+                              <AlertTriangle size={16} className="text-red-600" />
+                            )}
+                            <div>
+                              <p className="text-sm font-bold text-gray-900">{item.name}</p>
+                              <p className="text-xs text-gray-500">{item.unit}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="text-sm text-gray-700">{item.categoryName}</p>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <span className={`inline-block px-3 py-1 rounded-full text-sm font-bold ${
+                            item.isLowStock 
+                              ? 'bg-red-100 text-red-700' 
+                              : 'bg-brand-navy-100 text-brand-navy-700'
+                          }`}>
+                            {item.quantity}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <p className="text-sm font-semibold text-gray-900">₦{item.costPrice?.toLocaleString()}</p>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <p className="text-sm font-semibold text-gray-900">₦{item.sellingPrice?.toLocaleString()}</p>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          {item.profitMargin > 0 ? (
+                            <span className="inline-block px-3 py-1 rounded-full text-sm font-bold bg-green-100 text-green-700">
+                              {item.profitMargin?.toFixed(1)}%
+                            </span>
+                          ) : (
+                            <span className="text-xs text-gray-500">-</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <button
+                            onClick={() => handleDeleteItem(item._id)}
+                            className="inline-flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg transition-all text-xs font-bold"
+                          >
+                            <Trash2 size={14} /> Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
@@ -887,7 +893,7 @@ export default function InventoryPage() {
                 <p className="text-gray-600 text-base mb-4">Categories help you organize your inventory items</p>
                 <button
                   onClick={() => setShowCategoryForm(true)}
-                  className="inline-flex items-center gap-2 bg-gradient-to-r from-brand-navy-600 to-brand-orange-600 hover:from-brand-navy-700 hover:to-brand-orange-700 text-white px-6 py-3 rounded-lg font-bold transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 transform text-sm"
+                  className="inline-flex items-center gap-2 bg-gradient-to-r from-brand-orange-500 to-brand-orange-600 hover:from-brand-orange-600 hover:to-brand-orange-700 text-white px-6 py-3 rounded-lg font-bold transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 transform text-sm"
                 >
                   <Tag size={20} /> Create Your First Category
                 </button>

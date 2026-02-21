@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-export const API_URL = 'https://tailor-app-backend-uh5b.onrender.com/api';
-// const API_URL = import.meta.env.VITE_API_URL || 'https://tailor-app-backend-uh5b.onrender.com/api';
+// export const API_URL = 'https://tailor-app-backend-uh5b.onrender.com/api';
+export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const BASE_URL = API_URL.replace('/api', ''); // Get base URL without /api
 
 const client = axios.create({
@@ -24,6 +24,10 @@ client.interceptors.request.use((config) => {
   const token = localStorage.getItem('sewtrack_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+  }
+  // Ensure Content-Type is set for all requests
+  if (!config.headers['Content-Type']) {
+    config.headers['Content-Type'] = 'application/json';
   }
   return config;
 });
@@ -150,6 +154,8 @@ export const purchaseOrderAPI = {
 // ===== DASHBOARD ENDPOINTS =====
 export const dashboardAPI = {
   getOverview: () => client.get('/dashboard/overview'),
+  getMonthlyTrend: () => client.get('/dashboard/report/monthly-trend'),
+  getWeeklyOrders: () => client.get('/dashboard/report/weekly-orders'),
   getRevenueReport: (startDate, endDate, type) =>
     client.get('/dashboard/report/revenue', { params: { startDate, endDate, type } }),
   getTopAttires: () => client.get('/dashboard/report/top-attires'),
@@ -165,18 +171,14 @@ export const uploadAPI = {
   uploadSingle: (file) => {
     const formData = new FormData();
     formData.append('image', file);
-    return client.post('/upload/single', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    return client.post('/upload/single', formData);
   },
   uploadMultiple: (files) => {
     const formData = new FormData();
     files.forEach((file) => {
       formData.append('images', file);
     });
-    return client.post('/upload/multiple', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    return client.post('/upload/multiple', formData);
   },
 };
 

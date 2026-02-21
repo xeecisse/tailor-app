@@ -27,9 +27,12 @@ import {
   X,
   AlertTriangle,
   Bell,
-  PhoneOff
+  PhoneOff,
+  Image as ImageIcon,
+  Download,
+  ZoomIn
 } from 'lucide-react';
-import { orderAPI, measurementAPI } from '../lib/api';
+import { orderAPI, measurementAPI, getImageUrl } from '../lib/api';
 
 export default function OrderDetailsPage() {
   const { orderId } = useParams();
@@ -43,6 +46,7 @@ export default function OrderDetailsPage() {
   const [showStatusForm, setShowStatusForm] = useState(false);
   const [showNotificationDialog, setShowNotificationDialog] = useState(false);
   const [pendingStatus, setPendingStatus] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null);
   
   const [paymentData, setPaymentData] = useState({
     amount: '',
@@ -80,8 +84,8 @@ export default function OrderDetailsPage() {
   };
 
   const handleStatusChange = async (newStatus) => {
-    // If marking as completed or delivered, show confirmation dialog
-    if (newStatus === 'completed' || newStatus === 'delivered') {
+    // If marking as ready for pickup or delivered, show confirmation dialog
+    if (newStatus === 'ready_for_pickup' || newStatus === 'delivered') {
       setPendingStatus(newStatus);
       setShowNotificationDialog(true);
       setShowStatusForm(false);
@@ -91,7 +95,7 @@ export default function OrderDetailsPage() {
     // For other statuses, update directly
     try {
       await orderAPI.updateStatus(orderId, newStatus);
-      setMessage(`Order status updated to ${newStatus}`);
+      setMessage(`Order status updated to ${newStatus.replace(/_/g, ' ')}`);
       setShowStatusForm(false);
       fetchOrder();
       setTimeout(() => setMessage(''), 3000);
@@ -148,14 +152,16 @@ export default function OrderDetailsPage() {
 
   const getStatusConfig = (status) => {
     switch (status) {
-      case 'completed':
-        return { icon: CheckCircle, gradient: 'from-green-500 to-emerald-500', bg: 'from-green-50 to-emerald-50', text: 'text-green-700', label: 'Completed' };
+      case 'measurement_taken':
+        return { icon: Ruler, gradient: 'from-blue-500 to-blue-600', bg: 'from-blue-50 to-blue-100', text: 'text-blue-700', label: 'Measurement Taken' };
+      case 'fabric_received':
+        return { icon: Shirt, gradient: 'from-purple-500 to-purple-600', bg: 'from-purple-50 to-purple-100', text: 'text-purple-700', label: 'Fabric Received' };
+      case 'sewing':
+        return { icon: Settings, gradient: 'from-orange-500 to-orange-600', bg: 'from-orange-50 to-orange-100', text: 'text-orange-700', label: 'Sewing' };
+      case 'ready_for_pickup':
+        return { icon: CheckCircle, gradient: 'from-green-500 to-green-600', bg: 'from-green-50 to-green-100', text: 'text-green-700', label: 'Ready for Pickup' };
       case 'delivered':
-        return { icon: PartyPopper, gradient: 'from-blue-500 to-cyan-500', bg: 'from-blue-50 to-cyan-50', text: 'text-blue-700', label: 'Delivered' };
-      case 'in_progress':
-        return { icon: Settings, gradient: 'from-orange-500 to-amber-500', bg: 'from-orange-50 to-amber-50', text: 'text-orange-700', label: 'In Progress' };
-      case 'pending':
-        return { icon: Clock, gradient: 'from-yellow-500 to-amber-500', bg: 'from-yellow-50 to-amber-50', text: 'text-yellow-700', label: 'Pending' };
+        return { icon: PartyPopper, gradient: 'from-blue-900 to-blue-700', bg: 'from-blue-50 to-blue-100', text: 'text-blue-900', label: 'Delivered' };
       default:
         return { icon: ClipboardList, gradient: 'from-gray-500 to-gray-600', bg: 'from-gray-50 to-gray-100', text: 'text-gray-700', label: status };
     }
@@ -174,9 +180,9 @@ export default function OrderDetailsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-purple-200 border-t-purple-600 mb-4"></div>
+          <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-900 mb-4"></div>
           <p className="text-gray-700 font-bold text-lg">Loading order details...</p>
         </div>
       </div>
@@ -185,11 +191,11 @@ export default function OrderDetailsPage() {
 
   if (error && !order) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-8">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-50 p-8">
         <div className="max-w-4xl mx-auto space-y-4">
           <button
             onClick={() => navigate('/orders')}
-            className="flex items-center gap-2 text-purple-600 hover:text-purple-700 font-semibold transition-all hover:gap-3"
+            className="flex items-center gap-2 text-blue-900 hover:text-blue-950 font-semibold transition-all hover:gap-3"
           >
             <ArrowLeft size={20} /> Back to Orders
           </button>
@@ -208,12 +214,12 @@ export default function OrderDetailsPage() {
   const paymentConfig = getPaymentConfig(order?.paymentStatus);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-50">
       {/* Enhanced Decorative Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-purple-300 to-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-        <div className="absolute top-40 left-0 w-[500px] h-[500px] bg-gradient-to-br from-blue-300 to-cyan-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
-        <div className="absolute bottom-0 right-1/3 w-[550px] h-[550px] bg-gradient-to-br from-orange-300 to-yellow-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-blue-200 to-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+        <div className="absolute top-40 left-0 w-[500px] h-[500px] bg-gradient-to-br from-orange-200 to-orange-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute bottom-0 right-1/3 w-[550px] h-[550px] bg-gradient-to-br from-blue-200 to-slate-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -221,17 +227,17 @@ export default function OrderDetailsPage() {
         <div className="mb-8">
           <button
             onClick={() => navigate('/orders')}
-            className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-700 font-semibold mb-4 transition-all hover:gap-3"
+            className="inline-flex items-center gap-2 text-blue-900 hover:text-blue-950 font-semibold mb-4 transition-all hover:gap-3"
           >
             <ArrowLeft size={20} /> Back to Orders
           </button>
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             <div>
-              <h1 className="text-3xl font-extrabold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-extrabold bg-gradient-to-r from-blue-900 via-blue-800 to-orange-600 bg-clip-text text-transparent">
                 Order #{order?.orderNumber}
               </h1>
-              <p className="text-gray-600 mt-2 text-lg font-medium">
+              <p className="text-gray-600 mt-1 text-sm font-medium">
                 Created on {new Date(order?.createdAt).toLocaleDateString('en-US', { 
                   month: 'long', 
                   day: 'numeric', 
@@ -263,20 +269,20 @@ export default function OrderDetailsPage() {
         {/* Status and Payment Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Status Card */}
-          <div className={`bg-gradient-to-br ${statusConfig.bg} rounded-3xl p-8 shadow-lg border-2 ${statusConfig.text.replace('text-', 'border-')}-200`}>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className={`bg-gradient-to-br ${statusConfig.gradient} p-4 rounded-2xl shadow-md`}>
-                  {React.createElement(statusConfig.icon, { size: 32, className: 'text-white' })}
+          <div className={`bg-gradient-to-br ${statusConfig.bg} rounded-2xl p-6 shadow-lg border-2 ${statusConfig.text.replace('text-', 'border-')}-200`}>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className={`bg-gradient-to-br ${statusConfig.gradient} p-2 rounded-lg shadow-md`}>
+                  {React.createElement(statusConfig.icon, { size: 24, className: 'text-white' })}
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-gray-600">Order Status</p>
-                  <p className={`text-3xl font-extrabold ${statusConfig.text}`}>{statusConfig.label}</p>
+                  <p className="text-xs font-semibold text-gray-600">Order Status</p>
+                  <p className={`text-xl font-extrabold ${statusConfig.text}`}>{statusConfig.label}</p>
                 </div>
               </div>
               <button
                 onClick={() => setShowStatusForm(!showStatusForm)}
-                className="bg-white/80 hover:bg-white px-4 py-2 rounded-xl font-bold text-sm transition-all shadow-md hover:shadow-lg"
+                className="bg-white/80 hover:bg-white px-3 py-1 rounded-lg font-bold text-xs transition-all shadow-md hover:shadow-lg text-blue-900"
               >
                 Change
               </button>
@@ -284,21 +290,21 @@ export default function OrderDetailsPage() {
           </div>
 
           {/* Payment Card */}
-          <div className={`bg-gradient-to-br ${paymentConfig.bg} rounded-3xl p-8 shadow-lg border-2 ${paymentConfig.text.replace('text-', 'border-')}-200`}>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className={`bg-gradient-to-br ${paymentConfig.gradient} p-4 rounded-2xl shadow-md`}>
-                  {React.createElement(paymentConfig.icon, { size: 32, className: 'text-white' })}
+          <div className={`bg-gradient-to-br ${paymentConfig.bg} rounded-2xl p-6 shadow-lg border-2 ${paymentConfig.text.replace('text-', 'border-')}-200`}>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className={`bg-gradient-to-br ${paymentConfig.gradient} p-2 rounded-lg shadow-md`}>
+                  {React.createElement(paymentConfig.icon, { size: 24, className: 'text-white' })}
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-gray-600">Payment Status</p>
-                  <p className={`text-3xl font-extrabold ${paymentConfig.text}`}>{paymentConfig.label}</p>
+                  <p className="text-xs font-semibold text-gray-600">Payment Status</p>
+                  <p className={`text-xl font-extrabold ${paymentConfig.text}`}>{paymentConfig.label}</p>
                 </div>
               </div>
               {order?.paymentStatus !== 'paid' && (
                 <button
                   onClick={() => setShowPaymentForm(!showPaymentForm)}
-                  className="bg-white/80 hover:bg-white px-4 py-2 rounded-xl font-bold text-sm transition-all shadow-md hover:shadow-lg"
+                  className="bg-white/80 hover:bg-white px-3 py-1 rounded-lg font-bold text-xs transition-all shadow-md hover:shadow-lg text-blue-900"
                 >
                   Add Payment
                 </button>
@@ -310,19 +316,20 @@ export default function OrderDetailsPage() {
 
         {/* Status Change Form */}
         {showStatusForm && (
-          <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border-2 border-purple-200">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-gradient-to-br from-purple-500 to-pink-500 p-3 rounded-xl">
-                <Settings size={28} className="text-white" />
+          <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl p-6 border-2 border-blue-900">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="bg-gradient-to-br from-blue-900 to-orange-600 p-2 rounded-lg">
+                <Settings size={20} className="text-white" />
               </div>
-              <h2 className="text-lg font-bold text-gray-900">Update Order Status</h2>
+              <h2 className="text-base font-bold text-gray-900">Update Order Status</h2>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {[
-                { status: 'pending', icon: Clock, label: 'Pending', gradient: 'from-yellow-500 to-amber-500' },
-                { status: 'in_progress', icon: Settings, label: 'In Progress', gradient: 'from-orange-500 to-amber-500' },
-                { status: 'completed', icon: CheckCircle, label: 'Completed', gradient: 'from-green-500 to-emerald-500' },
-                { status: 'delivered', icon: PartyPopper, label: 'Delivered', gradient: 'from-blue-500 to-cyan-500' },
+                { status: 'measurement_taken', icon: Ruler, label: 'Measurement Taken', gradient: 'from-blue-500 to-blue-600' },
+                { status: 'fabric_received', icon: Shirt, label: 'Fabric Received', gradient: 'from-purple-500 to-purple-600' },
+                { status: 'sewing', icon: Settings, label: 'Sewing', gradient: 'from-orange-500 to-orange-600' },
+                { status: 'ready_for_pickup', icon: CheckCircle, label: 'Ready for Pickup', gradient: 'from-green-500 to-green-600' },
+                { status: 'delivered', icon: PartyPopper, label: 'Delivered', gradient: 'from-blue-900 to-blue-700' },
               ].map((item) => {
                 const Icon = item.icon;
                 return (
@@ -332,10 +339,10 @@ export default function OrderDetailsPage() {
                   disabled={order?.status === item.status}
                   className={`bg-gradient-to-br ${item.gradient} ${
                     order?.status === item.status ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'
-                  } text-white rounded-2xl p-6 transition-all duration-300 shadow-lg hover:shadow-xl transform`}
+                  } text-white rounded-lg p-4 transition-all duration-300 shadow-lg hover:shadow-xl transform`}
                 >
-                  <Icon size={32} className="mx-auto mb-2 text-white" />
-                  <span className="text-sm font-bold">{item.label}</span>
+                  <Icon size={24} className="mx-auto mb-1 text-white" />
+                  <span className="text-xs font-bold">{item.label}</span>
                 </button>
               )})}
             </div>
@@ -344,43 +351,43 @@ export default function OrderDetailsPage() {
 
         {/* Payment Form */}
         {showPaymentForm && (
-          <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border-2 border-purple-200">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-gradient-to-br from-purple-500 to-pink-500 p-3 rounded-xl">
-                <CreditCard size={28} className="text-white" />
+          <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl p-6 border-2 border-blue-900">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="bg-gradient-to-br from-blue-900 to-orange-600 p-2 rounded-lg">
+                <CreditCard size={20} className="text-white" />
               </div>
-              <h2 className="text-lg font-bold text-gray-900">Record Payment</h2>
+              <h2 className="text-base font-bold text-gray-900">Record Payment</h2>
             </div>
 
-            <form onSubmit={handleAddPayment} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <form onSubmit={handleAddPayment} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <Banknote size={20} /> Amount (₦)
+                  <label className="block text-xs font-bold text-gray-700 mb-1 flex items-center gap-2">
+                    <Banknote size={16} /> Amount (₦)
                   </label>
                   <input
                     type="number"
                     step="100"
                     value={paymentData.amount}
                     onChange={(e) => setPaymentData({ ...paymentData, amount: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all bg-white"
+                    className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-900 focus:ring-4 focus:ring-blue-100 outline-none transition-all bg-white text-sm"
                     placeholder="Enter amount"
                   />
                   {order?.amountRemaining > 0 && (
-                    <p className="text-sm text-gray-600 mt-2">
+                    <p className="text-xs text-gray-600 mt-1">
                       Remaining: ₦{order.amountRemaining.toLocaleString()}
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <DollarSign size={20} /> Payment Method
+                  <label className="block text-xs font-bold text-gray-700 mb-1 flex items-center gap-2">
+                    <DollarSign size={16} /> Payment Method
                   </label>
                   <select
                     value={paymentData.method}
                     onChange={(e) => setPaymentData({ ...paymentData, method: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all bg-white"
+                    className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-900 focus:ring-4 focus:ring-blue-100 outline-none transition-all bg-white text-sm"
                   >
                     <option value="cash">Cash</option>
                     <option value="transfer">Bank Transfer</option>
@@ -390,31 +397,31 @@ export default function OrderDetailsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                  <MessageSquare size={20} /> Note (Optional)
+                <label className="block text-xs font-bold text-gray-700 mb-1 flex items-center gap-2">
+                  <MessageSquare size={16} /> Note (Optional)
                 </label>
                 <textarea
                   value={paymentData.note}
                   onChange={(e) => setPaymentData({ ...paymentData, note: e.target.value })}
                   rows="2"
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all resize-none bg-white"
+                  className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-900 focus:ring-4 focus:ring-blue-100 outline-none transition-all resize-none bg-white text-sm"
                   placeholder="Add a note..."
                 />
               </div>
 
-              <div className="flex gap-4">
+              <div className="flex gap-3">
                 <button
                   type="submit"
-                  className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-4 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                  className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-blue-900 to-orange-600 hover:from-blue-950 hover:to-orange-700 text-white px-4 py-2 rounded-lg font-bold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 text-sm"
                 >
-                  <Save size={20} /> Save Payment
+                  <Save size={16} /> Save Payment
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowPaymentForm(false)}
-                  className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-gray-200 to-gray-300 hover:from-gray-300 hover:to-gray-400 text-gray-700 px-6 py-4 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl"
+                  className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-gray-200 to-gray-300 hover:from-gray-300 hover:to-gray-400 text-gray-700 px-4 py-2 rounded-lg font-bold transition-all duration-300 shadow-lg hover:shadow-xl text-sm"
                 >
-                  <X size={20} /> Cancel
+                  <X size={16} /> Cancel
                 </button>
               </div>
             </form>
@@ -426,42 +433,42 @@ export default function OrderDetailsPage() {
           {/* Left Column - Order Details */}
           <div className="lg:col-span-2 space-y-6">
             {/* Client Information */}
-            <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border-2 border-blue-200">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="bg-gradient-to-br from-blue-500 to-cyan-500 p-3 rounded-xl">
-                  <User size={28} className="text-white" />
+            <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl p-6 border-2 border-blue-900">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="bg-gradient-to-br from-blue-900 to-blue-700 p-2 rounded-lg">
+                  <User size={20} className="text-white" />
                 </div>
-                <h2 className="text-lg font-bold text-gray-900">Client Information</h2>
+                <h2 className="text-base font-bold text-gray-900">Client Information</h2>
               </div>
 
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl border-2 border-blue-200">
-                  <div className="flex items-center gap-3">
-                    <User size={24} className="text-blue-700" />
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border-2 border-blue-200">
+                  <div className="flex items-center gap-2">
+                    <User size={18} className="text-blue-900" />
                     <div>
-                      <p className="text-sm font-semibold text-gray-600">Name</p>
-                      <p className="text-lg font-bold text-gray-900">{order?.clientId?.name || 'N/A'}</p>
+                      <p className="text-xs font-semibold text-gray-600">Name</p>
+                      <p className="text-sm font-bold text-gray-900">{order?.clientId?.name || 'N/A'}</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl border-2 border-purple-200">
-                  <div className="flex items-center gap-3">
-                    <Phone size={24} className="text-purple-700" />
+                <div className="flex items-center justify-between p-3 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg border-2 border-orange-200">
+                  <div className="flex items-center gap-2">
+                    <Phone size={18} className="text-orange-700" />
                     <div>
-                      <p className="text-sm font-semibold text-gray-600">Phone</p>
-                      <p className="text-lg font-bold text-gray-900">{order?.clientId?.phone || 'N/A'}</p>
+                      <p className="text-xs font-semibold text-gray-600">Phone</p>
+                      <p className="text-sm font-bold text-gray-900">{order?.clientId?.phone || 'N/A'}</p>
                     </div>
                   </div>
                 </div>
 
                 {order?.clientId?.email && (
-                  <div className="flex items-center justify-between p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border-2 border-green-200">
-                    <div className="flex items-center gap-3">
-                      <Mail size={24} className="text-green-700" />
+                  <div className="flex items-center justify-between p-3 bg-gradient-to-br from-green-50 to-emerald-100 rounded-lg border-2 border-green-200">
+                    <div className="flex items-center gap-2">
+                      <Mail size={18} className="text-green-700" />
                       <div>
-                        <p className="text-sm font-semibold text-gray-600">Email</p>
-                        <p className="text-lg font-bold text-gray-900">{order.clientId.email}</p>
+                        <p className="text-xs font-semibold text-gray-600">Email</p>
+                        <p className="text-sm font-bold text-gray-900">{order.clientId.email}</p>
                       </div>
                     </div>
                   </div>
@@ -470,34 +477,34 @@ export default function OrderDetailsPage() {
             </div>
 
             {/* Order Details */}
-            <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border-2 border-purple-200">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="bg-gradient-to-br from-purple-500 to-pink-500 p-3 rounded-xl">
-                  <ClipboardList size={28} className="text-white" />
+            <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl p-6 border-2 border-blue-900">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="bg-gradient-to-br from-blue-900 to-orange-600 p-2 rounded-lg">
+                  <ClipboardList size={20} className="text-white" />
                 </div>
-                <h2 className="text-lg font-bold text-gray-900">Order Details</h2>
+                <h2 className="text-base font-bold text-gray-900">Order Details</h2>
               </div>
 
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl border-2 border-purple-200">
-                  <div className="flex items-center gap-3">
-                    <Shirt size={24} className="text-purple-700" />
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border-2 border-blue-200">
+                  <div className="flex items-center gap-2">
+                    <Shirt size={18} className="text-blue-900" />
                     <div>
-                      <p className="text-sm font-semibold text-gray-600">Attire Type</p>
-                      <p className="text-lg font-bold text-gray-900">{order?.attireType || 'N/A'}</p>
+                      <p className="text-xs font-semibold text-gray-600">Attire Type</p>
+                      <p className="text-sm font-bold text-gray-900">{order?.attireType || 'N/A'}</p>
                     </div>
                   </div>
                 </div>
 
                 {order?.expectedDeliveryDate && (
-                  <div className="flex items-center justify-between p-4 bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl border-2 border-orange-200">
-                    <div className="flex items-center gap-3">
-                      <Calendar size={24} className="text-orange-700" />
+                  <div className="flex items-center justify-between p-3 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg border-2 border-orange-200">
+                    <div className="flex items-center gap-2">
+                      <Calendar size={18} className="text-orange-700" />
                       <div>
-                        <p className="text-sm font-semibold text-gray-600">Expected Delivery</p>
-                        <p className="text-lg font-bold text-gray-900">
+                        <p className="text-xs font-semibold text-gray-600">Expected Delivery</p>
+                        <p className="text-sm font-bold text-gray-900">
                           {new Date(order.expectedDeliveryDate).toLocaleDateString('en-US', { 
-                            month: 'long', 
+                            month: 'short', 
                             day: 'numeric', 
                             year: 'numeric' 
                           })}
@@ -508,45 +515,88 @@ export default function OrderDetailsPage() {
                 )}
 
                 {order?.notes && (
-                  <div className="p-4 bg-gradient-to-br from-amber-50 to-yellow-50 rounded-2xl border-2 border-amber-200">
-                    <div className="flex items-start gap-3">
-                      <MessageSquare size={24} className="text-amber-700" />
+                  <div className="p-3 bg-gradient-to-br from-amber-50 to-yellow-100 rounded-lg border-2 border-amber-200">
+                    <div className="flex items-start gap-2">
+                      <MessageSquare size={18} className="text-amber-700" />
                       <div>
-                        <p className="text-sm font-semibold text-gray-600 mb-1">Notes</p>
-                        <p className="text-gray-700">{order.notes}</p>
+                        <p className="text-xs font-semibold text-gray-600 mb-1">Notes</p>
+                        <p className="text-xs text-gray-700">{order.notes}</p>
                       </div>
                     </div>
                   </div>
                 )}
               </div>
             </div>
+
+            {/* Fabric Images Section */}
+            {order?.fabricImages && order.fabricImages.length > 0 && (
+              <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl p-6 border-2 border-orange-200">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="bg-gradient-to-br from-orange-500 to-amber-500 p-2 rounded-lg">
+                    <ImageIcon size={20} className="text-white" />
+                  </div>
+                  <h2 className="text-base font-bold text-gray-900">Fabric Images</h2>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                  {order.fabricImages.map((imageUrl, idx) => (
+                    <div
+                      key={idx}
+                      className="relative group cursor-pointer overflow-hidden rounded-lg border-2 border-orange-200 hover:border-orange-500 transition-all duration-300 shadow-lg hover:shadow-xl"
+                      onClick={() => setSelectedImage(getImageUrl(imageUrl))}
+                    >
+                      <img
+                        src={getImageUrl(imageUrl)}
+                        alt={`Fabric ${idx + 1}`}
+                        className="w-full h-32 object-cover group-hover:scale-110 transition-transform duration-300"
+                        onError={(e) => {
+                          console.error(`Failed to load image: ${imageUrl}`);
+                          e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23f0f0f0" width="100" height="100"/%3E%3Ctext x="50" y="50" text-anchor="middle" dy=".3em" fill="%23999" font-size="14"%3EImage not found%3C/text%3E%3C/svg%3E';
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
+                        <ZoomIn size={24} className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {order.fabricImages.length > 0 && (
+                  <div className="mt-4 p-3 bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg border-2 border-orange-200">
+                    <p className="text-xs text-gray-700">
+                      <span className="font-bold text-orange-700">{order.fabricImages.length}</span> fabric image{order.fabricImages.length !== 1 ? 's' : ''} uploaded. Click any image to view in full size.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Right Column - Financial Summary */}
           <div className="space-y-6">
             {/* Price Summary */}
-            <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border-2 border-green-200">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="bg-gradient-to-br from-green-500 to-emerald-500 p-3 rounded-xl">
-                  <DollarSign size={28} className="text-white" />
+            <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl p-6 border-2 border-blue-900">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="bg-gradient-to-br from-blue-900 to-orange-600 p-2 rounded-lg">
+                  <DollarSign size={20} className="text-white" />
                 </div>
-                <h2 className="text-lg font-bold text-gray-900">Financial Summary</h2>
+                <h2 className="text-base font-bold text-gray-900">Financial Summary</h2>
               </div>
 
-              <div className="space-y-4">
-                <div className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl border-2 border-blue-200">
-                  <p className="text-sm font-semibold text-gray-600 mb-1">Total Price</p>
-                  <p className="text-3xl font-extrabold text-blue-700">₦{order?.price?.toLocaleString()}</p>
+              <div className="space-y-3">
+                <div className="p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border-2 border-blue-200">
+                  <p className="text-xs font-semibold text-gray-600 mb-1">Total Price</p>
+                  <p className="text-2xl font-extrabold text-blue-900">₦{order?.price?.toLocaleString()}</p>
                 </div>
 
-                <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border-2 border-green-200">
-                  <p className="text-sm font-semibold text-gray-600 mb-1">Amount Paid</p>
-                  <p className="text-3xl font-extrabold text-green-700">₦{order?.amountPaid?.toLocaleString() || 0}</p>
+                <div className="p-3 bg-gradient-to-br from-green-50 to-emerald-100 rounded-lg border-2 border-green-200">
+                  <p className="text-xs font-semibold text-gray-600 mb-1">Amount Paid</p>
+                  <p className="text-2xl font-extrabold text-green-700">₦{order?.amountPaid?.toLocaleString() || 0}</p>
                 </div>
 
-                <div className="p-4 bg-gradient-to-br from-red-50 to-pink-50 rounded-2xl border-2 border-red-200">
-                  <p className="text-sm font-semibold text-gray-600 mb-1">Amount Remaining</p>
-                  <p className="text-3xl font-extrabold text-red-700">₦{order?.amountRemaining?.toLocaleString() || 0}</p>
+                <div className="p-3 bg-gradient-to-br from-red-50 to-red-100 rounded-lg border-2 border-red-200">
+                  <p className="text-xs font-semibold text-gray-600 mb-1">Amount Remaining</p>
+                  <p className="text-2xl font-extrabold text-red-700">₦{order?.amountRemaining?.toLocaleString() || 0}</p>
                 </div>
               </div>
             </div>
@@ -554,33 +604,33 @@ export default function OrderDetailsPage() {
 
             {/* Payment History */}
             {order?.payments && order.payments.length > 0 && (
-              <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border-2 border-purple-200">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="bg-gradient-to-br from-purple-500 to-pink-500 p-3 rounded-xl">
-                    <FileText size={28} className="text-white" />
+              <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl p-6 border-2 border-blue-900">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="bg-gradient-to-br from-blue-900 to-orange-600 p-2 rounded-lg">
+                    <FileText size={20} className="text-white" />
                   </div>
-                  <h2 className="text-lg font-bold text-gray-900">Payment History</h2>
+                  <h2 className="text-base font-bold text-gray-900">Payment History</h2>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {order.payments.map((payment, idx) => (
                     <div 
                       key={idx}
-                      className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl border-2 border-purple-200"
+                      className="p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border-2 border-blue-200"
                     >
-                      <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center justify-between mb-1">
                         {payment.method === 'cash' ? (
-                          <Banknote size={24} className="text-purple-700" />
+                          <Banknote size={18} className="text-blue-900" />
                         ) : payment.method === 'transfer' ? (
-                          <DollarSign size={24} className="text-purple-700" />
+                          <DollarSign size={18} className="text-blue-900" />
                         ) : (
-                          <CreditCard size={24} className="text-purple-700" />
+                          <CreditCard size={18} className="text-blue-900" />
                         )}
-                        <span className="text-lg font-bold text-purple-700">
+                        <span className="text-sm font-bold text-blue-900">
                           ₦{payment.amount?.toLocaleString()}
                         </span>
                       </div>
-                      <div className="text-xs text-gray-600 space-y-1">
+                      <div className="text-xs text-gray-600 space-y-0.5">
                         <p className="font-semibold capitalize">{payment.method}</p>
                         <p>{new Date(payment.date).toLocaleDateString('en-US', { 
                           month: 'short', 
@@ -599,29 +649,29 @@ export default function OrderDetailsPage() {
 
             {/* Measurements Reference */}
             {order?.measurementId && (
-              <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border-2 border-blue-200">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="bg-gradient-to-br from-blue-500 to-cyan-500 p-3 rounded-xl">
-                    <Ruler size={28} className="text-white" />
+              <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl p-6 border-2 border-blue-900">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="bg-gradient-to-br from-blue-900 to-blue-700 p-2 rounded-lg">
+                    <Ruler size={20} className="text-white" />
                   </div>
-                  <h2 className="text-lg font-bold text-gray-900">Measurements</h2>
+                  <h2 className="text-base font-bold text-gray-900">Measurements</h2>
                 </div>
                 
                 {measurement ? (
-                  <div className="space-y-4">
-                    <div className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl border-2 border-blue-200">
-                      <p className="text-sm font-semibold text-gray-600 mb-1">Attire Type</p>
-                      <p className="text-lg font-bold text-blue-700">{measurement.attireName}</p>
+                  <div className="space-y-3">
+                    <div className="p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border-2 border-blue-200">
+                      <p className="text-xs font-semibold text-gray-600 mb-1">Attire Type</p>
+                      <p className="text-sm font-bold text-blue-900">{measurement.attireName}</p>
                     </div>
 
-                    <div className="space-y-2">
-                      <p className="text-sm font-bold text-gray-700 uppercase tracking-wide flex items-center gap-2">
-                        <Ruler size={20} /> Measurements
+                    <div className="space-y-1">
+                      <p className="text-xs font-bold text-gray-700 uppercase tracking-wide flex items-center gap-2">
+                        <Ruler size={16} /> Measurements
                       </p>
                       {Object.entries(measurement.measurements || {}).map(([key, val]) => (
-                        <div key={key} className="flex items-center justify-between bg-white/80 backdrop-blur-sm p-3 rounded-xl border border-blue-200">
-                          <span className="text-sm font-semibold text-gray-700 capitalize">{key}</span>
-                          <span className="text-sm font-bold text-blue-600 bg-blue-100 px-4 py-1 rounded-lg">
+                        <div key={key} className="flex items-center justify-between bg-white/80 backdrop-blur-sm p-2 rounded-lg border border-blue-200">
+                          <span className="text-xs font-semibold text-gray-700 capitalize">{key}</span>
+                          <span className="text-xs font-bold text-blue-900 bg-blue-100 px-2 py-0.5 rounded">
                             {val.value} {val.unit}
                           </span>
                         </div>
@@ -629,11 +679,11 @@ export default function OrderDetailsPage() {
                     </div>
 
                     {measurement.notes && (
-                      <div className="p-4 bg-gradient-to-br from-amber-50 to-yellow-50 rounded-2xl border-2 border-amber-200">
+                      <div className="p-3 bg-gradient-to-br from-amber-50 to-yellow-100 rounded-lg border-2 border-amber-200">
                         <div className="flex items-start gap-2">
-                          <MessageSquare size={20} className="text-amber-700" />
+                          <MessageSquare size={16} className="text-amber-700" />
                           <div>
-                            <p className="text-xs font-semibold text-gray-600 mb-1">Measurement Notes</p>
+                            <p className="text-xs font-semibold text-gray-600 mb-0.5">Measurement Notes</p>
                             <p className="text-xs text-gray-700">{measurement.notes}</p>
                           </div>
                         </div>
@@ -642,20 +692,20 @@ export default function OrderDetailsPage() {
 
                     <button
                       onClick={() => navigate(`/measurements/client/${order.clientId._id}`)}
-                      className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-4 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                      className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-900 to-blue-700 hover:from-blue-950 hover:to-blue-800 text-white px-3 py-2 rounded-lg font-bold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 text-sm"
                     >
-                      <Eye size={20} /> View All Measurements
+                      <Eye size={16} /> View All Measurements
                     </button>
                   </div>
                 ) : (
-                  <div className="text-center py-6">
-                    <Ruler size={40} className="mx-auto mb-3 text-gray-400" />
-                    <p className="text-sm text-gray-600 mb-4">Loading measurements...</p>
+                  <div className="text-center py-4">
+                    <Ruler size={32} className="mx-auto mb-2 text-gray-400" />
+                    <p className="text-xs text-gray-600 mb-3">Loading measurements...</p>
                     <button
                       onClick={() => navigate(`/measurements/client/${order.clientId._id}`)}
-                      className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-4 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                      className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-900 to-blue-700 hover:from-blue-950 hover:to-blue-800 text-white px-3 py-2 rounded-lg font-bold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 text-sm"
                     >
-                      <Eye size={20} /> View All Measurements
+                      <Eye size={16} /> View All Measurements
                     </button>
                   </div>
                 )}
@@ -668,37 +718,37 @@ export default function OrderDetailsPage() {
       {/* Notification Confirmation Dialog */}
       {showNotificationDialog && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl p-8 max-w-lg w-full border-2 border-purple-300">
+          <div className="bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl p-8 max-w-lg w-full border-2 border-blue-900">
             <div className="flex items-center gap-3 mb-6">
               <div className="bg-gradient-to-br from-green-500 to-emerald-500 p-3 rounded-xl">
                 <PartyPopper size={32} className="text-white" />
               </div>
               <h3 className="text-lg font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                Order {pendingStatus === 'completed' ? 'Completed' : 'Delivered'}!
+                Order {pendingStatus === 'ready_for_pickup' ? 'Ready for Pickup' : 'Delivered'}!
               </h3>
             </div>
 
             <div className="space-y-4 mb-6">
-              <div className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl border-2 border-blue-200">
+              <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl border-2 border-blue-200">
                 <div className="flex items-start gap-3">
-                  <Phone size={24} className="text-blue-700" />
+                  <Phone size={24} className="text-blue-900" />
                   <div>
                     <p className="text-sm font-bold text-gray-900 mb-1">Send Client Notification?</p>
                     <p className="text-xs text-gray-600">
                       We'll send an SMS/WhatsApp message to <span className="font-bold">{order?.clientId?.name}</span> at{' '}
-                      <span className="font-bold">{order?.clientId?.phone}</span> letting them know their order is ready.
+                      <span className="font-bold">{order?.clientId?.phone}</span> letting them know their order is {pendingStatus === 'ready_for_pickup' ? 'ready for pickup' : 'delivered'}.
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border-2 border-green-200">
+              <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-100 rounded-2xl border-2 border-green-200">
                 <div className="flex items-start gap-3">
                   <MessageSquare size={24} className="text-green-700" />
                   <div>
                     <p className="text-sm font-bold text-gray-900 mb-2">Message Preview:</p>
                     <p className="text-xs text-gray-700 italic bg-white/80 p-3 rounded-lg border border-green-300">
-                      "Hello {order?.clientId?.name}, great news! Your {order?.attireType} order (#{order?.orderNumber}) is {pendingStatus === 'completed' ? 'completed and ready for pickup' : 'delivered'}. Thank you for your business! 🎉"
+                      "Hello {order?.clientId?.name}, great news! Your {order?.attireType} order (#{order?.orderNumber}) is {pendingStatus === 'ready_for_pickup' ? 'ready for pickup' : 'delivered'}. Thank you for your business! 🎉"
                     </p>
                   </div>
                 </div>
@@ -729,6 +779,39 @@ export default function OrderDetailsPage() {
             >
               <X size={20} /> Cancel
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Image Preview Modal */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div 
+            className="relative max-w-4xl w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={selectedImage}
+              alt="Fabric preview"
+              className="w-full h-auto rounded-2xl shadow-2xl"
+            />
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute top-4 right-4 bg-white/90 hover:bg-white text-gray-900 p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
+            >
+              <X size={28} />
+            </button>
+            <a
+              href={selectedImage}
+              download
+              className="absolute bottom-4 right-4 bg-white/90 hover:bg-white text-gray-900 p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
+              title="Download image"
+            >
+              <Download size={28} />
+            </a>
           </div>
         </div>
       )}

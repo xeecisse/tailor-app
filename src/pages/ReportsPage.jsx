@@ -71,9 +71,9 @@ export default function ReportsPage() {
 
   if (loading && !report) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-brand-navy-50 via-brand-orange-50 to-brand-navy-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-purple-200 border-t-purple-600 mb-4"></div>
+          <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-brand-navy-200 border-t-brand-navy mb-4"></div>
           <p className="text-gray-700 font-bold text-lg">Loading reports...</p>
         </div>
       </div>
@@ -86,14 +86,14 @@ export default function ReportsPage() {
       {
         label: 'Revenue',
         data: report?.monthlyRevenue?.map((m) => m.revenue) || [],
-        borderColor: '#667eea',
-        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+        borderColor: '#1e3a5f',
+        backgroundColor: 'rgba(30, 58, 95, 0.1)',
         borderWidth: 3,
         tension: 0.4,
         fill: true,
         pointRadius: 6,
         pointHoverRadius: 8,
-        pointBackgroundColor: '#667eea',
+        pointBackgroundColor: '#ff8c42',
         pointBorderColor: '#fff',
         pointBorderWidth: 2,
       },
@@ -190,11 +190,18 @@ export default function ReportsPage() {
   const totalPipeline = pipelineData.reduce((sum, item) => sum + item.value, 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-brand-navy-50 via-brand-orange-50 to-brand-navy-50">
+      {/* Enhanced Decorative Background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-brand-navy to-brand-orange rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+        <div className="absolute top-40 left-0 w-[500px] h-[500px] bg-gradient-to-br from-brand-orange to-brand-navy rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute bottom-0 right-1/3 w-[550px] h-[550px] bg-gradient-to-br from-brand-navy to-brand-orange rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent mb-2">
+          <h1 className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-brand-navy via-brand-orange to-brand-orange-dark bg-clip-text text-transparent mb-2">
             Revenue Reports
           </h1>
           <p className="text-gray-600 text-base md:text-lg font-medium">
@@ -208,8 +215,8 @@ export default function ReportsPage() {
             onClick={() => setActiveTab('orders')}
             className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${
               activeTab === 'orders'
-                ? 'bg-white text-purple-600 shadow-lg'
-                : 'bg-white/20 text-white backdrop-blur-sm hover:bg-white/30'
+                ? 'bg-gradient-to-br from-brand-navy to-brand-orange text-white shadow-lg hover:shadow-xl transform hover:scale-105'
+                : 'bg-white/80 backdrop-blur-lg text-gray-700 border-2 border-gray-100 hover:border-brand-orange/50'
             }`}
           >
             <Package size={20} /> Orders
@@ -218,8 +225,8 @@ export default function ReportsPage() {
             onClick={() => setActiveTab('pos')}
             className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${
               activeTab === 'pos'
-                ? 'bg-white text-purple-600 shadow-lg'
-                : 'bg-white/20 text-white backdrop-blur-sm hover:bg-white/30'
+                ? 'bg-gradient-to-br from-brand-navy to-brand-orange text-white shadow-lg hover:shadow-xl transform hover:scale-105'
+                : 'bg-white/80 backdrop-blur-lg text-gray-700 border-2 border-gray-100 hover:border-brand-orange/50'
             }`}
           >
             <ShoppingCart size={20} /> POS Sales
@@ -231,7 +238,7 @@ export default function ReportsPage() {
           <select
             value={period}
             onChange={(e) => setPeriod(e.target.value)}
-            className="px-6 py-3 bg-white rounded-xl border-0 font-semibold text-gray-700 shadow-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="px-6 py-3 bg-white/80 backdrop-blur-lg rounded-xl border-2 border-gray-100 font-semibold text-gray-700 shadow-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-brand-navy transition-all"
           >
             <option value="thisMonth">This Month</option>
             <option value="lastMonth">Last Month</option>
@@ -242,7 +249,7 @@ export default function ReportsPage() {
         </div>
 
         {error && (
-          <div className="mb-8 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg text-red-700">
+          <div className="mb-8 p-6 bg-gradient-to-r from-red-50 to-pink-50 border-2 border-red-300 rounded-2xl text-red-700 font-semibold shadow-lg">
             {error}
           </div>
         )}
@@ -280,7 +287,7 @@ export default function ReportsPage() {
                 value={formatCurrency(report?.metrics?.avgOrderValue || 0)}
                 subtitle={`${report?.metrics?.uniqueClients || 0} clients`}
                 icon={<BarChart3 size={24} />}
-                color="purple"
+                color="navy"
               />
             </>
           ) : (
@@ -312,7 +319,7 @@ export default function ReportsPage() {
                 value={formatCurrency(report?.metrics?.avgOrderValue || 0)}
                 subtitle="Per transaction"
                 icon={<DollarSign size={24} />}
-                color="purple"
+                color="navy"
               />
             </>
           )}
@@ -321,9 +328,9 @@ export default function ReportsPage() {
         {/* Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           {/* Revenue Trend */}
-          <div className="lg:col-span-2 bg-white rounded-2xl p-6 shadow-md border border-gray-200">
+          <div className="lg:col-span-2 bg-white/80 backdrop-blur-lg rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-lg border-2 border-gray-100 hover:border-brand-orange/50 transition-all">
             <div className="mb-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-1">Revenue Trend</h3>
+              <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1">Revenue Trend</h3>
               <p className="text-sm text-gray-600">Monthly revenue performance</p>
             </div>
             <div className="h-[300px]">
@@ -332,9 +339,9 @@ export default function ReportsPage() {
           </div>
 
           {/* Payment Status */}
-          <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
+          <div className="bg-white/80 backdrop-blur-lg rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-lg border-2 border-gray-100 hover:border-brand-orange/50 transition-all">
             <div className="mb-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-1">Payment Status</h3>
+              <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1">Payment Status</h3>
               <p className="text-sm text-gray-600">Payment collection overview</p>
             </div>
             <div className="relative w-48 h-48 mx-auto mb-6">
@@ -367,9 +374,9 @@ export default function ReportsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Pipeline or Payment Methods */}
           {activeTab === 'orders' ? (
-            <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
+            <div className="bg-white/80 backdrop-blur-lg rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-lg border-2 border-gray-100 hover:border-brand-orange/50 transition-all">
               <div className="mb-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-1">Order Pipeline</h3>
+                <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1">Order Pipeline</h3>
                 <p className="text-sm text-gray-600">Orders by processing stage</p>
               </div>
               <div className="space-y-6">
@@ -379,13 +386,13 @@ export default function ReportsPage() {
                     <div key={idx}>
                       <div className="flex justify-between mb-2">
                         <span className="font-semibold text-gray-900">{item.label}</span>
-                        <span className="font-bold text-purple-600">
+                        <span className="font-bold text-brand-navy">
                           {item.value} ({percentage.toFixed(0)}%)
                         </span>
                       </div>
                       <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-purple-600 to-pink-600 rounded-full transition-all duration-1000"
+                          className="h-full bg-gradient-to-r from-brand-navy to-brand-orange rounded-full transition-all duration-1000"
                           style={{ width: `${percentage}%` }}
                         />
                       </div>
@@ -395,9 +402,9 @@ export default function ReportsPage() {
               </div>
             </div>
           ) : (
-            <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
+            <div className="bg-white/80 backdrop-blur-lg rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-lg border-2 border-gray-100 hover:border-brand-orange/50 transition-all">
               <div className="mb-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-1">Payment Methods</h3>
+                <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1">Payment Methods</h3>
                 <p className="text-sm text-gray-600">Breakdown by payment type</p>
               </div>
               {report?.paymentMethods && report.paymentMethods.length > 0 ? (
@@ -406,13 +413,13 @@ export default function ReportsPage() {
                     const totalAmount = report.paymentMethods.reduce((sum, m) => sum + m.amount, 0);
                     const percentage = totalAmount > 0 ? (method.amount / totalAmount) * 100 : 0;
                     return (
-                      <div key={idx} className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border border-purple-200">
+                      <div key={idx} className="p-4 bg-gradient-to-br from-brand-navy-50 to-brand-orange-50 rounded-xl border-2 border-brand-navy-200 hover:border-brand-orange/50 transition-all">
                         <div className="flex justify-between items-center mb-2">
                           <span className="font-bold text-gray-900 capitalize">{method.method}</span>
                           <span className="text-sm text-gray-600">{method.count} transactions</span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-2xl font-bold text-purple-600">
+                          <span className="text-2xl font-bold text-brand-navy">
                             {formatCurrency(method.amount)}
                           </span>
                           <span className="text-sm font-semibold text-gray-600">
@@ -433,9 +440,9 @@ export default function ReportsPage() {
           )}
 
           {/* Top Items */}
-          <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
+          <div className="bg-white/80 backdrop-blur-lg rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-lg border-2 border-gray-100 hover:border-brand-orange/50 transition-all">
             <div className="mb-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-1">
+              <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1">
                 {activeTab === 'orders' ? 'Top Selling Attires' : 'Best Selling Items'}
               </h3>
               <p className="text-sm text-gray-600">Best performing products</p>
@@ -445,10 +452,10 @@ export default function ReportsPage() {
                 {(activeTab === 'orders' ? report?.topAttires : report?.topItems)?.map((item, idx) => (
                   <div
                     key={idx}
-                    className="flex justify-between items-center p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl hover:from-purple-100 hover:to-pink-100 transition-all border border-purple-200"
+                    className="flex justify-between items-center p-4 bg-gradient-to-br from-brand-navy-50 to-brand-orange-50 rounded-xl hover:from-brand-navy-100 hover:to-brand-orange-100 transition-all border-2 border-brand-navy-200 hover:border-brand-orange/50"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center text-white font-bold">
+                      <div className="w-10 h-10 bg-gradient-to-br from-brand-navy to-brand-orange rounded-lg flex items-center justify-center text-white font-bold">
                         {idx + 1}
                       </div>
                       <div>
@@ -478,9 +485,9 @@ export default function ReportsPage() {
 function MetricCard({ title, value, subtitle, icon, color, trend, trendValue }) {
   const colorClasses = {
     orange: {
-      accent: 'from-orange-500 to-amber-500',
-      bg: 'bg-orange-50',
-      icon: 'bg-orange-100 text-orange-600',
+      accent: 'from-brand-orange to-brand-orange-dark',
+      bg: 'bg-brand-orange-50',
+      icon: 'bg-brand-orange-100 text-brand-orange',
     },
     green: {
       accent: 'from-green-500 to-emerald-500',
@@ -492,10 +499,10 @@ function MetricCard({ title, value, subtitle, icon, color, trend, trendValue }) 
       bg: 'bg-red-50',
       icon: 'bg-red-100 text-red-600',
     },
-    purple: {
-      accent: 'from-purple-500 to-pink-500',
-      bg: 'bg-purple-50',
-      icon: 'bg-purple-100 text-purple-600',
+    navy: {
+      accent: 'from-brand-navy to-brand-navy-dark',
+      bg: 'bg-brand-navy-50',
+      icon: 'bg-brand-navy-100 text-brand-navy',
     },
     blue: {
       accent: 'from-blue-500 to-cyan-500',
@@ -507,17 +514,17 @@ function MetricCard({ title, value, subtitle, icon, color, trend, trendValue }) 
   const colors = colorClasses[color];
 
   return (
-    <div className={`${colors.bg} rounded-2xl p-6 shadow-md border border-gray-200 hover:shadow-lg hover:-translate-y-1 transition-all relative overflow-hidden`}>
+    <div className={`${colors.bg} rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-lg border-2 border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all relative overflow-hidden hover:border-brand-orange/50`}>
       <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${colors.accent}`} />
       <div className="flex justify-between items-start mb-4">
-        <div className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
+        <div className="text-xs md:text-sm font-semibold text-gray-600 uppercase tracking-wide">
           {title}
         </div>
         <div className={`w-12 h-12 rounded-xl ${colors.icon} flex items-center justify-center`}>
           {icon}
         </div>
       </div>
-      <div className="text-3xl font-extrabold text-gray-900 mb-2">{value}</div>
+      <div className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-2">{value}</div>
       <div className="flex items-center gap-2 text-sm text-gray-600">
         <span>{subtitle}</span>
         {trend && (

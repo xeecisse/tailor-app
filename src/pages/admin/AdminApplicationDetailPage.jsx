@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, CheckCircle, XCircle, Clock } from 'lucide-react';
 import axios from 'axios';
-import AdminSidebar from '../components/AdminSidebar';
-import { API_URL } from '../lib/api';
+import AdminSidebar from '../../components/AdminSidebar';
+import { API_URL } from '../../lib/api';
 
 export default function AdminApplicationDetailPage() {
   const navigate = useNavigate();

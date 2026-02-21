@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Lock, AlertTriangle } from 'lucide-react';
 import axios from 'axios';
-import { API_URL } from '../lib/api';
+import { API_URL } from '../../lib/api';
 
 export default function AdminLoginPage() {
   const navigate = useNavigate();

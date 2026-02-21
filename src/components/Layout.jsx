@@ -17,12 +17,13 @@ import {
   Settings,
   UserCog,
   BarChart3,
-  MessageSquare
+  MessageSquare,
+  ChevronDown
 } from 'lucide-react';
 import authStore from '../stores/authStore';
 
 export default function Layout() {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const { logout, user, role } = authStore();
 
@@ -57,38 +58,51 @@ export default function Layout() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex flex-col lg:flex-row h-screen bg-gray-50">
+      {/* Mobile Header */}
+      <header className="lg:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-0 z-40">
+        <div className="flex items-center gap-2">
+          <img src="/logo.png" alt="SewTrack" className="w-8 h-8 object-contain" />
+          <span className="font-bold text-brand-navy">SewTrack</span>
+        </div>
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="text-gray-600 hover:text-gray-900 p-1"
+        >
+          {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </header>
+
       {/* Sidebar */}
       <aside
         className={`${
-          sidebarOpen ? 'w-64' : 'w-20'
-        } bg-brand-navy-dark text-white transition-all duration-300 flex flex-col`}
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        } lg:translate-x-0 fixed lg:relative w-64 h-screen lg:h-auto bg-brand-navy-dark text-white transition-transform duration-300 flex flex-col z-30 lg:z-auto`}
       >
-        {/* Logo/Brand */}
-        <div className="p-6 border-b border-brand-navy">
-          <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="SewTrack" className="w-10 h-10 object-contain" />
-            {sidebarOpen && <h1 className="font-bold text-lg text-brand-orange">SewTrack</h1>}
-          </div>
+        {/* Logo - Desktop Only */}
+        <div className="hidden lg:flex p-6 border-b border-brand-navy items-center gap-3">
+          <img src="/logo.png" alt="SewTrack" className="w-10 h-10 object-contain" />
+          <h1 className="font-bold text-lg text-brand-orange">SewTrack</h1>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4">
-          <ul className="space-y-2">
+        <nav className="flex-1 p-4 overflow-y-auto">
+          <ul className="space-y-1">
             {menuItems.map((item) => {
               const Icon = item.icon;
               return (
                 <li key={item.path}>
                   <Link
                     to={item.path}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                    onClick={() => setSidebarOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-sm ${
                       isActive(item.path)
                         ? 'bg-brand-orange text-white'
                         : 'text-gray-300 hover:bg-brand-navy'
                     }`}
                   >
                     <Icon size={20} />
-                    {sidebarOpen && <span>{item.label}</span>}
+                    <span>{item.label}</span>
                   </Link>
                 </li>
               );
@@ -100,38 +114,42 @@ export default function Layout() {
         <div className="p-4 border-t border-brand-navy space-y-2">
           <Link
             to="/profile"
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+            onClick={() => setSidebarOpen(false)}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-sm ${
               isActive('/profile')
                 ? 'bg-brand-orange text-white'
                 : 'text-gray-300 hover:bg-brand-navy'
             }`}
           >
             <Settings size={20} />
-            {sidebarOpen && <span>Settings</span>}
+            <span>Settings</span>
           </Link>
 
           <button
-            onClick={logout}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-brand-navy transition-all text-left"
+            onClick={() => {
+              logout();
+              setSidebarOpen(false);
+            }}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-brand-navy transition-all text-left text-sm"
           >
             <LogOut size={20} />
-            {sidebarOpen && <span>Logout</span>}
+            <span>Logout</span>
           </button>
         </div>
-
-        {/* Toggle Button */}
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="p-4 text-gray-400 hover:text-white"
-        >
-          {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
       </aside>
+
+      {/* Overlay for mobile */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 lg:hidden z-20"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Bar */}
-        <header className="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between">
+        {/* Desktop Header */}
+        <header className="hidden lg:flex bg-white border-b border-gray-200 px-8 py-4 items-center justify-between">
           <h2 className="text-xl font-semibold text-gray-800">
             {location.pathname.startsWith('/staff/') && location.pathname !== '/staff' 
               ? 'Staff Details'
@@ -140,16 +158,18 @@ export default function Layout() {
               : menuItems.find((item) => item.path === location.pathname)?.label || 'Dashboard'}
           </h2>
           {user && (
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-gray-600 text-right">
               <p className="font-medium">{role === 'customer' ? user.name : user.businessName}</p>
-              <p className="text-xs">{user.email}</p>
+              <p className="text-xs text-gray-500">{user.email}</p>
             </div>
           )}
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-auto p-8">
-          <Outlet />
+        <main className="flex-1 overflow-auto">
+          <div className="w-full h-full">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

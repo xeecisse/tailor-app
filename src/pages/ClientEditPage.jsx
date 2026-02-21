@@ -42,7 +42,6 @@ export default function ClientEditPage() {
       city: '',
       state: 'Lagos',
     },
-    notes: '',
   });
 
   useEffect(() => {
@@ -67,7 +66,6 @@ export default function ClientEditPage() {
         gender: client.gender,
         email: client.email || '',
         address: client.address || { street: '', city: '', state: 'Lagos' },
-        notes: client.notes || '',
       });
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch client');
@@ -112,12 +110,12 @@ export default function ClientEditPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-brand-navy-50 via-brand-orange-50 to-brand-navy-50">
       {/* Enhanced Decorative Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-purple-300 to-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-        <div className="absolute top-40 left-0 w-[500px] h-[500px] bg-gradient-to-br from-blue-300 to-cyan-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
-        <div className="absolute bottom-0 right-1/3 w-[550px] h-[550px] bg-gradient-to-br from-orange-300 to-yellow-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-brand-navy to-brand-orange rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+        <div className="absolute top-40 left-0 w-[500px] h-[500px] bg-gradient-to-br from-brand-orange to-brand-navy rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute bottom-0 right-1/3 w-[550px] h-[550px] bg-gradient-to-br from-brand-navy to-brand-orange rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
       </div>
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -125,20 +123,20 @@ export default function ClientEditPage() {
         <div className="mb-8">
           <button
             onClick={() => navigate('/clients')}
-            className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-700 font-semibold mb-4 transition-all hover:gap-3"
+            className="inline-flex items-center gap-2 text-brand-navy hover:text-brand-navy-dark font-semibold mb-4 transition-all hover:gap-3 text-sm"
           >
-            <ArrowLeft size={20} /> Back to Clients
+            <ArrowLeft size={18} /> Back to Clients
           </button>
           
           <div className="flex items-center gap-3">
-            <div className="bg-gradient-to-br from-purple-500 to-pink-500 p-3 rounded-2xl shadow-lg">
-              {isEditMode ? <Edit size={32} className="text-white" /> : <Plus size={32} className="text-white" />}
+            <div className="bg-gradient-to-br from-brand-navy to-brand-orange p-2 rounded-xl shadow-lg">
+              {isEditMode ? <Edit size={24} className="text-white" /> : <Plus size={24} className="text-white" />}
             </div>
             <div>
-              <h1 className="text-5xl font-extrabold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
+              <h1 className="text-3xl font-extrabold bg-gradient-to-r from-brand-navy via-brand-orange to-brand-orange-dark bg-clip-text text-transparent">
                 {isEditMode ? 'Edit Client' : 'Add New Client'}
               </h1>
-              <p className="text-gray-600 mt-1 text-lg font-medium">
+              <p className="text-gray-600 mt-1 text-sm font-medium">
                 {isEditMode ? 'Update client information' : 'Create a new client profile'}
               </p>
             </div>
@@ -147,26 +145,26 @@ export default function ClientEditPage() {
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 p-5 bg-gradient-to-r from-red-50 to-pink-50 border-2 border-red-300 rounded-2xl text-red-700 flex items-center gap-4 shadow-lg">
-            <div className="bg-red-100 p-3 rounded-xl">
-              <AlertTriangle size={24} className="text-red-700" />
+          <div className="mb-6 p-4 bg-gradient-to-r from-red-50 to-pink-50 border-2 border-red-300 rounded-xl text-red-700 flex items-center gap-3 shadow-lg">
+            <div className="bg-red-100 p-2 rounded-lg">
+              <AlertTriangle size={20} className="text-red-700" />
             </div>
-            <span className="font-semibold text-lg">{error}</span>
+            <span className="font-semibold text-sm">{error}</span>
           </div>
         )}
 
         {/* Form */}
-        <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border-2 border-purple-200">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl p-6 border-2 border-brand-navy">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {/* Personal Information Section */}
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <User size={28} className="text-gray-700" /> Personal Information
+              <h2 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+                <User size={20} className="text-brand-navy" /> Personal Information
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <Edit size={20} /> Full Name *
+                  <label className="block text-xs font-bold text-gray-700 mb-2 flex items-center gap-2">
+                    <Edit size={16} /> Full Name *
                   </label>
                   <input
                     type="text"
@@ -174,18 +172,18 @@ export default function ClientEditPage() {
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="Enter client name"
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all bg-white"
+                    className="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-brand-navy focus:ring-4 focus:ring-brand-navy-100 outline-none transition-all bg-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <Users size={20} /> Gender *
+                  <label className="block text-xs font-bold text-gray-700 mb-2 flex items-center gap-2">
+                    <Users size={16} /> Gender *
                   </label>
                   <select
                     value={formData.gender}
                     onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all bg-white"
+                    className="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-brand-navy focus:ring-4 focus:ring-brand-navy-100 outline-none transition-all bg-white"
                   >
                     <option value="male">Male</option>
                     <option value="female">Female</option>
@@ -197,13 +195,13 @@ export default function ClientEditPage() {
 
             {/* Contact Information Section */}
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <Phone size={28} className="text-gray-700" /> Contact Information
+              <h2 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+                <Phone size={20} className="text-brand-orange" /> Contact Information
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <Phone size={20} /> Phone Number *
+                  <label className="block text-xs font-bold text-gray-700 mb-2 flex items-center gap-2">
+                    <Phone size={16} /> Phone Number *
                   </label>
                   <input
                     type="tel"
@@ -211,33 +209,33 @@ export default function ClientEditPage() {
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     placeholder="+234..."
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all bg-white"
+                    className="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-brand-navy focus:ring-4 focus:ring-brand-navy-100 outline-none transition-all bg-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <MessageCircle size={20} /> WhatsApp Number
+                  <label className="block text-xs font-bold text-gray-700 mb-2 flex items-center gap-2">
+                    <MessageCircle size={16} /> WhatsApp Number
                   </label>
                   <input
                     type="tel"
                     value={formData.whatsappNumber}
                     onChange={(e) => setFormData({ ...formData, whatsappNumber: e.target.value })}
                     placeholder="+234..."
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all bg-white"
+                    className="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-brand-navy focus:ring-4 focus:ring-brand-navy-100 outline-none transition-all bg-white"
                   />
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <Mail size={20} /> Email
+                  <label className="block text-xs font-bold text-gray-700 mb-2 flex items-center gap-2">
+                    <Mail size={16} /> Email
                   </label>
                   <input
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     placeholder="client@example.com"
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all bg-white"
+                    className="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-brand-navy focus:ring-4 focus:ring-brand-navy-100 outline-none transition-all bg-white"
                   />
                 </div>
               </div>
@@ -245,13 +243,13 @@ export default function ClientEditPage() {
 
             {/* Address Section */}
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <MapPin size={28} className="text-gray-700" /> Address
+              <h2 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+                <MapPin size={20} className="text-brand-navy" /> Address
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <Building2 size={20} /> City
+                  <label className="block text-xs font-bold text-gray-700 mb-2 flex items-center gap-2">
+                    <Building2 size={16} /> City
                   </label>
                   <input
                     type="text"
@@ -263,13 +261,13 @@ export default function ClientEditPage() {
                       })
                     }
                     placeholder="Lagos, Abuja, etc."
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all bg-white"
+                    className="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-brand-navy focus:ring-4 focus:ring-brand-navy-100 outline-none transition-all bg-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <Map size={20} /> State
+                  <label className="block text-xs font-bold text-gray-700 mb-2 flex items-center gap-2">
+                    <Map size={16} /> State
                   </label>
                   <input
                     type="text"
@@ -281,13 +279,13 @@ export default function ClientEditPage() {
                       })
                     }
                     placeholder="State"
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all bg-white"
+                    className="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-brand-navy focus:ring-4 focus:ring-brand-navy-100 outline-none transition-all bg-white"
                   />
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <Home size={20} /> Street Address
+                  <label className="block text-xs font-bold text-gray-700 mb-2 flex items-center gap-2">
+                    <Home size={16} /> Street Address
                   </label>
                   <input
                     type="text"
@@ -299,47 +297,28 @@ export default function ClientEditPage() {
                       })
                     }
                     placeholder="Street address"
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all bg-white"
+                    className="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-brand-navy focus:ring-4 focus:ring-brand-navy-100 outline-none transition-all bg-white"
                   />
                 </div>
               </div>
             </div>
 
-            {/* Notes Section */}
-            <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <FileText size={28} className="text-gray-700" /> Additional Notes
-              </h2>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                  <MessageSquare size={20} /> Notes
-                </label>
-                <textarea
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder="Add any special notes about this client..."
-                  rows="4"
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all resize-none bg-white"
-                />
-              </div>
-            </div>
-
             {/* Action Buttons */}
-            <div className="flex gap-4 pt-4">
+            <div className="flex gap-3 pt-3">
               <button
                 type="submit"
                 disabled={saving}
-                className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-4 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-brand-navy to-brand-orange hover:from-brand-navy-dark hover:to-brand-orange-dark text-white px-4 py-3 rounded-lg font-bold text-sm transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Save size={20} />
+                <Save size={16} />
                 {saving ? 'Saving...' : isEditMode ? 'Update Client' : 'Create Client'}
               </button>
               <button
                 type="button"
                 onClick={() => navigate('/clients')}
-                className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-gray-200 to-gray-300 hover:from-gray-300 hover:to-gray-400 text-gray-700 px-6 py-4 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl"
+                className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-gray-200 to-gray-300 hover:from-gray-300 hover:to-gray-400 text-gray-700 px-4 py-3 rounded-lg font-bold text-sm transition-all duration-300 shadow-lg hover:shadow-xl"
               >
-                <X size={20} /> Cancel
+                <X size={16} /> Cancel
               </button>
             </div>
           </form>

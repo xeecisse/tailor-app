@@ -31,11 +31,12 @@ export default function ClientMeasurementsPage() {
   const [message, setMessage] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [filteredAttires, setFilteredAttires] = useState([]);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [measurementToDelete, setMeasurementToDelete] = useState(null);
   const [formData, setFormData] = useState({
     clientId: clientId,
     attireTypeId: '',
     measurements: {},
-    notes: '',
   });
 
   useEffect(() => {
@@ -63,79 +64,166 @@ export default function ClientMeasurementsPage() {
         let filtered = [];
         const clientGender = clientRes.data.client.gender;
         
-        if (allAttires.length > 0) {
-          if (clientGender === 'female') {
-            filtered = allAttires.filter(
-              (a) => a.genders?.includes('female') || a.genders?.includes('unisex')
-            );
-            if (filtered.length === 0) {
-              filtered = allAttires;
-            }
-          } else if (clientGender === 'male') {
-            filtered = allAttires.filter(
-              (a) => a.genders?.includes('male') || a.genders?.includes('unisex')
-            );
-            if (filtered.length === 0) {
-              filtered = allAttires;
-            }
-          } else {
-            filtered = allAttires;
-          }
-        } else {
-          const defaultAttires = clientGender === 'female' ? [
-            { _id: 'default-1', name: 'Iro & Buba', category: 'Traditional', genders: ['female'] },
-            { _id: 'default-2', name: 'Boubou', category: 'Traditional', genders: ['female'] },
-            { _id: 'default-3', name: 'Ankara Gown', category: 'Casual', genders: ['female'] },
-            { _id: 'default-4', name: 'Wrapper & Blouse', category: 'Traditional', genders: ['female'] },
-            { _id: 'default-5', name: 'Lace Skirt & Blouse', category: 'Formal', genders: ['female'] },
-            { _id: 'default-6', name: 'Female Kaftan', category: 'Traditional', genders: ['female'] },
-            { _id: 'default-7', name: 'Abaya', category: 'Traditional', genders: ['female'] },
-            { _id: 'default-8', name: 'Jumpsuit', category: 'Casual', genders: ['female'] },
-            { _id: 'default-9', name: 'Skirt', category: 'Casual', genders: ['female'] },
-            { _id: 'default-10', name: 'Female Senator', category: 'Formal', genders: ['female'] },
-          ] : clientGender === 'male' ? [
-            { _id: 'default-1', name: 'Kaftan', category: 'Traditional', genders: ['male'] },
-            { _id: 'default-2', name: 'Babban Riga', category: 'Traditional', genders: ['male'] },
-            { _id: 'default-3', name: 'Jalabiya', category: 'Traditional', genders: ['male'] },
-            { _id: 'default-4', name: 'Agbada', category: 'Traditional', genders: ['male'] },
-            { _id: 'default-5', name: 'Senator', category: 'Formal', genders: ['male'] },
-            { _id: 'default-6', name: 'Trouser (Wando)', category: 'Casual', genders: ['male'] },
-            { _id: 'default-7', name: 'Suit', category: 'Formal', genders: ['male'] },
-            { _id: 'default-8', name: 'Shirt', category: 'Casual', genders: ['male'] },
-            { _id: 'default-9', name: 'Cap (Hula)', category: 'Accessory', genders: ['male'] },
-          ] : [];
-          
+        if (clientGender === 'female') {
+          // Always use the fixed female attire list
+          const defaultAttires = [
+            { _id: 'default-1', name: 'Bubu (Boubou)', category: 'Traditional', genders: ['female'] },
+            { _id: 'default-2', name: 'T-Bubu', category: 'Traditional', genders: ['female'] },
+            { _id: 'default-3', name: 'Female Kaftan', category: 'Traditional', genders: ['female'] },
+            { _id: 'default-4', name: 'Ankara Gown', category: 'Casual', genders: ['female'] },
+            { _id: 'default-5', name: 'Lace Gown', category: 'Formal', genders: ['female'] },
+            { _id: 'default-6', name: 'Wrapper & Blouse', category: 'Traditional', genders: ['female'] },
+            { _id: 'default-7', name: 'Skirt & Blouse', category: 'Casual', genders: ['female'] },
+            { _id: 'default-8', name: 'Skirt & Tri-Cutter Blouse', category: 'Casual', genders: ['female'] },
+            { _id: 'default-9', name: 'Iro & Buba', category: 'Traditional', genders: ['female'] },
+            { _id: 'default-10', name: 'Aso-Ebi Style', category: 'Formal', genders: ['female'] },
+            { _id: 'default-11', name: 'Straight Gown', category: 'Formal', genders: ['female'] },
+            { _id: 'default-12', name: 'A-Shape Gown', category: 'Formal', genders: ['female'] },
+            { _id: 'default-13', name: 'Fitted Gown', category: 'Formal', genders: ['female'] },
+            { _id: 'default-14', name: 'Flare Gown', category: 'Formal', genders: ['female'] },
+            { _id: 'default-15', name: 'Umbrella Gown', category: 'Formal', genders: ['female'] },
+            { _id: 'default-16', name: 'Princess Cut Gown', category: 'Formal', genders: ['female'] },
+            { _id: 'default-17', name: 'Maxi Gown', category: 'Formal', genders: ['female'] },
+            { _id: 'default-18', name: 'Short Gown', category: 'Casual', genders: ['female'] },
+            { _id: 'default-19', name: 'Dinner / Evening Gown', category: 'Formal', genders: ['female'] },
+            { _id: 'default-20', name: 'Reception Dress', category: 'Formal', genders: ['female'] },
+            { _id: 'default-21', name: 'Wedding Gown', category: 'Formal', genders: ['female'] },
+            { _id: 'default-22', name: 'Blouse Only', category: 'Casual', genders: ['female'] },
+            { _id: 'default-23', name: 'Peplum Top', category: 'Casual', genders: ['female'] },
+            { _id: 'default-24', name: 'Corset Top', category: 'Casual', genders: ['female'] },
+            { _id: 'default-25', name: 'Crop Top', category: 'Casual', genders: ['female'] },
+            { _id: 'default-26', name: 'Jacket Top', category: 'Casual', genders: ['female'] },
+            { _id: 'default-27', name: 'Pencil Skirt', category: 'Casual', genders: ['female'] },
+            { _id: 'default-28', name: 'Straight Skirt', category: 'Casual', genders: ['female'] },
+            { _id: 'default-29', name: 'Flare Skirt', category: 'Casual', genders: ['female'] },
+            { _id: 'default-30', name: 'Mermaid Skirt', category: 'Casual', genders: ['female'] },
+            { _id: 'default-31', name: 'Long Skirt', category: 'Casual', genders: ['female'] },
+            { _id: 'default-32', name: 'Short Skirt', category: 'Casual', genders: ['female'] },
+            { _id: 'default-33', name: 'Female Trouser', category: 'Casual', genders: ['female'] },
+          ];
           filtered = defaultAttires;
+        } else if (clientGender === 'male') {
+          // Always use the fixed male attire list
+          const defaultAttires = [
+            { _id: 'male-1', name: 'Short Kaftan', category: 'Traditional', genders: ['male'] },
+            { _id: 'male-2', name: 'Long Kaftan', category: 'Traditional', genders: ['male'] },
+            { _id: 'male-3', name: 'Babban Riga', category: 'Traditional', genders: ['male'] },
+            { _id: 'male-4', name: 'Agbada', category: 'Traditional', genders: ['male'] },
+            { _id: 'male-5', name: 'Senator Wear (2-Piece)', category: 'Traditional', genders: ['male'] },
+            { _id: 'male-6', name: 'Complete Senator (3-Piece)', category: 'Traditional', genders: ['male'] },
+            { _id: 'male-7', name: 'Jalabiya / Jallabiya', category: 'Traditional', genders: ['male'] },
+            { _id: 'male-8', name: 'Boubou (Male)', category: 'Traditional', genders: ['male'] },
+            { _id: 'male-9', name: 'Traditional Inner Top', category: 'Traditional', genders: ['male'] },
+            { _id: 'male-10', name: 'Corporate Shirt', category: 'Formal', genders: ['male'] },
+            { _id: 'male-11', name: 'Casual Shirt', category: 'Casual', genders: ['male'] },
+            { _id: 'male-12', name: 'Native Shirt', category: 'Traditional', genders: ['male'] },
+            { _id: 'male-13', name: 'Short Sleeve Shirt', category: 'Casual', genders: ['male'] },
+            { _id: 'male-14', name: 'Long Sleeve Shirt', category: 'Formal', genders: ['male'] },
+            { _id: 'male-15', name: 'Inner Top Only', category: 'Casual', genders: ['male'] },
+            { _id: 'male-16', name: 'Polo Style Top', category: 'Casual', genders: ['male'] },
+            { _id: 'male-17', name: 'Suit (2-Piece)', category: 'Formal', genders: ['male'] },
+            { _id: 'male-18', name: 'Suit (3-Piece)', category: 'Formal', genders: ['male'] },
+            { _id: 'male-19', name: 'Blazer', category: 'Formal', genders: ['male'] },
+            { _id: 'male-20', name: 'Waistcoat (Vest)', category: 'Formal', genders: ['male'] },
+            { _id: 'male-21', name: 'Trouser (Wando)', category: 'Casual', genders: ['male'] },
+            { _id: 'male-22', name: 'Fitted Trouser', category: 'Formal', genders: ['male'] },
+            { _id: 'male-23', name: 'Native Trouser', category: 'Traditional', genders: ['male'] },
+            { _id: 'male-24', name: 'Chinos', category: 'Casual', genders: ['male'] },
+            { _id: 'male-25', name: 'Shorts', category: 'Casual', genders: ['male'] },
+            { _id: 'male-26', name: 'Hula (Cap)', category: 'Accessories', genders: ['male'] },
+            { _id: 'male-27', name: 'Embroidery Only', category: 'Service', genders: ['male'] },
+            { _id: 'male-28', name: 'Trouser Only', category: 'Service', genders: ['male'] },
+            { _id: 'male-29', name: 'Top Only', category: 'Service', genders: ['male'] },
+            { _id: 'male-30', name: 'Repair / Adjustment', category: 'Service', genders: ['male'] },
+            { _id: 'male-31', name: 'Tightening / Resizing', category: 'Service', genders: ['male'] },
+            { _id: 'male-32', name: 'Patch Work', category: 'Service', genders: ['male'] },
+          ];
+          filtered = defaultAttires;
+        } else {
+          filtered = allAttires;
         }
 
         setFilteredAttires(filtered);
       } catch (attireErr) {
         console.error('Failed to fetch attires:', attireErr);
         const clientGender = clientRes.data.client.gender;
-        const defaultAttires = clientGender === 'female' ? [
-          { _id: 'default-1', name: 'Iro & Buba', category: 'Traditional', genders: ['female'] },
-          { _id: 'default-2', name: 'Boubou', category: 'Traditional', genders: ['female'] },
-          { _id: 'default-3', name: 'Ankara Gown', category: 'Casual', genders: ['female'] },
-          { _id: 'default-4', name: 'Wrapper & Blouse', category: 'Traditional', genders: ['female'] },
-          { _id: 'default-5', name: 'Lace Skirt & Blouse', category: 'Formal', genders: ['female'] },
-          { _id: 'default-6', name: 'Female Kaftan', category: 'Traditional', genders: ['female'] },
-          { _id: 'default-7', name: 'Abaya', category: 'Traditional', genders: ['female'] },
-          { _id: 'default-8', name: 'Jumpsuit', category: 'Casual', genders: ['female'] },
-          { _id: 'default-9', name: 'Skirt', category: 'Casual', genders: ['female'] },
-          { _id: 'default-10', name: 'Female Senator', category: 'Formal', genders: ['female'] },
-        ] : clientGender === 'male' ? [
-          { _id: 'default-1', name: 'Kaftan', category: 'Traditional', genders: ['male'] },
-          { _id: 'default-2', name: 'Babban Riga', category: 'Traditional', genders: ['male'] },
-          { _id: 'default-3', name: 'Jalabiya', category: 'Traditional', genders: ['male'] },
-          { _id: 'default-4', name: 'Agbada', category: 'Traditional', genders: ['male'] },
-          { _id: 'default-5', name: 'Senator', category: 'Formal', genders: ['male'] },
-          { _id: 'default-6', name: 'Trouser (Wando)', category: 'Casual', genders: ['male'] },
-          { _id: 'default-7', name: 'Suit', category: 'Formal', genders: ['male'] },
-          { _id: 'default-8', name: 'Shirt', category: 'Casual', genders: ['male'] },
-          { _id: 'default-9', name: 'Cap (Hula)', category: 'Accessory', genders: ['male'] },
-        ] : [];
+        let filtered = [];
         
-        setFilteredAttires(defaultAttires);
+        if (clientGender === 'female') {
+          // Always use the fixed female attire list
+          filtered = [
+            { _id: 'default-1', name: 'Bubu (Boubou)', category: 'Traditional', genders: ['female'] },
+            { _id: 'default-2', name: 'T-Bubu', category: 'Traditional', genders: ['female'] },
+            { _id: 'default-3', name: 'Female Kaftan', category: 'Traditional', genders: ['female'] },
+            { _id: 'default-4', name: 'Ankara Gown', category: 'Casual', genders: ['female'] },
+            { _id: 'default-5', name: 'Lace Gown', category: 'Formal', genders: ['female'] },
+            { _id: 'default-6', name: 'Wrapper & Blouse', category: 'Traditional', genders: ['female'] },
+            { _id: 'default-7', name: 'Skirt & Blouse', category: 'Casual', genders: ['female'] },
+            { _id: 'default-8', name: 'Skirt & Tri-Cutter Blouse', category: 'Casual', genders: ['female'] },
+            { _id: 'default-9', name: 'Iro & Buba', category: 'Traditional', genders: ['female'] },
+            { _id: 'default-10', name: 'Aso-Ebi Style', category: 'Formal', genders: ['female'] },
+            { _id: 'default-11', name: 'Straight Gown', category: 'Formal', genders: ['female'] },
+            { _id: 'default-12', name: 'A-Shape Gown', category: 'Formal', genders: ['female'] },
+            { _id: 'default-13', name: 'Fitted Gown', category: 'Formal', genders: ['female'] },
+            { _id: 'default-14', name: 'Flare Gown', category: 'Formal', genders: ['female'] },
+            { _id: 'default-15', name: 'Umbrella Gown', category: 'Formal', genders: ['female'] },
+            { _id: 'default-16', name: 'Princess Cut Gown', category: 'Formal', genders: ['female'] },
+            { _id: 'default-17', name: 'Maxi Gown', category: 'Formal', genders: ['female'] },
+            { _id: 'default-18', name: 'Short Gown', category: 'Casual', genders: ['female'] },
+            { _id: 'default-19', name: 'Dinner / Evening Gown', category: 'Formal', genders: ['female'] },
+            { _id: 'default-20', name: 'Reception Dress', category: 'Formal', genders: ['female'] },
+            { _id: 'default-21', name: 'Wedding Gown', category: 'Formal', genders: ['female'] },
+            { _id: 'default-22', name: 'Blouse Only', category: 'Casual', genders: ['female'] },
+            { _id: 'default-23', name: 'Peplum Top', category: 'Casual', genders: ['female'] },
+            { _id: 'default-24', name: 'Corset Top', category: 'Casual', genders: ['female'] },
+            { _id: 'default-25', name: 'Crop Top', category: 'Casual', genders: ['female'] },
+            { _id: 'default-26', name: 'Jacket Top', category: 'Casual', genders: ['female'] },
+            { _id: 'default-27', name: 'Pencil Skirt', category: 'Casual', genders: ['female'] },
+            { _id: 'default-28', name: 'Straight Skirt', category: 'Casual', genders: ['female'] },
+            { _id: 'default-29', name: 'Flare Skirt', category: 'Casual', genders: ['female'] },
+            { _id: 'default-30', name: 'Mermaid Skirt', category: 'Casual', genders: ['female'] },
+            { _id: 'default-31', name: 'Long Skirt', category: 'Casual', genders: ['female'] },
+            { _id: 'default-32', name: 'Short Skirt', category: 'Casual', genders: ['female'] },
+            { _id: 'default-33', name: 'Female Trouser', category: 'Casual', genders: ['female'] },
+          ];
+        } else if (clientGender === 'male') {
+          filtered = [
+            { _id: 'male-1', name: 'Short Kaftan', category: 'Traditional', genders: ['male'] },
+            { _id: 'male-2', name: 'Long Kaftan', category: 'Traditional', genders: ['male'] },
+            { _id: 'male-3', name: 'Babban Riga', category: 'Traditional', genders: ['male'] },
+            { _id: 'male-4', name: 'Agbada', category: 'Traditional', genders: ['male'] },
+            { _id: 'male-5', name: 'Senator Wear (2-Piece)', category: 'Traditional', genders: ['male'] },
+            { _id: 'male-6', name: 'Complete Senator (3-Piece)', category: 'Traditional', genders: ['male'] },
+            { _id: 'male-7', name: 'Jalabiya / Jallabiya', category: 'Traditional', genders: ['male'] },
+            { _id: 'male-8', name: 'Boubou (Male)', category: 'Traditional', genders: ['male'] },
+            { _id: 'male-9', name: 'Traditional Inner Top', category: 'Traditional', genders: ['male'] },
+            { _id: 'male-10', name: 'Corporate Shirt', category: 'Formal', genders: ['male'] },
+            { _id: 'male-11', name: 'Casual Shirt', category: 'Casual', genders: ['male'] },
+            { _id: 'male-12', name: 'Native Shirt', category: 'Traditional', genders: ['male'] },
+            { _id: 'male-13', name: 'Short Sleeve Shirt', category: 'Casual', genders: ['male'] },
+            { _id: 'male-14', name: 'Long Sleeve Shirt', category: 'Formal', genders: ['male'] },
+            { _id: 'male-15', name: 'Inner Top Only', category: 'Casual', genders: ['male'] },
+            { _id: 'male-16', name: 'Polo Style Top', category: 'Casual', genders: ['male'] },
+            { _id: 'male-17', name: 'Suit (2-Piece)', category: 'Formal', genders: ['male'] },
+            { _id: 'male-18', name: 'Suit (3-Piece)', category: 'Formal', genders: ['male'] },
+            { _id: 'male-19', name: 'Blazer', category: 'Formal', genders: ['male'] },
+            { _id: 'male-20', name: 'Waistcoat (Vest)', category: 'Formal', genders: ['male'] },
+            { _id: 'male-21', name: 'Trouser (Wando)', category: 'Casual', genders: ['male'] },
+            { _id: 'male-22', name: 'Fitted Trouser', category: 'Formal', genders: ['male'] },
+            { _id: 'male-23', name: 'Native Trouser', category: 'Traditional', genders: ['male'] },
+            { _id: 'male-24', name: 'Chinos', category: 'Casual', genders: ['male'] },
+            { _id: 'male-25', name: 'Shorts', category: 'Casual', genders: ['male'] },
+            { _id: 'male-26', name: 'Hula (Cap)', category: 'Accessories', genders: ['male'] },
+            { _id: 'male-27', name: 'Embroidery Only', category: 'Service', genders: ['male'] },
+            { _id: 'male-28', name: 'Trouser Only', category: 'Service', genders: ['male'] },
+            { _id: 'male-29', name: 'Top Only', category: 'Service', genders: ['male'] },
+            { _id: 'male-30', name: 'Repair / Adjustment', category: 'Service', genders: ['male'] },
+            { _id: 'male-31', name: 'Tightening / Resizing', category: 'Service', genders: ['male'] },
+            { _id: 'male-32', name: 'Patch Work', category: 'Service', genders: ['male'] },
+          ];
+        }
+        
+        setFilteredAttires(filtered);
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load data');
@@ -159,8 +247,7 @@ export default function ClientMeasurementsPage() {
         if (client.gender === 'female') {
           defaultFields = [
             { fieldName: 'shoulder_width', unit: 'inch', label: 'Shoulder Width' },
-            { fieldName: 'bust', unit: 'inch', label: 'Bust (Breast/Chest)' },
-            { fieldName: 'under_bust', unit: 'inch', label: 'Under Bust' },
+            { fieldName: 'bust', unit: 'inch', label: 'Bust (Chest)' },
             { fieldName: 'upper_waist', unit: 'inch', label: 'Waist (Upper Waist)' },
             { fieldName: 'sleeve_length', unit: 'inch', label: 'Sleeve Length' },
             { fieldName: 'arm_width', unit: 'inch', label: 'Arm Width (Bicep)' },
@@ -193,7 +280,7 @@ export default function ClientMeasurementsPage() {
         }
         
         defaultFields.forEach((field) => {
-          measurementsObj[field.fieldName] = { value: '', unit: field.unit, note: '' };
+          measurementsObj[field.fieldName] = { value: 0, unit: field.unit, note: '' };
         });
       }
 
@@ -274,7 +361,6 @@ export default function ClientMeasurementsPage() {
         clientId: clientId,
         attireTypeId: '',
         measurements: {},
-        notes: '',
       });
       fetchData();
       setTimeout(() => setMessage(''), 3000);
@@ -292,17 +378,31 @@ export default function ClientMeasurementsPage() {
     }
   };
 
-  const handleDeleteMeasurement = async (measurementId) => {
-    if (window.confirm('Delete this measurement?')) {
-      try {
-        await measurementAPI.delete(measurementId);
-        setMessage('Measurement deleted successfully');
-        fetchData();
-        setTimeout(() => setMessage(''), 3000);
-      } catch (err) {
-        setError(err.response?.data?.message || 'Failed to delete measurement');
-      }
+  const handleDeleteMeasurement = (measurementId) => {
+    setMeasurementToDelete(measurementId);
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDeleteMeasurement = async () => {
+    if (!measurementToDelete) return;
+    
+    try {
+      await measurementAPI.delete(measurementToDelete);
+      setMessage('Measurement deleted successfully');
+      setDeleteModalOpen(false);
+      setMeasurementToDelete(null);
+      fetchData();
+      setTimeout(() => setMessage(''), 3000);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to delete measurement');
+      setDeleteModalOpen(false);
+      setMeasurementToDelete(null);
     }
+  };
+
+  const cancelDeleteMeasurement = () => {
+    setDeleteModalOpen(false);
+    setMeasurementToDelete(null);
   };
 
   if (loading) {
@@ -468,42 +568,6 @@ export default function ClientMeasurementsPage() {
               </h2>
             </div>
 
-            {/* Gender-specific attire info */}
-            {filteredAttires.length > 0 && (
-              <div className="mb-6 p-4 rounded-lg border border-gray-200 bg-gray-50">
-                <div className="flex items-start gap-3">
-                  <Package size={20} className={config.textColor} />
-                  <div>
-                    <p className="font-bold text-gray-800 mb-2">
-                      Available Attire Types for {client?.name}
-                    </p>
-                    {filteredAttires[0]?._id?.startsWith('default-') && (
-                      <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                        <p className="text-sm text-blue-800 font-semibold flex items-center gap-2">
-                          <Info size={16} /> These attire types will be automatically added to the system when you save your first measurement.
-                        </p>
-                      </div>
-                    )}
-                    <p className="text-sm text-gray-600 mb-3">
-                      {filteredAttires.length} attire type{filteredAttires.length !== 1 ? 's' : ''} available
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {filteredAttires.slice(0, 10).map((attire) => (
-                        <span key={attire._id} className={`${config.bgColor} bg-opacity-10 ${config.textColor} px-3 py-1 rounded-full text-xs font-semibold`}>
-                          {attire.name}
-                        </span>
-                      ))}
-                      {filteredAttires.length > 10 && (
-                        <span className="text-xs text-gray-500 px-3 py-1">
-                          +{filteredAttires.length - 10} more
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
             <form onSubmit={handleSaveMeasurement} className="space-y-6">
               {/* Attire Selection */}
               <div>
@@ -537,13 +601,12 @@ export default function ClientMeasurementsPage() {
                       {/* Female Top Measurements */}
                       <div className="space-y-4">
                         <h3 className={`font-bold ${config.textColor} text-sm uppercase tracking-wide`}>Top Measurements</h3>
-                        {['shoulder_width', 'bust', 'under_bust', 'upper_waist', 'sleeve_length', 'arm_width', 'wrist', 'top_length', 'back_width'].map((fieldName) => {
-                          if (!formData.measurements[fieldName]) return null;
+                        {['shoulder_width', 'bust', 'upper_waist', 'sleeve_length', 'arm_width', 'wrist', 'top_length', 'back_width'].map((fieldName) => {
                           const fieldData = formData.measurements[fieldName];
+                          if (!fieldData) return null;
                           const labels = {
                             shoulder_width: 'Shoulder Width',
-                            bust: 'Bust (Breast/Chest)',
-                            under_bust: 'Under Bust',
+                            bust: 'Bust (Chest)',
                             upper_waist: 'Waist (Upper Waist)',
                             sleeve_length: 'Sleeve Length',
                             arm_width: 'Arm Width (Bicep)',
@@ -575,8 +638,8 @@ export default function ClientMeasurementsPage() {
                       <div className="space-y-4">
                         <h3 className={`font-bold ${config.textColor} text-sm uppercase tracking-wide`}>Bottom Measurements</h3>
                         {['waist', 'hip', 'thigh', 'knee', 'skirt_length', 'bottom_width'].map((fieldName) => {
-                          if (!formData.measurements[fieldName]) return null;
                           const fieldData = formData.measurements[fieldName];
+                          if (!fieldData) return null;
                           const labels = {
                             waist: 'Waist',
                             hip: 'Hip',
@@ -701,20 +764,6 @@ export default function ClientMeasurementsPage() {
                 </div>
               )}
 
-              {/* Notes */}
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                  <MessageSquare size={18} /> Notes
-                </label>
-                <textarea
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder="Add any special notes..."
-                  rows="3"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-brand-navy focus:ring-2 focus:ring-brand-navy focus:ring-opacity-20 outline-none transition-all resize-none bg-white"
-                />
-              </div>
-
               {/* Buttons */}
               <div className="flex gap-4">
                 <button
@@ -820,6 +869,42 @@ export default function ClientMeasurementsPage() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-8 border-2 border-red-200">
+            <div className="flex items-center justify-center mb-6">
+              <div className="bg-red-100 p-4 rounded-full">
+                <AlertTriangle size={32} className="text-red-600" />
+              </div>
+            </div>
+            
+            <h2 className="text-2xl font-bold text-gray-900 text-center mb-3">
+              Delete Measurement?
+            </h2>
+            
+            <p className="text-gray-600 text-center mb-8">
+              Are you sure you want to delete this measurement? This action cannot be undone.
+            </p>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={cancelDeleteMeasurement}
+                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 px-4 rounded-lg transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteMeasurement}
+                className="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-lg transition-all flex items-center justify-center gap-2"
+              >
+                <Trash2 size={18} /> Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

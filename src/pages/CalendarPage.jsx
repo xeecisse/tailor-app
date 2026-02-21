@@ -1,169 +1,240 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { appointmentAPI, clientAPI } from '../lib/api';
+import { orderAPI, clientAPI, measurementAPI } from '../lib/api';
 import {
-  Ruler,
-  Shirt,
-  MessageSquare,
-  Package,
-  Truck,
-  DollarSign,
-  FileText,
-  Plus,
-  Calendar as CalendarIcon,
   ChevronLeft,
   ChevronRight,
-  CheckCircle,
-  X,
   AlertTriangle,
-  User,
+  CheckCircle,
   Clock,
-  MapPin,
-  Edit,
-  MessageCircle,
+  X,
+  Plus,
   Save,
+  Package,
 } from 'lucide-react';
 
+function EventCard({ order, type, isOverdue, onClick }) {
+  const isDeadline = type === 'deadline';
+  const baseColor = isDeadline ? 'from-blue-500 to-blue-600' : 'from-red-500 to-red-600';
+  const bgColor = isDeadline ? 'bg-blue-50' : 'bg-red-50';
+  const textColor = isDeadline ? 'text-blue-700' : 'text-red-700';
+  const borderColor = isDeadline ? 'border-blue-300' : 'border-red-300';
+
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full text-left p-2 rounded-lg border-2 ${borderColor} ${bgColor} hover:shadow-lg transition-all transform hover:scale-105 cursor-pointer group`}
+    >
+      <div className={`flex items-center gap-1 ${textColor}`}>
+        <div className={`w-2 h-2 rounded-full bg-gradient-to-br ${baseColor}`}></div>
+        <p className="text-xs font-bold truncate">{isDeadline ? 'Deadline' : 'Delivery'}</p>
+        {isOverdue && <AlertTriangle size={12} className="text-red-600" />}
+      </div>
+      <p className="text-xs font-bold text-gray-900 truncate mt-0.5">{order.clientId?.name || 'Client'}</p>
+      <p className="text-xs text-gray-600 truncate">{order.attireType}</p>
+    </button>
+  );
+}
+
 export default function CalendarPage() {
-  const [appointments, setAppointments] = useState([]);
+  const [orders, setOrders] = useState([]);
   const [clients, setClients] = useState([]);
+  const [measurements, setMeasurements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
-  const [showForm, setShowForm] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [viewMode, setViewMode] = useState('day'); // day, week, month
-
+  const [currentWeekStart, setCurrentWeekStart] = useState(getMonday(new Date()));
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [showOrderPanel, setShowOrderPanel] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [showDayView, setShowDayView] = useState(false);
+  const [selectedDayOrders, setSelectedDayOrders] = useState([]);
   const [formData, setFormData] = useState({
     clientId: '',
-    title: '',
-    description: '',
-    date: new Date().toISOString().split('T')[0],
-    startTime: '09:00',
-    endTime: '10:00',
-    type: 'measurement',
-    location: 'Shop',
+    measurementId: '',
+    attireType: '',
+    expectedDeliveryDate: '',
+    expectedDeliveryTime: '',
+    price: '',
     notes: '',
   });
 
-  const appointmentTypes = [
-    { value: 'measurement', label: 'Measurement', icon: Ruler, color: 'purple' },
-    { value: 'fitting', label: 'Fitting', icon: Shirt, color: 'blue' },
-    { value: 'consultation', label: 'Consultation', icon: MessageSquare, color: 'green' },
-    { value: 'pickup', label: 'Pickup', icon: Package, color: 'orange' },
-    { value: 'delivery', label: 'Delivery', icon: Truck, color: 'cyan' },
-    { value: 'payment', label: 'Payment', icon: DollarSign, color: 'yellow' },
-    { value: 'other', label: 'Other', icon: FileText, color: 'gray' },
-  ];
-
   useEffect(() => {
+    fetchOrders();
     fetchClients();
-    fetchAppointments();
-  }, [selectedDate]);
+  }, [currentWeekStart]);
 
-  const fetchClients = async () => {
-    try {
-      const res = await clientAPI.getAll('active');
-      setClients(res.data.clients);
-    } catch (err) {
-      console.error('Failed to fetch clients:', err);
-    }
-  };
-
-  const fetchAppointments = async () => {
+  const fetchOrders = async () => {
     try {
       setLoading(true);
-      const res = await appointmentAPI.getByDate(selectedDate);
-      setAppointments(res.data.appointments);
+      setError('');
+      const response = await orderAPI.getAll();
+      setOrders(response.data.orders || []);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load appointments');
+      setError(err.response?.data?.message || 'Failed to load orders');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSubmit = async (e) => {
+  const fetchClients = async () => {
+    try {
+      const response = await clientAPI.getAll('active');
+      setClients(response.data.clients || []);
+    } catch (err) {
+      console.error('Failed to fetch clients:', err);
+    }
+  };
+
+  const fetchMeasurements = async (clientId) => {
+    try {
+      const response = await measurementAPI.getByClient(clientId);
+      setMeasurements(response.data.measurements || []);
+    } catch (err) {
+      console.error('Failed to fetch measurements:', err);
+      setMeasurements([]);
+    }
+  };
+
+  const handleClientChange = (clientId) => {
+    setFormData({ ...formData, clientId, measurementId: '', attireType: '' });
+    if (clientId) {
+      fetchMeasurements(clientId);
+    } else {
+      setMeasurements([]);
+    }
+  };
+
+  const handleCreateOrder = async (e) => {
     e.preventDefault();
-    setError('');
+    if (!formData.clientId || !formData.measurementId || !formData.attireType || !formData.expectedDeliveryDate || !formData.expectedDeliveryTime || !formData.price) {
+      setError('Please fill in all required fields');
+      return;
+    }
 
     try {
-      await appointmentAPI.create(formData);
-      setMessage('Appointment created successfully');
-      setShowForm(false);
+      // Combine date and time into a datetime string
+      const deliveryDateTime = `${formData.expectedDeliveryDate}T${formData.expectedDeliveryTime}:00`;
+      
+      await orderAPI.create({
+        clientId: formData.clientId,
+        measurementId: formData.measurementId,
+        attireType: formData.attireType,
+        expectedDeliveryDate: deliveryDateTime,
+        price: parseFloat(formData.price),
+        notes: formData.notes,
+      });
+      setMessage('Order created successfully');
+      setShowCreateModal(false);
       setFormData({
         clientId: '',
-        title: '',
-        description: '',
-        date: new Date().toISOString().split('T')[0],
-        startTime: '09:00',
-        endTime: '10:00',
-        type: 'measurement',
-        location: 'Shop',
+        measurementId: '',
+        attireType: '',
+        expectedDeliveryDate: '',
+        expectedDeliveryTime: '',
+        price: '',
         notes: '',
       });
-      fetchAppointments();
+      fetchOrders();
       setTimeout(() => setMessage(''), 3000);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to create appointment');
+      setError(err.response?.data?.message || 'Failed to create order');
     }
   };
 
-  const handleCancel = async (id) => {
-    const reason = prompt('Reason for cancellation:');
-    if (!reason) return;
+  const handleTimeSlotClick = (date) => {
+    setSelectedDate(date);
+    // Get all orders for this date
+    const dayOrders = orders.filter(order => {
+      const orderDate = new Date(order.expectedDeliveryDate);
+      return orderDate.toDateString() === date.toDateString();
+    });
+    setSelectedDayOrders(dayOrders);
+    setShowDayView(true);
+  };
 
-    try {
-      await appointmentAPI.cancel(id, reason);
-      setMessage('Appointment cancelled');
-      fetchAppointments();
-      setTimeout(() => setMessage(''), 3000);
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to cancel appointment');
+  const handleCreateNewOrder = () => {
+    setFormData({
+      ...formData,
+      expectedDeliveryDate: selectedDate.toISOString().split('T')[0],
+      expectedDeliveryTime: '10:00',
+    });
+    setShowDayView(false);
+    setShowCreateModal(true);
+  };
+
+  function getMonday(date) {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    return new Date(d.setDate(diff));
+  }
+
+  const getWeekDays = () => {
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(currentWeekStart);
+      date.setDate(date.getDate() + i);
+      days.push(date);
     }
+    return days;
   };
 
-  const handleComplete = async (id) => {
-    try {
-      await appointmentAPI.complete(id);
-      setMessage('Appointment marked as completed');
-      fetchAppointments();
-      setTimeout(() => setMessage(''), 3000);
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to complete appointment');
+  const getTimeSlots = () => {
+    const slots = [];
+    for (let hour = 8; hour <= 18; hour++) {
+      slots.push(`${hour.toString().padStart(2, '0')}:00`);
     }
+    return slots;
   };
 
-  const getTypeConfig = (type) => {
-    return appointmentTypes.find((t) => t.value === type) || appointmentTypes[0];
+  const isToday = (date) => {
+    const today = new Date();
+    return date.toDateString() === today.toDateString();
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'completed':
-        return 'from-green-500 to-emerald-500';
-      case 'confirmed':
-        return 'from-blue-500 to-cyan-500';
-      case 'cancelled':
-        return 'from-red-500 to-pink-500';
-      case 'no-show':
-        return 'from-gray-500 to-gray-600';
-      default:
-        return 'from-yellow-500 to-amber-500';
-    }
+  const isOverdue = (date) => {
+    return new Date(date) < new Date() && new Date(date).toDateString() !== new Date().toDateString();
   };
 
-  const changeDate = (days) => {
-    const date = new Date(selectedDate);
-    date.setDate(date.getDate() + days);
-    setSelectedDate(date.toISOString().split('T')[0]);
+  const getEventsForDay = (date, eventType) => {
+    return orders.filter((order) => {
+      const eventDate = eventType === 'deadline' ? order.expectedDeliveryDate : order.expectedDeliveryDate;
+      if (!eventDate) return false;
+      const eventDateObj = new Date(eventDate);
+      return eventDateObj.toDateString() === date.toDateString() &&
+        (eventType === 'deadline' ? order.status !== 'delivered' : order.status !== 'delivered');
+    });
   };
 
-  if (loading && appointments.length === 0) {
+  const getEventsForTimeSlot = (date, timeSlot) => {
+    const [slotHour] = timeSlot.split(':');
+    return orders.filter((order) => {
+      if (!order.expectedDeliveryDate) return false;
+      const orderDate = new Date(order.expectedDeliveryDate);
+      const orderHour = orderDate.getHours().toString().padStart(2, '0');
+      return orderDate.toDateString() === date.toDateString() && 
+             orderHour === slotHour &&
+             order.status !== 'delivered';
+    });
+  };
+
+  const stats = {
+    deadlinesThisWeek: getWeekDays().reduce((sum, day) => sum + getEventsForDay(day, 'deadline').length, 0),
+    deliveriesThisWeek: getWeekDays().reduce((sum, day) => sum + getEventsForDay(day, 'delivery').length, 0),
+    overdueOrders: orders.filter(o => isOverdue(o.expectedDeliveryDate) && o.status !== 'delivered').length,
+  };
+
+  const weekDays = getWeekDays();
+  const timeSlots = getTimeSlots();
+
+  if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-brand-navy-50 via-brand-orange-50 to-brand-navy-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-purple-200 border-t-purple-600 mb-4"></div>
+          <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-brand-navy-200 border-t-brand-navy mb-4"></div>
           <p className="text-gray-700 font-bold text-lg">Loading calendar...</p>
         </div>
       </div>
@@ -171,355 +242,527 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
-      {/* Decorative Background */}
+    <div className="min-h-screen bg-gradient-to-br from-brand-navy-50 via-brand-orange-50 to-brand-navy-50">
+      {/* Enhanced Decorative Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-purple-300 to-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-        <div className="absolute top-40 left-0 w-[500px] h-[500px] bg-gradient-to-br from-blue-300 to-cyan-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-brand-navy to-brand-orange rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+        <div className="absolute top-40 left-0 w-[500px] h-[500px] bg-gradient-to-br from-brand-orange to-brand-navy rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute bottom-0 right-1/3 w-[550px] h-[550px] bg-gradient-to-br from-brand-navy to-brand-orange rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-          <div>
-            <h1 className="text-5xl font-extrabold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
-              Calendar & Appointments
-            </h1>
-            <p className="text-gray-600 mt-2 text-lg font-medium">
-              {new Date(selectedDate).toLocaleDateString('en-US', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-              })}
+        <div className="mb-8">
+          <h1 className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-brand-navy via-brand-orange to-brand-orange-dark bg-clip-text text-transparent mb-2">
+            Weekly Order Tracking
+          </h1>
+          <p className="text-gray-600 text-base md:text-lg font-medium">
+            Track deadlines and deliveries at a glance
+          </p>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border-2 border-gray-100 shadow-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-600 text-sm font-semibold">Deadlines This Week</p>
+                <p className="text-3xl font-bold text-brand-navy mt-2">{stats.deadlinesThisWeek}</p>
+              </div>
+              <Clock size={32} className="text-brand-navy opacity-20" />
+            </div>
+          </div>
+
+          <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border-2 border-gray-100 shadow-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-600 text-sm font-semibold">Deliveries This Week</p>
+                <p className="text-3xl font-bold text-brand-orange mt-2">{stats.deliveriesThisWeek}</p>
+              </div>
+              <CheckCircle size={32} className="text-brand-orange opacity-20" />
+            </div>
+          </div>
+
+          <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border-2 border-red-300 shadow-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-red-700 text-sm font-semibold">Overdue Orders</p>
+                <p className="text-3xl font-bold text-red-600 mt-2">{stats.overdueOrders}</p>
+              </div>
+              <AlertTriangle size={32} className="text-red-600 opacity-20" />
+            </div>
+          </div>
+        </div>
+
+        {/* Week Navigation */}
+        <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-4 border-2 border-gray-100 shadow-lg mb-8 flex items-center justify-between">
+          <button
+            onClick={() => setCurrentWeekStart(new Date(currentWeekStart.getTime() - 7 * 24 * 60 * 60 * 1000))}
+            className="px-4 py-2 bg-gradient-to-br from-brand-navy to-brand-navy-dark hover:from-brand-navy-dark hover:to-brand-navy text-white rounded-lg font-bold transition-all"
+          >
+            ← Previous Week
+          </button>
+
+          <div className="text-center">
+            <p className="text-lg font-bold text-gray-900">
+              {weekDays[0].toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {weekDays[6].toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
             </p>
           </div>
+
           <button
-            onClick={() => setShowForm(!showForm)}
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 hover:from-purple-700 hover:via-pink-700 hover:to-blue-700 text-white px-8 py-4 rounded-2xl font-bold transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 transform"
+            onClick={() => {
+              const today = new Date();
+              setCurrentWeekStart(getMonday(today));
+            }}
+            className="px-4 py-2 bg-gradient-to-br from-brand-orange to-brand-orange-dark hover:from-brand-orange-dark hover:to-brand-orange text-white rounded-lg font-bold transition-all"
           >
-            <Plus size={24} /> New Appointment
+            Today
+          </button>
+
+          <button
+            onClick={() => setCurrentWeekStart(new Date(currentWeekStart.getTime() + 7 * 24 * 60 * 60 * 1000))}
+            className="px-4 py-2 bg-gradient-to-br from-brand-navy to-brand-navy-dark hover:from-brand-navy-dark hover:to-brand-navy text-white rounded-lg font-bold transition-all"
+          >
+            Next Week →
           </button>
         </div>
 
-        {/* Date Navigation */}
-        <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border-2 border-purple-200">
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => changeDate(-1)}
-              className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl font-bold transition-all shadow-md hover:shadow-lg"
-            >
-              ← Previous Day
-            </button>
-            
-            <div className="flex items-center gap-4">
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all bg-white font-semibold"
-              />
-              <button
-                onClick={() => setSelectedDate(new Date().toISOString().split('T')[0])}
-                className="px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-xl font-bold transition-all shadow-md hover:shadow-lg"
-              >
-                📅 Today
-              </button>
-            </div>
-
-            <button
-              onClick={() => changeDate(1)}
-              className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl font-bold transition-all shadow-md hover:shadow-lg"
-            >
-              Next Day →
-            </button>
-          </div>
-        </div>
-
-        {/* Messages */}
-        {error && (
-          <div className="p-5 bg-gradient-to-r from-red-50 to-pink-50 border-2 border-red-300 rounded-2xl text-red-700 flex items-center gap-4 shadow-lg">
-            <div className="bg-red-100 p-3 rounded-xl">
-              <AlertTriangle size={24} className="text-red-600" />
-            </div>
-            <span className="font-semibold text-lg">{error}</span>
-          </div>
-        )}
-        {message && (
-          <div className="p-5 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-2xl text-green-700 flex items-center gap-4 shadow-lg">
-            <div className="bg-green-100 p-3 rounded-xl">
-              <CheckCircle size={24} className="text-green-600" />
-            </div>
-            <span className="font-semibold text-lg">{message}</span>
-          </div>
-        )}
-
-        {/* Create Appointment Form */}
-        {showForm && (
-          <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border-2 border-purple-200">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-gradient-to-br from-purple-500 to-pink-500 p-3 rounded-xl">
-                <CalendarIcon size={28} className="text-white" />
-              </div>
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                New Appointment
-              </h2>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <User size={18} /> Client *
-                  </label>
-                  <select
-                    required
-                    value={formData.clientId}
-                    onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all bg-white"
-                  >
-                    <option value="">Select client...</option>
-                    {clients.map((c) => (
-                      <option key={c._id} value={c._id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <FileText size={18} /> Type *
-                  </label>
-                  <select
-                    required
-                    value={formData.type}
-                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all bg-white"
-                  >
-                    {appointmentTypes.map((type) => (
-                      <option key={type.value} value={type.value}>
-                        {type.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <CalendarIcon size={18} /> Date *
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={formData.date}
-                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all bg-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <Clock size={18} /> Start Time *
-                  </label>
-                  <input
-                    type="time"
-                    required
-                    value={formData.startTime}
-                    onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all bg-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <Clock size={18} /> End Time *
-                  </label>
-                  <input
-                    type="time"
-                    required
-                    value={formData.endTime}
-                    onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all bg-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <MapPin size={18} /> Location
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all bg-white"
-                    placeholder="Shop, Client's place, etc."
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                  <Edit size={18} /> Title *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all bg-white"
-                  placeholder="e.g., Measurement for wedding dress"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                  <MessageCircle size={18} /> Notes
-                </label>
-                <textarea
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  rows="3"
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all resize-none bg-white"
-                  placeholder="Additional notes..."
-                />
-              </div>
-
-              <div className="flex gap-4">
-                <button
-                  type="submit"
-                  className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-4 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-                >
-                  <Save size={20} /> Create Appointment
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowForm(false)}
-                  className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-gray-200 to-gray-300 hover:from-gray-300 hover:to-gray-400 text-gray-700 px-6 py-4 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl"
-                >
-                  <X size={20} /> Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
-
-        {/* Appointments List */}
-        {appointments.length === 0 ? (
-          <div className="text-center py-20 bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-dashed border-purple-300 shadow-xl">
-            <CalendarIcon size={80} className="mx-auto mb-6 text-gray-400" />
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">No appointments for this day</h3>
-            <p className="text-gray-600 text-lg">Schedule your first appointment</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {appointments.map((apt) => {
-              const typeConfig = getTypeConfig(apt.type);
-              const statusGradient = getStatusColor(apt.status);
-              const TypeIcon = typeConfig.icon;
-
+        {/* Calendar Grid */}
+        <div className="bg-white/80 backdrop-blur-lg rounded-2xl border-2 border-gray-100 shadow-lg overflow-hidden">
+          {/* Mobile: Card View */}
+          <div className="md:hidden space-y-3 p-4">
+            {weekDays.map((day, idx) => {
+              const dayOrders = orders.filter(order => {
+                const orderDate = new Date(order.expectedDeliveryDate);
+                return orderDate.toDateString() === day.toDateString();
+              });
+              
               return (
                 <div
-                  key={apt._id}
-                  className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-purple-200"
+                  key={idx}
+                  onClick={() => handleTimeSlotClick(day)}
+                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                    isToday(day)
+                      ? 'bg-brand-navy-50 border-brand-navy'
+                      : 'bg-white border-gray-200 hover:border-brand-orange'
+                  }`}
                 >
-                  <div className={`bg-gradient-to-r ${statusGradient} p-4 text-white`}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="bg-white/20 p-2 rounded-lg">
-                          <TypeIcon size={28} className="text-white" />
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-bold">{apt.title}</h3>
-                          <p className="text-sm opacity-90">{apt.clientId?.name || 'Unknown Client'}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-2xl font-bold">{apt.startTime} - {apt.endTime}</p>
-                        <p className="text-sm opacity-90 capitalize">{apt.status}</p>
-                      </div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <p className="text-xs font-bold text-gray-600 uppercase">
+                        {day.toLocaleDateString('en-US', { weekday: 'short' })}
+                      </p>
+                      <p className={`text-lg font-bold ${isToday(day) ? 'text-brand-navy' : 'text-gray-900'}`}>
+                        {day.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      </p>
                     </div>
-                  </div>
-
-                  <div className="p-6">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 text-sm">
-                      <div>
-                        <span className="font-semibold text-gray-600">Type:</span>
-                        <div className="flex items-center gap-2 text-gray-800 capitalize mt-1">
-                          <TypeIcon size={16} />
-                          <span>{apt.type}</span>
-                        </div>
-                      </div>
-                      <div>
-                        <span className="font-semibold text-gray-600">Location:</span>
-                        <p className="text-gray-800">{apt.location}</p>
-                      </div>
-                      <div>
-                        <span className="font-semibold text-gray-600">Duration:</span>
-                        <p className="text-gray-800">{apt.duration} minutes</p>
-                      </div>
-                      <div>
-                        <span className="font-semibold text-gray-600">Phone:</span>
-                        <p className="text-gray-800">{apt.clientId?.phone || 'N/A'}</p>
-                      </div>
-                    </div>
-
-                    {apt.notes && (
-                      <div className="mb-4 p-3 bg-amber-50 border-2 border-amber-200 rounded-xl">
-                        <p className="text-sm text-gray-700"><strong>Notes:</strong> {apt.notes}</p>
-                      </div>
+                    {dayOrders.length > 0 && (
+                      <span className="bg-gradient-to-r from-brand-navy to-brand-orange text-white px-3 py-1 rounded-full text-xs font-bold">
+                        {dayOrders.length}
+                      </span>
                     )}
-
-                    <div className="flex gap-2">
-                      {apt.status === 'scheduled' && (
-                        <>
-                          <button
-                            onClick={() => handleComplete(apt._id)}
-                            className="flex-1 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-xl font-bold transition-all shadow-md hover:shadow-lg text-sm"
-                          >
-                            ✅ Complete
-                          </button>
-                          <button
-                            onClick={() => handleCancel(apt._id)}
-                            className="flex-1 px-4 py-2 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white rounded-xl font-bold transition-all shadow-md hover:shadow-lg text-sm"
-                          >
-                            ❌ Cancel
-                          </button>
-                        </>
-                      )}
-                      {apt.status === 'cancelled' && apt.cancellationReason && (
-                        <div className="flex-1 p-3 bg-red-50 border-2 border-red-200 rounded-xl text-sm">
-                          <strong>Cancelled:</strong> {apt.cancellationReason}
+                  </div>
+                  {dayOrders.length > 0 && (
+                    <div className="space-y-1">
+                      {dayOrders.slice(0, 2).map((order) => (
+                        <div key={order._id} className="text-xs bg-gray-50 p-2 rounded border border-gray-200">
+                          <p className="font-bold text-gray-900 truncate">{order.clientId?.name || 'Unknown'}</p>
+                          <p className="text-gray-600 truncate">{order.attireType}</p>
                         </div>
+                      ))}
+                      {dayOrders.length > 2 && (
+                        <p className="text-xs text-gray-500 italic">+{dayOrders.length - 2} more</p>
                       )}
                     </div>
-                  </div>
+                  )}
                 </div>
               );
             })}
           </div>
-        )}
+
+          {/* Desktop: Grid View */}
+          <div className="hidden md:block">
+            {/* Day Headers */}
+            <div className="grid grid-cols-8 border-b-2 border-gray-100">
+              <div className="p-4 bg-gray-50 border-r border-gray-100"></div>
+              {weekDays.map((day, idx) => (
+                <div
+                  key={idx}
+                  className={`p-4 text-center border-r border-gray-100 ${
+                    isToday(day) ? 'bg-brand-navy-50' : 'bg-white'
+                  }`}
+                >
+                  <p className="text-xs font-bold text-gray-600 uppercase">
+                    {day.toLocaleDateString('en-US', { weekday: 'short' })}
+                  </p>
+                  <p className={`text-lg font-bold mt-1 ${isToday(day) ? 'text-brand-navy' : 'text-gray-900'}`}>
+                    {day.getDate()}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {/* Time Slots */}
+            <div className="grid grid-cols-8 gap-0">
+              {/* Time Column */}
+              <div className="bg-gray-50 border-r border-gray-100">
+                {timeSlots.map((time, idx) => (
+                  <div key={idx} className="h-20 p-2 border-b border-gray-100 text-xs font-semibold text-gray-600 flex items-start justify-center">
+                    {time}
+                  </div>
+                ))}
+              </div>
+
+              {/* Day Columns */}
+              {weekDays.map((day, dayIdx) => (
+                <div key={dayIdx} className={`border-r border-gray-100 ${isToday(day) ? 'bg-brand-navy-50 bg-opacity-30' : ''}`}>
+                  {timeSlots.map((time, timeIdx) => (
+                    <div
+                      key={timeIdx}
+                      onClick={() => handleTimeSlotClick(day)}
+                      className="h-20 border-b border-gray-100 p-1 relative cursor-pointer hover:bg-brand-navy-100 hover:bg-opacity-10 transition-colors group"
+                    >
+                      {/* Events for this specific time slot */}
+                      <div className="space-y-1">
+                        {getEventsForTimeSlot(day, time).map((order) => (
+                          <EventCard
+                            key={`order-${order._id}`}
+                            order={order}
+                            type="deadline"
+                            isOverdue={isOverdue(order.expectedDeliveryDate)}
+                            onClick={() => {
+                              setSelectedOrder(order);
+                              setShowOrderPanel(true);
+                            }}
+                          />
+                        ))}
+                      </div>
+                      {/* Add button on hover */}
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button className="bg-brand-navy text-white p-1 rounded-lg shadow-lg hover:bg-brand-navy-dark">
+                          <Plus size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
+
+      {/* Create Order Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white/90 backdrop-blur-lg rounded-2xl md:rounded-3xl w-full md:w-96 max-h-[90vh] overflow-y-auto border-2 border-gray-100 shadow-2xl">
+            <div className="sticky top-0 bg-gradient-to-r from-brand-navy to-brand-orange p-6 text-white flex items-center justify-between">
+              <h3 className="text-xl font-bold">Create New Order</h3>
+              <button
+                onClick={() => setShowCreateModal(false)}
+                className="p-2 hover:bg-white/20 rounded-lg transition-all"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {error && (
+              <div className="m-4 p-4 bg-red-50 border-2 border-red-300 rounded-xl text-red-700 text-sm font-semibold">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleCreateOrder} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Client *
+                </label>
+                <select
+                  required
+                  value={formData.clientId}
+                  onChange={(e) => handleClientChange(e.target.value)}
+                  className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/10 outline-none transition-all"
+                >
+                  <option value="">Select a client...</option>
+                  {clients.map((client) => (
+                    <option key={client._id} value={client._id}>
+                      {client.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Garment Type *
+                </label>
+                {formData.clientId ? (
+                  measurements.length > 0 ? (
+                    <select
+                      required
+                      value={formData.measurementId}
+                      onChange={(e) => {
+                        const measurement = measurements.find(m => m._id === e.target.value);
+                        setFormData({ 
+                          ...formData, 
+                          measurementId: e.target.value,
+                          attireType: measurement?.attireTypeId?.name || measurement?.attireType || ''
+                        });
+                      }}
+                      className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/10 outline-none transition-all"
+                    >
+                      <option value="">Select a measurement...</option>
+                      {measurements.map((measurement) => (
+                        <option key={measurement._id} value={measurement._id}>
+                          {measurement.attireTypeId?.name || measurement.attireType}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-600 text-sm">
+                      No measurements found for this client
+                    </div>
+                  )
+                ) : (
+                  <input
+                    type="text"
+                    required
+                    value={formData.attireType}
+                    onChange={(e) => setFormData({ ...formData, attireType: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/10 outline-none transition-all"
+                    placeholder="Select a client first"
+                    disabled
+                  />
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Delivery Date *
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={formData.expectedDeliveryDate}
+                  onChange={(e) => setFormData({ ...formData, expectedDeliveryDate: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/10 outline-none transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Delivery Time *
+                </label>
+                <input
+                  type="time"
+                  required
+                  value={formData.expectedDeliveryTime}
+                  onChange={(e) => setFormData({ ...formData, expectedDeliveryTime: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/10 outline-none transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Amount (₦) *
+                </label>
+                <input
+                  type="number"
+                  required
+                  value={formData.price}
+                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/10 outline-none transition-all"
+                  placeholder="0"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Notes
+                </label>
+                <textarea
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/10 outline-none transition-all resize-none"
+                  rows="3"
+                  placeholder="Order details..."
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateModal(false)}
+                  className="flex-1 px-4 py-3 border-2 border-gray-100 rounded-xl font-bold text-gray-700 hover:bg-gray-50 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-3 bg-gradient-to-br from-brand-navy to-brand-orange hover:from-brand-navy-dark hover:to-brand-orange-dark text-white rounded-xl font-bold transition-all shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center gap-2"
+                >
+                  <Save size={18} /> Create Order
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Day View Modal */}
+      {showDayView && selectedDate && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end md:items-center md:justify-center p-4">
+          <div className="bg-white/90 backdrop-blur-lg rounded-t-3xl md:rounded-2xl w-full md:w-xl max-h-[80vh] overflow-y-auto border-2 border-gray-100 shadow-2xl">
+            <div className="sticky top-0 bg-gradient-to-r from-brand-navy to-brand-orange p-4 md:p-6 text-white flex items-center justify-between">
+              <div>
+                <h3 className="text-lg md:text-xl font-bold">
+                  {selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                </h3>
+                <p className="text-xs md:text-sm opacity-90 mt-1">{selectedDayOrders.length} order(s)</p>
+              </div>
+              <button
+                onClick={() => setShowDayView(false)}
+                className="p-2 hover:bg-white/20 rounded-lg transition-all"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="p-4 md:p-6 space-y-3">
+              {selectedDayOrders.length > 0 ? (
+                <>
+                  {selectedDayOrders.map((order) => (
+                    <div
+                      key={order._id}
+                      className="bg-gradient-to-br from-brand-navy-50 to-brand-orange-50 rounded-lg p-3 border-2 border-gray-200 hover:border-brand-orange/50 transition-all cursor-pointer hover:shadow-lg"
+                      onClick={() => {
+                        setSelectedOrder(order);
+                        setShowOrderPanel(true);
+                        setShowDayView(false);
+                      }}
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <p className="text-xs font-bold text-gray-600 uppercase">#{order.orderNumber?.slice(-6)}</p>
+                          <p className="text-sm md:text-base font-bold text-gray-900 mt-0.5">
+                            {order.clientId?.name || 'Unknown'}
+                          </p>
+                        </div>
+                        <span className={`px-2 py-1 rounded-full text-xs font-bold whitespace-nowrap ${
+                          order.status === 'delivered' ? 'bg-green-100 text-green-700' :
+                          order.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
+                          'bg-yellow-100 text-yellow-700'
+                        }`}>
+                          {order.status === 'delivered' ? 'Done' : order.status === 'in_progress' ? 'In Progress' : 'Pending'}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-xs md:text-sm">
+                        <div>
+                          <p className="text-gray-600 font-semibold">Garment</p>
+                          <p className="font-bold text-gray-900">{order.attireType || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600 font-semibold">Amount</p>
+                          <p className="font-bold text-green-700">₦{order.price?.toLocaleString() || '0'}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </>
+              ) : (
+                <div className="text-center py-6">
+                  <Package size={40} className="text-gray-300 mx-auto mb-2" />
+                  <p className="text-gray-600 font-semibold text-sm">No orders for this day</p>
+                </div>
+              )}
+
+              <button
+                onClick={handleCreateNewOrder}
+                className="w-full mt-4 flex items-center justify-center gap-2 bg-gradient-to-br from-brand-navy to-brand-orange hover:from-brand-navy-dark hover:to-brand-orange-dark text-white px-4 py-2 md:py-3 rounded-lg md:rounded-xl font-bold text-sm md:text-base transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                <Plus size={18} />
+                New Order
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Order Details Side Panel */}
+      {showOrderPanel && selectedOrder && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end md:items-center md:justify-end">
+          <div className="bg-white/90 backdrop-blur-lg rounded-t-3xl md:rounded-2xl w-full md:w-96 max-h-[90vh] overflow-y-auto border-2 border-gray-100 shadow-2xl">
+            <div className="sticky top-0 bg-gradient-to-r from-brand-navy to-brand-orange p-6 text-white flex items-center justify-between">
+              <h3 className="text-xl font-bold">Order Details</h3>
+              <button
+                onClick={() => setShowOrderPanel(false)}
+                className="p-2 hover:bg-white/20 rounded-lg transition-all"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <p className="text-xs font-bold text-gray-600 uppercase">Order ID</p>
+                <p className="text-lg font-bold text-gray-900 mt-1">{selectedOrder.orderNumber}</p>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold text-gray-600 uppercase">Client</p>
+                <p className="text-lg font-bold text-gray-900 mt-1">{selectedOrder.clientId?.name || 'Unknown'}</p>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold text-gray-600 uppercase">Garment Type</p>
+                <p className="text-lg font-bold text-gray-900 mt-1">{selectedOrder.attireType || 'N/A'}</p>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold text-gray-600 uppercase">Status</p>
+                <p className={`text-lg font-bold mt-1 ${
+                  selectedOrder.status === 'delivered' ? 'text-green-600' :
+                  selectedOrder.status === 'in_progress' ? 'text-blue-600' :
+                  'text-yellow-600'
+                }`}>
+                  {selectedOrder.status.replace('_', ' ').toUpperCase()}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold text-gray-600 uppercase">Deadline</p>
+                <p className="text-lg font-bold text-gray-900 mt-1">
+                  {new Date(selectedOrder.expectedDeliveryDate).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold text-gray-600 uppercase">Amount</p>
+                <p className="text-lg font-bold text-gray-900 mt-1">
+                  ₦{selectedOrder.totalAmount?.toLocaleString() || '0'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style>{`
         @keyframes blob {
-          0%, 100% {
-            transform: translate(0, 0) scale(1);
-          }
-          33% {
-            transform: translate(30px, -50px) scale(1.1);
-          }
-          66% {
-            transform: translate(-20px, 20px) scale(0.9);
-          }
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33% { transform: translate(30px, -50px) scale(1.1); }
+          66% { transform: translate(-20px, 20px) scale(0.9); }
         }
-        .animate-blob {
-          animation: blob 7s infinite;
-        }
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
+        .animate-blob { animation: blob 7s infinite; }
+        .animation-delay-2000 { animation-delay: 2s; }
+        .animation-delay-4000 { animation-delay: 4s; }
       `}</style>
     </div>
   );
 }
+

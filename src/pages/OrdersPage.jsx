@@ -50,7 +50,6 @@ export default function OrdersPage() {
     attireType: '',
     price: '',
     expectedDeliveryDate: '',
-    notes: '',
     fabricImages: [],
   });
 
@@ -158,6 +157,7 @@ export default function OrdersPage() {
           fabricImageUrls = uploadRes.data.files.map(file => file.url);
         } catch (uploadErr) {
           console.error('Image upload failed:', uploadErr);
+          console.error('Upload error response:', uploadErr.response?.data);
           
           // Check if it's a configuration error
           if (uploadErr.response?.data?.configured === false) {
@@ -178,7 +178,6 @@ export default function OrdersPage() {
         attireType: formData.attireType,
         price: parseFloat(formData.price),
         expectedDeliveryDate: formData.expectedDeliveryDate,
-        notes: formData.notes,
         fabricImages: fabricImageUrls,
       });
 
@@ -190,7 +189,6 @@ export default function OrdersPage() {
         attireType: '',
         price: '',
         expectedDeliveryDate: '',
-        notes: '',
         fabricImages: [],
       });
       setSelectedImages([]);
@@ -314,66 +312,81 @@ export default function OrdersPage() {
 
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-brand-navy-50 via-brand-orange-50 to-brand-navy-50">
+      {/* Enhanced Decorative Background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-brand-navy to-brand-orange rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+        <div className="absolute top-40 left-0 w-[500px] h-[500px] bg-gradient-to-br from-brand-orange to-brand-navy rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute bottom-0 right-1/3 w-[550px] h-[550px] bg-gradient-to-br from-brand-navy to-brand-orange rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+      </div>
+
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-extrabold text-brand-navy">
+            <h1 className="text-5xl font-extrabold bg-gradient-to-r from-brand-navy via-brand-orange to-brand-orange-dark bg-clip-text text-transparent mb-2">
               Orders Management
             </h1>
-            <p className="text-gray-600 mt-1 text-base font-medium">{totalOrders} total orders</p>
+            <p className="text-gray-600 text-lg font-medium">{totalOrders} total orders</p>
           </div>
           <button
             onClick={() => setShowForm(!showForm)}
-            className="inline-flex items-center gap-2 bg-brand-navy hover:bg-brand-navy-dark text-white px-8 py-3 rounded-lg font-bold transition-all duration-300 shadow-md hover:shadow-lg"
+            className="inline-flex items-center gap-2 bg-gradient-to-br from-brand-navy to-brand-orange hover:from-brand-navy-dark hover:to-brand-orange-dark text-white px-6 md:px-8 py-3 md:py-4 rounded-xl md:rounded-2xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform text-sm md:text-base whitespace-nowrap"
           >
             <Plus size={20} /> New Order
           </button>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {[
             { 
               label: 'Total Revenue', 
               value: `₦${totalRevenue.toLocaleString()}`, 
               icon: DollarSign,
-              borderColor: 'border-brand-navy',
+              gradient: 'from-brand-navy via-brand-orange to-brand-orange-dark',
+              bgGradient: 'from-brand-navy-50 to-brand-orange-50',
+              iconBg: 'bg-brand-navy-100',
             },
             { 
-              label: 'Pending Orders', 
+              label: 'Pending', 
               value: pendingOrders, 
               icon: Clock,
-              borderColor: 'border-brand-orange',
+              gradient: 'from-brand-orange via-brand-orange-dark to-brand-navy',
+              bgGradient: 'from-brand-orange-50 to-brand-navy-50',
+              iconBg: 'bg-brand-orange-100',
             },
             { 
               label: 'In Progress', 
               value: inProgressOrders, 
               icon: Settings,
-              borderColor: 'border-brand-navy',
+              gradient: 'from-brand-navy via-brand-orange to-brand-navy-dark',
+              bgGradient: 'from-brand-navy-50 to-brand-orange-50',
+              iconBg: 'bg-brand-navy-100',
             },
             { 
               label: 'Completed', 
               value: completedOrders, 
               icon: CheckCircle,
-              borderColor: 'border-brand-orange',
+              gradient: 'from-brand-orange via-brand-navy to-brand-orange-dark',
+              bgGradient: 'from-brand-orange-50 to-brand-navy-50',
+              iconBg: 'bg-brand-orange-100',
             },
-          ].map((stat, idx) => {
+          ].map((stat) => {
             const Icon = stat.icon;
             return (
             <div 
-              key={idx} 
-              className={`bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-all border-l-4 ${stat.borderColor}`}
+              key={stat.label} 
+              className={`bg-gradient-to-br ${stat.bgGradient} rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 transform border border-white/50 backdrop-blur-sm`}
             >
               <div className="flex items-start justify-between mb-4">
-                <div className="bg-gray-100 p-3 rounded-lg">
-                  <Icon size={24} className={stat.borderColor.replace('border-', 'text-')} />
+                <div className={`${stat.iconBg} p-3 md:p-4 rounded-xl md:rounded-2xl shadow-md`}>
+                  <Icon size={24} className="md:w-8 md:h-8 text-gray-700" />
                 </div>
               </div>
               <div>
-                <p className="text-gray-600 text-xs font-semibold mb-1">{stat.label}</p>
-                <p className="text-2xl font-extrabold text-gray-900">
+                <p className="text-gray-600 text-xs md:text-sm font-semibold mb-1">{stat.label}</p>
+                <p className={`text-2xl md:text-3xl font-extrabold bg-gradient-to-r ${stat.gradient} bg-clip-text text-transparent`}>
                   {stat.value}
                 </p>
               </div>
@@ -383,42 +396,53 @@ export default function OrdersPage() {
 
         {/* Messages */}
         {error && (
-          <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-lg text-red-700 flex items-center gap-3 shadow-sm">
-            <AlertTriangle size={20} className="flex-shrink-0" />
-            <span className="font-semibold text-base">{error}</span>
+          <div className="p-6 bg-gradient-to-r from-red-50 to-pink-50 border-2 border-red-300 rounded-2xl text-red-700 flex items-center gap-4 shadow-lg">
+            <div className="bg-red-100 p-3 rounded-xl">
+              <AlertTriangle size={24} className="text-red-700" />
+            </div>
+            <span className="font-semibold text-base flex-1">{error}</span>
+            <button onClick={() => setError('')} className="text-red-700 hover:text-red-900">
+              <X size={20} />
+            </button>
           </div>
         )}
         {message && (
-          <div className="p-4 bg-green-50 border-l-4 border-green-500 rounded-lg text-green-700 flex items-center gap-3 shadow-sm">
-            <CheckCircle size={20} className="flex-shrink-0" />
-            <span className="font-semibold text-base">{message}</span>
+          <div className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-2xl text-green-700 flex items-center gap-4 shadow-lg">
+            <div className="bg-green-100 p-3 rounded-xl">
+              <CheckCircle size={24} className="text-green-700" />
+            </div>
+            <span className="font-semibold text-base flex-1">{message}</span>
+            <button onClick={() => setMessage('')} className="text-green-700 hover:text-green-900">
+              <X size={20} />
+            </button>
           </div>
         )}
 
 
         {/* Create Order Form */}
         {showForm && (
-          <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="bg-brand-navy p-3 rounded-lg">
-                <Sparkles size={24} className="text-white" />
+          <div className="bg-white/80 backdrop-blur-lg rounded-2xl md:rounded-3xl shadow-2xl p-4 md:p-8 border-2 border-brand-navy">
+            <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
+              <div className="bg-gradient-to-br from-brand-navy to-brand-orange p-2 md:p-3 rounded-lg md:rounded-xl">
+                <Sparkles size={20} className="md:w-7 md:h-7 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-brand-navy">
-                Create New Order
-              </h2>
+              <div>
+                <h2 className="text-lg md:text-2xl font-bold text-gray-900">Create New Order</h2>
+                <p className="text-gray-600 text-xs md:text-sm">Add a new order for your client</p>
+              </div>
             </div>
 
             <form onSubmit={handleCreateOrder} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <User size={18} /> Select Client *
+                  <label className="block text-xs md:text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                    <User size={16} /> Select Client *
                   </label>
                   <select
                     required
                     value={selectedClient}
                     onChange={(e) => handleClientSelect(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-brand-navy focus:ring-2 focus:ring-brand-navy focus:ring-opacity-20 outline-none transition-all bg-white text-sm"
+                    className="w-full px-4 py-2 md:py-3 border-2 border-gray-300 rounded-xl focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/20 outline-none transition-all bg-white text-sm"
                   >
                     <option value="">Choose a client...</option>
                     {clients.map((c) => (
@@ -431,14 +455,14 @@ export default function OrdersPage() {
 
                 {selectedClient && (
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                      <Ruler size={18} /> Select Measurement *
+                    <label className="block text-xs md:text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                      <Ruler size={16} /> Select Measurement *
                     </label>
                     <select
                       required
                       value={formData.measurementId}
                       onChange={(e) => handleMeasurementSelect(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-brand-navy focus:ring-2 focus:ring-brand-navy focus:ring-opacity-20 outline-none transition-all bg-white text-sm"
+                      className="w-full px-4 py-2 md:py-3 border-2 border-gray-300 rounded-xl focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/20 outline-none transition-all bg-white text-sm"
                     >
                       <option value="">Choose measurement...</option>
                       {filteredMeasurements.map((m) => (
@@ -451,8 +475,8 @@ export default function OrdersPage() {
                 )}
 
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <DollarSign size={18} /> Price (₦) *
+                  <label className="block text-xs md:text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                    <DollarSign size={16} /> Price (₦) *
                   </label>
                   <input
                     type="number"
@@ -460,34 +484,21 @@ export default function OrdersPage() {
                     required
                     value={formData.price}
                     onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-brand-navy focus:ring-2 focus:ring-brand-navy focus:ring-opacity-20 outline-none transition-all bg-white text-sm"
+                    className="w-full px-4 py-2 md:py-3 border-2 border-gray-300 rounded-xl focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/20 outline-none transition-all bg-white text-sm"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <Calendar size={18} /> Expected Delivery Date
+                  <label className="block text-xs md:text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                    <Calendar size={16} /> Expected Delivery Date
                   </label>
                   <input
                     type="date"
                     value={formData.expectedDeliveryDate}
                     onChange={(e) => setFormData({ ...formData, expectedDeliveryDate: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-brand-navy focus:ring-2 focus:ring-brand-navy focus:ring-opacity-20 outline-none transition-all bg-white text-sm"
+                    className="w-full px-4 py-2 md:py-3 border-2 border-gray-300 rounded-xl focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/20 outline-none transition-all bg-white text-sm"
                   />
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                  <MessageSquare size={18} /> Notes
-                </label>
-                <textarea
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  rows="2"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-brand-navy focus:ring-2 focus:ring-brand-navy focus:ring-opacity-20 outline-none transition-all resize-none bg-white text-sm"
-                  placeholder="Add any special notes..."
-                />
               </div>
 
               {/* Fabric Images Upload */}
@@ -575,16 +586,16 @@ export default function OrdersPage() {
         )}
 
         {/* Filter */}
-        <div className="bg-white rounded-lg shadow-sm p-3 border border-gray-200">
-          <div className="flex items-center gap-3">
+        <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-4 border-2 border-purple-200">
+          <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <Search size={18} className="text-gray-700" />
-              <span className="font-bold text-gray-700 text-sm">Filter by Status:</span>
+              <Search size={24} />
+              <span className="font-bold text-gray-700">Filter by Status:</span>
             </div>
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:border-brand-navy focus:ring-2 focus:ring-brand-navy focus:ring-opacity-20 outline-none transition-all bg-white font-semibold text-sm"
+              className="px-4 py-2 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all bg-white font-semibold"
             >
               <option value="">All Statuses</option>
               <option value="pending">Pending</option>
@@ -598,10 +609,19 @@ export default function OrdersPage() {
 
         {/* Orders Grid */}
         {orders.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-lg border border-gray-200 shadow-sm">
-            <Package size={80} className="mx-auto mb-6 text-gray-400" />
-            <h3 className="text-xl font-bold text-gray-800 mb-2">No orders yet</h3>
-            <p className="text-gray-600 text-base">Create your first order to get started</p>
+          <div className="bg-white/80 backdrop-blur-lg rounded-2xl md:rounded-3xl shadow-2xl p-8 md:p-12 text-center border-2 border-gray-100">
+            <div className="bg-gradient-to-br from-brand-navy-50 to-brand-orange-50 rounded-2xl p-8 mb-6 inline-block">
+              <Package size={64} className="text-gray-400 mx-auto" />
+            </div>
+            <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">No Orders Yet</h3>
+            <p className="text-gray-600 text-base md:text-lg mb-8">Create your first order to get started</p>
+            <button
+              onClick={() => setShowForm(true)}
+              className="inline-flex items-center gap-2 bg-gradient-to-br from-brand-navy to-brand-orange hover:from-brand-navy-dark hover:to-brand-orange-dark text-white px-6 md:px-8 py-3 md:py-4 rounded-xl md:rounded-2xl font-bold transition-all duration-300 hover:scale-105 transform shadow-lg hover:shadow-xl"
+            >
+              <Plus size={20} />
+              Create Order
+            </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -614,52 +634,57 @@ export default function OrdersPage() {
               return (
                 <div
                   key={order._id}
-                  className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all overflow-hidden border-l-4 border-brand-navy"
+                  className="bg-white/80 backdrop-blur-lg rounded-2xl md:rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 transform border-2 border-gray-100 hover:border-brand-orange/50 overflow-hidden"
                 >
-                  {/* Card Header */}
-                  <div className="bg-brand-navy p-6 text-white">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <StatusIcon size={24} className="text-white" />
-                        <span className="text-sm font-bold">#{order.orderNumber}</span>
+                  {/* Card Header with Gradient */}
+                  <div className={`bg-gradient-to-r ${statusConfig.gradient} p-4 md:p-6 text-white relative overflow-hidden`}>
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12"></div>
+                    
+                    <div className="relative z-10">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <StatusIcon size={24} className="text-white" />
+                          <span className="text-sm md:text-base font-bold">#{order.orderNumber}</span>
+                        </div>
+                        <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
+                          <span className="text-xs font-bold capitalize">{order.status.replace('_', ' ')}</span>
+                        </div>
                       </div>
-                      <div className="bg-white/20 px-3 py-1 rounded-full">
-                        <span className="text-xs font-bold capitalize">{order.status.replace('_', ' ')}</span>
-                      </div>
+                      <h3 className="text-lg md:text-xl font-bold mb-1">{order.clientId?.name || 'N/A'}</h3>
+                      <p className="text-sm opacity-90">{order.attireType}</p>
                     </div>
-                    <h3 className="text-lg font-bold mb-1">{order.clientId?.name || 'N/A'}</h3>
-                    <p className="text-sm opacity-90">{order.attireType}</p>
                   </div>
 
                   {/* Card Body */}
-                  <div className="p-6 space-y-4">
+                  <div className="p-4 md:p-6 space-y-4">
                     {/* Price */}
-                    <div className="bg-green-50 rounded-lg p-4 border-l-4 border-green-500">
+                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl md:rounded-2xl p-3 md:p-4 border-2 border-green-200">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <DollarSign size={20} className="text-green-700" />
-                          <span className="text-sm font-semibold text-gray-600">Total Price</span>
+                          <DollarSign size={20} className="text-green-600" />
+                          <span className="text-xs md:text-sm font-semibold text-gray-600">Total Price</span>
                         </div>
-                        <span className="text-2xl font-extrabold text-green-700">
+                        <span className="text-xl md:text-2xl font-extrabold text-green-700">
                           ₦{order.price?.toLocaleString()}
                         </span>
                       </div>
                     </div>
 
                     {/* Payment Status */}
-                    <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-brand-navy">
-                      <div className="flex items-center justify-between mb-2">
+                    <div className={`bg-gradient-to-br ${paymentConfig.bg} rounded-xl md:rounded-2xl p-3 md:p-4 border-2 ${paymentConfig.text.replace('text-', 'border-')}-200`}>
+                      <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <PaymentIcon size={20} className="text-brand-navy" />
-                          <span className="text-sm font-bold text-brand-navy capitalize">
-                            {order.paymentStatus}
+                          <PaymentIcon size={20} className={paymentConfig.text} />
+                          <span className={`text-xs md:text-sm font-bold ${paymentConfig.text} capitalize`}>
+                            {paymentConfig.label}
                           </span>
                         </div>
                       </div>
                       {order.amountRemaining > 0 && (
                         <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-200">
                           <span className="text-xs text-gray-600 font-semibold">Amount Due:</span>
-                          <span className="text-lg font-bold text-brand-navy">
+                          <span className="text-base font-bold text-red-600">
                             ₦{order.amountRemaining?.toLocaleString()}
                           </span>
                         </div>
@@ -676,8 +701,8 @@ export default function OrdersPage() {
 
                     {/* Delivery Date */}
                     {order.expectedDeliveryDate && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Calendar size={20} className="text-gray-600" />
+                      <div className="flex items-center gap-2 text-xs md:text-sm text-gray-600 bg-gray-50 p-3 rounded-xl border border-gray-200">
+                        <Calendar size={18} className="text-brand-navy flex-shrink-0" />
                         <span className="font-semibold">
                           Delivery: {new Date(order.expectedDeliveryDate).toLocaleDateString('en-US', { 
                             month: 'short', 
@@ -687,50 +712,40 @@ export default function OrdersPage() {
                         </span>
                       </div>
                     )}
-
-                    {/* Notes */}
-                    {order.notes && (
-                      <div className="bg-amber-50 border-l-4 border-amber-500 p-3 rounded-lg">
-                        <div className="flex items-start gap-2">
-                          <MessageSquare size={18} className="text-amber-700 flex-shrink-0 mt-0.5" />
-                          <p className="text-xs text-gray-700 font-medium">{order.notes}</p>
-                        </div>
-                      </div>
-                    )}
                   </div>
 
                   {/* Card Actions */}
-                  <div className="bg-gray-50 p-4 border-t border-gray-200 flex gap-2">
+                  <div className="bg-gray-50 p-3 md:p-4 border-t-2 border-gray-100 flex gap-2 flex-wrap">
                     <button
                       onClick={() => navigate(`/orders/${order._id}`)}
-                      className="flex-1 flex items-center justify-center gap-2 bg-brand-navy hover:bg-brand-navy-dark text-white px-3 py-2.5 rounded-lg transition-all text-sm font-bold shadow-sm hover:shadow-md"
+                      className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-brand-navy to-brand-navy-dark hover:from-brand-navy-dark hover:to-brand-navy text-white px-3 py-2 md:py-2.5 rounded-lg md:rounded-xl transition-all text-xs md:text-sm font-bold shadow-md hover:shadow-lg transform hover:scale-105"
                     >
-                      <Eye size={18} /> View
+                      <Eye size={16} /> View
                     </button>
                     
                     {order.status === 'pending' && (
                       <button
                         onClick={() => handleStatusChange(order._id, 'in_progress')}
-                        className="flex-1 flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white px-3 py-2.5 rounded-lg transition-all text-sm font-bold shadow-sm hover:shadow-md"
+                        className="flex-1 min-w-[100px] flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-3 py-2 md:py-2.5 rounded-lg md:rounded-xl transition-all text-xs md:text-sm font-bold shadow-md hover:shadow-lg transform hover:scale-105"
                       >
-                        <Play size={18} /> Start
+                        <Play size={16} /> Start
                       </button>
                     )}
                     
                     {order.paymentStatus !== 'paid' && (
                       <button
                         onClick={() => setPaymentForm(order._id)}
-                        className="flex-1 flex items-center justify-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white px-3 py-2.5 rounded-lg transition-all text-sm font-bold shadow-sm hover:shadow-md"
+                        className="flex-1 min-w-[100px] flex items-center justify-center gap-2 bg-gradient-to-r from-brand-orange to-brand-orange-dark hover:from-brand-orange-dark hover:to-brand-orange text-white px-3 py-2 md:py-2.5 rounded-lg md:rounded-xl transition-all text-xs md:text-sm font-bold shadow-md hover:shadow-lg transform hover:scale-105"
                       >
-                        <CreditCard size={18} /> Pay
+                        <CreditCard size={16} /> Pay
                       </button>
                     )}
                     
                     <button
                       onClick={() => handleDeleteOrder(order._id)}
-                      className="flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white px-3 py-2.5 rounded-lg transition-all text-sm font-bold shadow-sm hover:shadow-md"
+                      className="flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-3 py-2 md:py-2.5 rounded-lg md:rounded-xl transition-all text-xs md:text-sm font-bold shadow-md hover:shadow-lg transform hover:scale-105"
                     >
-                      <Trash2 size={18} />
+                      <Trash2 size={16} />
                     </button>
                   </div>
                 </div>
@@ -743,39 +758,42 @@ export default function OrdersPage() {
         {/* Payment Modal */}
         {paymentForm && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full border border-gray-200">
+            <div className="bg-white rounded-2xl md:rounded-3xl shadow-2xl p-6 md:p-8 max-w-md w-full border-2 border-gray-100">
               <div className="flex items-center gap-3 mb-6">
-                <div className="bg-brand-navy p-3 rounded-lg">
+                <div className="bg-gradient-to-br from-brand-navy to-brand-orange p-3 rounded-xl">
                   <CreditCard size={28} className="text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-brand-navy">
-                  Record Payment
-                </h3>
+                <div>
+                  <h3 className="text-xl md:text-2xl font-bold text-gray-900">
+                    Record Payment
+                  </h3>
+                  <p className="text-gray-600 text-xs md:text-sm">Enter payment details</p>
+                </div>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <DollarSign size={20} /> Amount (₦)
+                  <label className="block text-xs md:text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                    <DollarSign size={16} /> Amount (₦)
                   </label>
                   <input
                     type="number"
                     step="100"
                     value={paymentData.amount}
                     onChange={(e) => setPaymentData({ ...paymentData, amount: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-brand-navy focus:ring-2 focus:ring-brand-navy focus:ring-opacity-20 outline-none transition-all bg-white"
+                    className="w-full px-4 py-2 md:py-3 border-2 border-gray-300 rounded-xl focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/20 outline-none transition-all bg-white text-sm"
                     placeholder="Enter amount"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <CreditCard size={20} /> Payment Method
+                  <label className="block text-xs md:text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                    <CreditCard size={16} /> Payment Method
                   </label>
                   <select
                     value={paymentData.method}
                     onChange={(e) => setPaymentData({ ...paymentData, method: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-brand-navy focus:ring-2 focus:ring-brand-navy focus:ring-opacity-20 outline-none transition-all bg-white"
+                    className="w-full px-4 py-2 md:py-3 border-2 border-gray-300 rounded-xl focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/20 outline-none transition-all bg-white text-sm"
                   >
                     <option value="cash">Cash</option>
                     <option value="transfer">Bank Transfer</option>
@@ -818,6 +836,29 @@ export default function OrdersPage() {
           </div>
         )}
       </div>
+
+      <style>{`
+        @keyframes blob {
+          0%, 100% {
+            transform: translate(0, 0) scale(1);
+          }
+          33% {
+            transform: translate(30px, -50px) scale(1.1);
+          }
+          66% {
+            transform: translate(-20px, 20px) scale(0.9);
+          }
+        }
+        .animate-blob {
+          animation: blob 7s infinite;
+        }
+        .animation-delay-2000 {
+          animation-delay: 2s;
+        }
+        .animation-delay-4000 {
+          animation-delay: 4s;
+        }
+      `}</style>
     </div>
   );
 }

@@ -16,8 +16,8 @@ import {
   Package,
 } from 'lucide-react';
 import axios from 'axios';
-import AdminSidebar from '../components/AdminSidebar';
-import { API_URL } from '../lib/api';
+import AdminSidebar from '../../components/AdminSidebar';
+import { API_URL } from '../../lib/api';
 
 export default function AdminDashboardPage() {
   const navigate = useNavigate();

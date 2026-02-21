@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, AlertCircle, CheckCircle, Clock, Edit2 } from 'lucide-react';
 import axios from 'axios';
-import AdminSidebar from '../components/AdminSidebar';
-import { API_URL } from '../lib/api';
+import AdminSidebar from '../../components/AdminSidebar';
+import { API_URL } from '../../lib/api';
 
 export default function AdminSubscriptionsPage() {
   const navigate = useNavigate();

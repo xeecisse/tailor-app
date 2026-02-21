@@ -85,9 +85,9 @@ export default function StaffDetailsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-brand-navy-50 via-brand-orange-50 to-brand-navy-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-purple-200 border-t-purple-600 mb-4"></div>
+          <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-brand-navy-200 border-t-brand-navy mb-4"></div>
           <p className="text-gray-700 font-bold text-lg">Loading staff details...</p>
         </div>
       </div>
@@ -96,12 +96,12 @@ export default function StaffDetailsPage() {
 
   if (error || !staff) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-brand-navy-50 via-brand-orange-50 to-brand-navy-50 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 text-lg mb-4">{error || 'Staff member not found'}</p>
           <button
             onClick={() => navigate('/staff')}
-            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl font-bold transition-all shadow-lg"
+            className="px-6 py-3 bg-gradient-to-br from-brand-navy to-brand-orange hover:from-brand-navy-dark hover:to-brand-orange-dark text-white rounded-xl font-bold transition-all shadow-lg"
           >
             Back to Staff List
           </button>
@@ -116,34 +116,41 @@ export default function StaffDetailsPage() {
   const deliveriesForSelectedDate = selectedDate ? getDeliveriesForDate(selectedDate) : [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-brand-navy-50 via-brand-orange-50 to-brand-navy-50">
+      {/* Enhanced Decorative Background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-brand-navy to-brand-orange rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+        <div className="absolute top-40 left-0 w-[500px] h-[500px] bg-gradient-to-br from-brand-orange to-brand-navy rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute bottom-0 right-1/3 w-[550px] h-[550px] bg-gradient-to-br from-brand-navy to-brand-orange rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <header className="flex justify-between items-center mb-12 pb-8 border-b border-gray-200">
+        <header className="flex justify-between items-center mb-12 pb-8 border-b-2 border-gray-200">
           <div className="flex items-center gap-6">
             <button
               onClick={() => navigate('/staff')}
-              className="w-12 h-12 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-purple-50 hover:-translate-x-1 transition-all shadow-sm"
+              className="w-12 h-12 rounded-full bg-white border-2 border-gray-100 flex items-center justify-center hover:bg-brand-navy-50 hover:-translate-x-1 transition-all shadow-lg hover:shadow-xl"
             >
-              <ArrowLeft size={20} className="text-gray-700" />
+              <ArrowLeft size={20} className="text-brand-navy" />
             </button>
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-brand-navy to-brand-orange flex items-center justify-center text-white text-3xl font-bold shadow-lg">
               {staff.name.charAt(0).toUpperCase()}
             </div>
             <div>
-              <h1 className="text-4xl font-extrabold text-gray-900 mb-1">
+              <h1 className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-brand-navy via-brand-orange to-brand-orange-dark bg-clip-text text-transparent mb-1">
                 {staff.name}
               </h1>
-              <div className="text-purple-600 text-sm font-semibold uppercase tracking-wider mb-3">
+              <div className="text-brand-navy text-sm font-semibold uppercase tracking-wider mb-3">
                 {staff.role}
               </div>
               <div className="flex items-center gap-8 text-sm text-gray-600">
                 <span className="flex items-center gap-2">
-                  <Phone size={16} /> {staff.phone}
+                  <Phone size={16} className="text-brand-navy" /> {staff.phone}
                 </span>
                 {staff.specialization && (
                   <span className="flex items-center gap-2">
-                    <Briefcase size={16} /> Specializes in: {staff.specialization}
+                    <Briefcase size={16} className="text-brand-orange" /> Specializes in: {staff.specialization}
                   </span>
                 )}
               </div>
@@ -151,7 +158,7 @@ export default function StaffDetailsPage() {
           </div>
           <button
             onClick={() => navigate('/orders')}
-            className="px-7 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl font-bold hover:-translate-y-0.5 transition-all shadow-lg"
+            className="px-7 py-3 bg-gradient-to-br from-brand-navy to-brand-orange hover:from-brand-navy-dark hover:to-brand-orange-dark text-white rounded-xl font-bold hover:-translate-y-0.5 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
           >
             <FileText size={18} className="inline mr-2" />
             View in Orders
@@ -159,23 +166,23 @@ export default function StaffDetailsPage() {
         </header>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-4 gap-6 mb-14">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-14">
           {[
-            { label: 'Active', value: staff.stats?.active || 0, icon: Clock, color: 'from-orange-500 to-amber-500', bgColor: 'bg-orange-50' },
+            { label: 'Active', value: staff.stats?.active || 0, icon: Clock, color: 'from-brand-orange to-brand-orange-dark', bgColor: 'bg-brand-orange-50' },
             { label: 'Completed', value: staff.stats?.completed || 0, icon: CheckCircle, color: 'from-green-500 to-emerald-500', bgColor: 'bg-green-50' },
-            { label: 'Total', value: staff.stats?.total || 0, icon: BarChart3, color: 'from-purple-500 to-pink-500', bgColor: 'bg-purple-50' },
-            { label: 'Completion Rate', value: `${staff.stats?.completionRate || 0}%`, icon: TrendingUp, color: 'from-blue-500 to-cyan-500', bgColor: 'bg-blue-50' },
+            { label: 'Total', value: staff.stats?.total || 0, icon: BarChart3, color: 'from-brand-navy to-brand-navy-dark', bgColor: 'bg-brand-navy-50' },
+            { label: 'Completion Rate', value: `${staff.stats?.completionRate || 0}%`, icon: TrendingUp, color: 'from-brand-navy to-brand-orange', bgColor: 'bg-brand-navy-50' },
           ].map((stat, idx) => {
             const Icon = stat.icon;
             return (
               <div
                 key={idx}
-                className={`${stat.bgColor} p-8 rounded-2xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all border border-gray-200`}
+                className={`${stat.bgColor} p-6 md:p-8 rounded-2xl md:rounded-3xl shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all border-2 border-gray-100 hover:border-brand-orange/50`}
               >
-                <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${stat.color} flex items-center justify-center text-white mb-4`}>
-                  <Icon size={20} />
+                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center text-white mb-4`}>
+                  <Icon size={24} />
                 </div>
-                <div className="text-4xl font-extrabold mb-2 text-gray-900">
+                <div className="text-3xl md:text-4xl font-extrabold mb-2 text-gray-900">
                   {stat.value}
                 </div>
                 <div className="text-sm text-gray-600 font-semibold">{stat.label}</div>
@@ -186,19 +193,19 @@ export default function StaffDetailsPage() {
 
         {/* Monthly Performance */}
         <section className="mb-14">
-          <h2 className="text-3xl font-bold mb-6 text-gray-900">
+          <h2 className="text-2xl md:text-3xl font-bold mb-6 text-gray-900">
             Monthly Performance
           </h2>
-          <div className="grid grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {staff.monthlyPerformance?.map((month, idx) => (
               <div
                 key={idx}
-                className="bg-white rounded-xl p-6 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all border border-gray-200"
+                className="bg-white/80 backdrop-blur-lg rounded-2xl md:rounded-3xl p-6 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all border-2 border-gray-100 hover:border-brand-orange/50"
               >
                 <div className="text-xs text-gray-500 font-semibold mb-4">{month.month}</div>
-                <div className="w-full h-1.5 bg-gray-200 rounded-full mb-4 overflow-hidden">
+                <div className="w-full h-2 bg-gray-200 rounded-full mb-4 overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-purple-600 to-pink-600 rounded-full transition-all duration-1000"
+                    className="h-full bg-gradient-to-r from-brand-navy to-brand-orange rounded-full transition-all duration-1000"
                     style={{ width: `${month.percentage}%` }}
                   />
                 </div>
@@ -212,28 +219,28 @@ export default function StaffDetailsPage() {
 
         {/* Delivery Calendar */}
         <section className="mb-14">
-          <h2 className="text-3xl font-bold mb-2 text-gray-900">
+          <h2 className="text-2xl md:text-3xl font-bold mb-2 text-gray-900">
             Delivery Calendar
           </h2>
           <p className="text-gray-600 text-sm mb-6">
             Tap a highlighted date to see assigned orders
           </p>
-          <div className="grid grid-cols-[320px_1fr] gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-8">
             {/* Calendar */}
-            <div className="bg-white p-8 rounded-2xl shadow-md border border-gray-200">
+            <div className="bg-white/80 backdrop-blur-lg p-6 md:p-8 rounded-2xl md:rounded-3xl shadow-lg border-2 border-gray-100">
               <div className="flex justify-between items-center mb-6">
                 <button
                   onClick={() => changeMonth(-1)}
-                  className="w-8 h-8 bg-purple-100 rounded-md hover:bg-purple-600 hover:text-white transition-all flex items-center justify-center text-gray-700"
+                  className="w-8 h-8 bg-brand-navy-100 rounded-lg hover:bg-brand-navy hover:text-white transition-all flex items-center justify-center text-brand-navy font-bold"
                 >
                   <ChevronLeft size={18} />
                 </button>
-                <div className="text-xl font-bold text-gray-900">
+                <div className="text-lg md:text-xl font-bold text-gray-900">
                   {monthName}
                 </div>
                 <button
                   onClick={() => changeMonth(1)}
-                  className="w-8 h-8 bg-purple-100 rounded-md hover:bg-purple-600 hover:text-white transition-all flex items-center justify-center text-gray-700"
+                  className="w-8 h-8 bg-brand-navy-100 rounded-lg hover:bg-brand-navy hover:text-white transition-all flex items-center justify-center text-brand-navy font-bold"
                 >
                   <ChevronRight size={18} />
                 </button>
@@ -256,11 +263,11 @@ export default function StaffDetailsPage() {
                       onClick={() => setSelectedDate(day)}
                       className={`aspect-square flex items-center justify-center text-sm rounded-lg font-medium transition-all ${
                         isToday(day)
-                          ? 'bg-gradient-to-br from-purple-600 to-pink-600 text-white shadow-md'
+                          ? 'bg-gradient-to-br from-brand-navy to-brand-orange text-white shadow-md'
                           : selectedDate === day
-                          ? 'bg-purple-600 text-white'
+                          ? 'bg-brand-navy text-white'
                           : hasDeliveries
-                          ? 'bg-purple-100 text-purple-700 font-bold'
+                          ? 'bg-brand-navy-100 text-brand-navy font-bold'
                           : 'hover:bg-gray-100 text-gray-700'
                       }`}
                     >
@@ -272,17 +279,17 @@ export default function StaffDetailsPage() {
             </div>
 
             {/* Delivery Info */}
-            <div className="bg-white p-10 rounded-2xl shadow-md border border-gray-200 flex flex-col items-center justify-center text-center">
+            <div className="bg-white/80 backdrop-blur-lg p-8 md:p-10 rounded-2xl md:rounded-3xl shadow-lg border-2 border-gray-100 flex flex-col items-center justify-center text-center">
               {selectedDate && deliveriesForSelectedDate.length > 0 ? (
                 <div className="w-full">
-                  <h3 className="text-2xl font-bold mb-6 text-gray-900">
+                  <h3 className="text-xl md:text-2xl font-bold mb-6 text-gray-900">
                     Deliveries for {monthName.split(' ')[0]} {selectedDate}
                   </h3>
                   <div className="space-y-4">
                     {deliveriesForSelectedDate.map((delivery) => (
                       <div
                         key={delivery.orderId}
-                        className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg text-left hover:from-purple-100 hover:to-pink-100 transition-all cursor-pointer border border-purple-200"
+                        className="p-4 bg-gradient-to-br from-brand-navy-50 to-brand-orange-50 rounded-xl text-left hover:from-brand-navy-100 hover:to-brand-orange-100 transition-all cursor-pointer border-2 border-brand-navy-200 hover:border-brand-orange/50"
                         onClick={() => navigate(`/orders/${delivery.orderId}`)}
                       >
                         <div className="font-bold text-gray-900 mb-1">
@@ -291,7 +298,7 @@ export default function StaffDetailsPage() {
                         <div className="text-sm text-gray-600">
                           Client: {delivery.clientName}
                         </div>
-                        <div className="text-xs text-purple-600 mt-2 capitalize font-semibold">
+                        <div className="text-xs text-brand-navy mt-2 capitalize font-semibold">
                           Status: {delivery.status.replace('_', ' ')}
                         </div>
                       </div>
@@ -301,7 +308,7 @@ export default function StaffDetailsPage() {
               ) : (
                 <>
                   <Calendar size={64} className="text-gray-300 mb-4" />
-                  <h3 className="text-2xl font-bold mb-4 text-gray-900">
+                  <h3 className="text-xl md:text-2xl font-bold mb-4 text-gray-900">
                     {selectedDate
                       ? `No deliveries on ${monthName.split(' ')[0]} ${selectedDate}`
                       : 'Select a date to view deliveries'}
@@ -319,8 +326,8 @@ export default function StaffDetailsPage() {
 
         {/* Order History */}
         <section>
-          <div className="bg-white p-10 rounded-2xl shadow-md border border-gray-200">
-            <h2 className="text-3xl font-bold mb-6 text-gray-900">
+          <div className="bg-white/80 backdrop-blur-lg p-8 md:p-10 rounded-2xl md:rounded-3xl shadow-lg border-2 border-gray-100">
+            <h2 className="text-2xl md:text-3xl font-bold mb-6 text-gray-900">
               Order History
             </h2>
             {staff.orderHistory && staff.orderHistory.length > 0 ? (
@@ -328,7 +335,7 @@ export default function StaffDetailsPage() {
                 {staff.orderHistory.map((order) => (
                   <div
                     key={order._id}
-                    className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl hover:from-purple-100 hover:to-pink-100 transition-all cursor-pointer flex justify-between items-center border border-purple-200"
+                    className="p-6 bg-gradient-to-br from-brand-navy-50 to-brand-orange-50 rounded-xl hover:from-brand-navy-100 hover:to-brand-orange-100 transition-all cursor-pointer flex justify-between items-center border-2 border-brand-navy-200 hover:border-brand-orange/50"
                     onClick={() => navigate(`/orders/${order._id}`)}
                   >
                     <div>
@@ -336,7 +343,7 @@ export default function StaffDetailsPage() {
                       <div className="text-sm text-gray-600">
                         Client: {order.clientId?.name} • {order.attireType}
                       </div>
-                      <div className="text-xs text-purple-600 mt-2 font-semibold">
+                      <div className="text-xs text-brand-navy mt-2 font-semibold">
                         {new Date(order.createdAt).toLocaleDateString('en-US', {
                           month: 'short',
                           day: 'numeric',
