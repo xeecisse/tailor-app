@@ -126,22 +126,22 @@ export default function AdminLoginPage() {
           </form>
 
           {/* Divider */}
-          <div className="relative my-6">
+          {/* <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-200"></div>
             </div>
             <div className="relative flex justify-center text-sm">
               <span className="px-2 bg-white text-gray-500">Back to</span>
             </div>
-          </div>
+          </div> */}
 
           {/* Back Link */}
-          <Link
+          {/* <Link
             to="/"
             className="w-full block text-center py-3 px-4 border-2 border-brand-navy text-brand-navy font-semibold rounded-lg hover:bg-brand-navy hover:text-white transition-all"
           >
             Landing Page
-          </Link>
+          </Link> */}
         </div>
 
         {/* Footer */}

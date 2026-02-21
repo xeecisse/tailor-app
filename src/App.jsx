@@ -5,7 +5,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import authStore from './stores/authStore';
 
 // Pages
-import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import AdminLoginPage from './pages/admin/AdminLoginPage';
@@ -55,7 +54,7 @@ function App() {
       <NotificationCenter />
       <Routes>
         {/* Public routes */}
-        <Route path="/" element={token ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
+        <Route path="/" element={<Navigate to="/admin/login" replace />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
 
@@ -115,7 +114,7 @@ function App() {
           </Route>
         </Route>
 
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/admin/login" replace />} />
       </Routes>
     </Router>
   );
