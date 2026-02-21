@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// export const API_URL = 'https://tailor-app-backend-uh5b.onrender.com/api';
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+export const API_URL = 'https://tailor-app-backend-uh5b.onrender.com/api';
+// export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const BASE_URL = API_URL.replace('/api', ''); // Get base URL without /api
 
 const client = axios.create({

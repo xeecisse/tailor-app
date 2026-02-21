@@ -90,15 +90,10 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <img src={logo} alt="SewTrack Logo" className="h-16 w-auto" />
-            <h1 className="text-2xl font-bold text-brand-navy">SewTrack</h1>
+            {/* <h1 className="text-2xl font-bold text-brand-navy">SewTrack</h1> */}
           </div>
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate('/admin/login')}
-              className="bg-brand-orange hover:bg-brand-orange-dark text-white px-6 py-2 rounded-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg"
-            >
-              Admin Panel
-            </button>
+        
             <button
               onClick={() => navigate('/login')}
               className="bg-brand-navy hover:bg-brand-navy-dark text-white px-6 py-2 rounded-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg"
@@ -116,7 +111,7 @@ export default function LandingPage() {
             {/* Left Content */}
             <div className="space-y-8">
               <div className="flex items-center gap-3 mb-4">
-                <img src={logo} alt="SewTrack Logo" className="h-16 w-auto" />
+                {/* <img src={logo} alt="SewTrack Logo" className="h-16 w-auto" /> */}
                 <div>
                   <h1 className="text-3xl font-bold">SewTrack</h1>
                   <p className="text-sm text-gray-300">Tailoring Business Management</p>
