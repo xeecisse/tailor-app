@@ -17,7 +17,7 @@ import {
   DollarSign,
   Receipt,
 } from 'lucide-react';
-import { inventoryAPI, clientAPI } from '../lib/api';
+import { inventoryAPI, clientAPI, purchaseOrderAPI } from '../lib/api';
 
 export default function POSPage() {
   // State Management
@@ -130,8 +130,38 @@ export default function POSPage() {
       setLoading(true);
       setError('');
 
-      // Create sale record
+      // Prepare PO data
+      const poData = {
+        clientId: selectedCustomer === 'walk-in' ? 'walk-in' : selectedCustomer,
+        items: cartItems.map(item => ({
+          itemId: item._id,
+          quantity: item.quantity,
+          unitPrice: item.price,
+        })),
+        notes: `POS Sale - ${paymentMethod}`,
+      };
+
+      // Create purchase order
+      const poResponse = await purchaseOrderAPI.create(poData);
+      const poId = poResponse.data.po._id;
+      console.log('Purchase order created:', poId);
+
+      // Record payment immediately
+      const paymentData = {
+        amount: calculateTotal(),
+        method: paymentMethod,
+      };
+      
+      await purchaseOrderAPI.recordPayment(poId, paymentData);
+      console.log('Payment recorded for PO:', poId);
+
+      // Mark as delivered to deduct inventory
+      await purchaseOrderAPI.updateDeliveryStatus(poId, 'delivered');
+      console.log('PO marked as delivered, inventory deducted');
+
+      // Create sale record for display
       const saleData = {
+        poId,
         customerId: selectedCustomer === 'walk-in' ? null : selectedCustomer,
         customerName: selectedCustomer === 'walk-in' ? 'Walk-in Customer' : 
           clients.find(c => c._id === selectedCustomer)?.name || 'Unknown',
@@ -150,20 +180,20 @@ export default function POSPage() {
         timestamp: new Date().toISOString(),
       };
 
-      // TODO: Call sales API to save the transaction
-      // await salesAPI.create(saleData);
-
       // Add to completed sales
       setCompletedSales([...completedSales, saleData]);
       setLastSale(saleData);
       setShowReceipt(true);
 
-      setMessage('Sale completed successfully!');
+      setMessage('✅ Sale completed successfully!');
       setCartItems([]);
       setDiscount(0);
       setSelectedCustomer('walk-in');
       setPaymentMethod('cash');
       setShowPaymentModal(false);
+      
+      // Refresh inventory
+      fetchItems();
       
       setTimeout(() => setMessage(''), 3000);
     } catch (err) {
@@ -315,61 +345,6 @@ export default function POSPage() {
 
           {/* Revenue Dashboard */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-            <div className="bg-gradient-to-br from-brand-navy-50 to-brand-orange-50 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 transform border border-white/50 backdrop-blur-sm">
-              <div className="flex items-start justify-between mb-4">
-                <div className="bg-brand-navy-100 p-3 md:p-4 rounded-xl md:rounded-2xl shadow-md">
-                  <DollarSign size={24} className="md:w-8 md:h-8 text-brand-navy" />
-                </div>
-              </div>
-              <div>
-                <p className="text-gray-600 text-xs md:text-sm font-semibold mb-1">Total Revenue</p>
-                <p className="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-brand-navy via-brand-orange to-brand-orange-dark bg-clip-text text-transparent">
-                  ₦{totalRevenue.toLocaleString()}
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-brand-orange-50 to-brand-navy-50 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 transform border border-white/50 backdrop-blur-sm">
-              <div className="flex items-start justify-between mb-4">
-                <div className="bg-brand-orange-100 p-3 md:p-4 rounded-xl md:rounded-2xl shadow-md">
-                  <ShoppingCart size={24} className="md:w-8 md:h-8 text-brand-orange" />
-                </div>
-              </div>
-              <div>
-                <p className="text-gray-600 text-xs md:text-sm font-semibold mb-1">Total Sales</p>
-                <p className="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-brand-orange via-brand-orange-dark to-brand-navy bg-clip-text text-transparent">
-                  {totalSales}
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-brand-navy-50 to-brand-orange-50 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 transform border border-white/50 backdrop-blur-sm">
-              <div className="flex items-start justify-between mb-4">
-                <div className="bg-brand-navy-100 p-3 md:p-4 rounded-xl md:rounded-2xl shadow-md">
-                  <TrendingUp size={24} className="md:w-8 md:h-8 text-brand-navy" />
-                </div>
-              </div>
-              <div>
-                <p className="text-gray-600 text-xs md:text-sm font-semibold mb-1">Avg Transaction</p>
-                <p className="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-brand-navy to-brand-orange bg-clip-text text-transparent">
-                  ₦{averageTransaction.toLocaleString()}
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-brand-orange-50 to-brand-navy-50 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 transform border border-white/50 backdrop-blur-sm">
-              <div className="flex items-start justify-between mb-4">
-                <div className="bg-brand-orange-100 p-3 md:p-4 rounded-xl md:rounded-2xl shadow-md">
-                  <Receipt size={24} className="md:w-8 md:h-8 text-brand-orange" />
-                </div>
-              </div>
-              <div>
-                <p className="text-gray-600 text-xs md:text-sm font-semibold mb-1">Total Discount</p>
-                <p className="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-brand-orange to-brand-navy bg-clip-text text-transparent">
-                  ₦{totalDiscount.toLocaleString()}
-                </p>
-              </div>
-            </div>
           </div>
 
         {/* Messages */}

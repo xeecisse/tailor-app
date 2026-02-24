@@ -315,7 +315,17 @@ export default function ClientMeasurementsPage() {
     }
 
     try {
-      if (formData.attireTypeId.startsWith('default-')) {
+      // Transform measurements to send only values to backend
+      const measurementsToSend = {};
+      Object.keys(formData.measurements).forEach(fieldName => {
+        const measurement = formData.measurements[fieldName];
+        measurementsToSend[fieldName] = {
+          value: parseFloat(measurement.value) || 0,
+          unit: measurement.unit || 'inch'
+        };
+      });
+
+      if (formData.attireTypeId.startsWith('default-') || formData.attireTypeId.startsWith('male-') || formData.attireTypeId.startsWith('female-')) {
         const defaultAttire = filteredAttires.find(a => a._id === formData.attireTypeId);
         
         if (defaultAttire) {
@@ -336,10 +346,12 @@ export default function ClientMeasurementsPage() {
             };
             
             const createdAttire = await attireAPI.create(attireData);
+            const attireId = createdAttire.data.attire._id;
             
             const updatedFormData = {
-              ...formData,
-              attireTypeId: createdAttire.data.attire._id
+              clientId: formData.clientId,
+              attireTypeId: attireId,
+              measurements: measurementsToSend
             };
             
             await measurementAPI.create(updatedFormData);
@@ -352,7 +364,13 @@ export default function ClientMeasurementsPage() {
           }
         }
       } else {
-        await measurementAPI.create(formData);
+        const dataToSend = {
+          clientId: formData.clientId,
+          attireTypeId: formData.attireTypeId,
+          measurements: measurementsToSend
+        };
+        console.log('Sending measurement data:', JSON.stringify(dataToSend, null, 2));
+        await measurementAPI.create(dataToSend);
         setMessage('Measurement saved successfully');
       }
       
@@ -623,7 +641,8 @@ export default function ClientMeasurementsPage() {
                                 <input
                                   type="number"
                                   step="0.1"
-                                  value={fieldData.value}
+                                  placeholder="0"
+                                  value={fieldData.value === 0 ? '' : fieldData.value}
                                   onChange={(e) => handleMeasurementChange(fieldName, e.target.value)}
                                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-brand-navy focus:ring-2 focus:ring-brand-navy focus:ring-opacity-20 outline-none transition-all bg-white"
                                 />
@@ -657,7 +676,8 @@ export default function ClientMeasurementsPage() {
                                 <input
                                   type="number"
                                   step="0.1"
-                                  value={fieldData.value}
+                                  placeholder="0"
+                                  value={fieldData.value === 0 ? '' : fieldData.value}
                                   onChange={(e) => handleMeasurementChange(fieldName, e.target.value)}
                                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-brand-navy focus:ring-2 focus:ring-brand-navy focus:ring-opacity-20 outline-none transition-all bg-white"
                                 />
@@ -694,7 +714,8 @@ export default function ClientMeasurementsPage() {
                                 <input
                                   type="number"
                                   step="0.1"
-                                  value={fieldData.value}
+                                  placeholder="0"
+                                  value={fieldData.value === 0 ? '' : fieldData.value}
                                   onChange={(e) => handleMeasurementChange(fieldName, e.target.value)}
                                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-brand-navy focus:ring-2 focus:ring-brand-navy focus:ring-opacity-20 outline-none transition-all bg-white"
                                 />
@@ -717,7 +738,8 @@ export default function ClientMeasurementsPage() {
                               <input
                                 type="number"
                                 step="0.1"
-                                value={formData.measurements['girth'].value}
+                                placeholder="0"
+                                value={formData.measurements['girth'].value === 0 ? '' : formData.measurements['girth'].value}
                                 onChange={(e) => handleMeasurementChange('girth', e.target.value)}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-brand-navy focus:ring-2 focus:ring-brand-navy focus:ring-opacity-20 outline-none transition-all bg-white"
                               />

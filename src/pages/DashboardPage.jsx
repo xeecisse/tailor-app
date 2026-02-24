@@ -60,6 +60,7 @@ export default function DashboardPage() {
         ]);
         
         setOverview(overviewRes.data.overview);
+        console.log('Overview data:', overviewRes.data.overview);
         
         // Transform top attires data for category revenue chart
         if (topAttireRes.data.topAttires && topAttireRes.data.topAttires.length > 0) {
@@ -88,6 +89,10 @@ export default function DashboardPage() {
     };
 
     fetchDashboard();
+    
+    // Refresh dashboard every 30 seconds
+    const interval = setInterval(fetchDashboard, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   if (loading) {
@@ -117,6 +122,7 @@ export default function DashboardPage() {
   }
 
   const totalRevenue = overview?.totalRevenue || 0;
+  const totalSales = overview?.totalSales || 0;
   const expectedRevenue = overview?.expectedRevenue || 0;
   const outstandingPayments = overview?.outstandingPayments || 0;
   const tailoringRevenue = overview?.thisMonth?.tailoringRevenue || 0;
@@ -126,10 +132,11 @@ export default function DashboardPage() {
 
   // Calculate percentages for visual bars
   const revenuePercentage = expectedRevenue > 0 ? (totalRevenue / expectedRevenue) * 100 : 0;
-  const tailoringPercentage = (tailoringRevenue + inventoryRevenue) > 0 
-    ? (tailoringRevenue / (tailoringRevenue + inventoryRevenue)) * 100 
-    : 50;
-  const inventoryPercentage = 100 - tailoringPercentage;
+  const totalMonthRevenue = tailoringRevenue + inventoryRevenue;
+  const tailoringPercentage = totalMonthRevenue > 0 
+    ? (tailoringRevenue / totalMonthRevenue) * 100 
+    : 0;
+  const inventoryPercentage = totalMonthRevenue > 0 ? (inventoryRevenue / totalMonthRevenue) * 100 : 0;
 
   // Weekly orders data is now fetched from API
 
@@ -152,23 +159,47 @@ export default function DashboardPage() {
 
   const stats = [
     {
-      title: 'Total Revenue',
+      title: 'Collected Revenue',
       value: `₦${totalRevenue.toLocaleString()}`,
+      subtitle: 'Actual payments received',
       icon: DollarSign,
-      gradient: 'from-brand-navy via-brand-orange to-brand-orange-dark',
-      bgGradient: 'from-brand-navy-50 to-brand-orange-50',
-      iconBg: 'bg-brand-navy-100',
-      change: '+12.5%',
+      gradient: 'from-green-500 via-green-600 to-green-700',
+      bgGradient: 'from-green-50 to-green-100',
+      iconBg: 'bg-green-100',
+      change: `${totalRevenue > 0 ? '+' : ''}${((totalRevenue / (totalRevenue + outstandingPayments)) * 100).toFixed(1)}%`,
       changePositive: true,
     },
     {
-      title: 'Expected Revenue',
+      title: 'Total Sales',
+      value: `₦${totalSales.toLocaleString()}`,
+      subtitle: 'All sales (paid + pending)',
+      icon: ShoppingBag,
+      gradient: 'from-blue-500 via-blue-600 to-blue-700',
+      bgGradient: 'from-blue-50 to-blue-100',
+      iconBg: 'bg-blue-100',
+      change: `${ordersCreated > 0 ? '+' : ''}${((ordersCreated / Math.max(ordersCreated, 1)) * 100).toFixed(1)}%`,
+      changePositive: true,
+    },
+    {
+      title: 'Outstanding',
+      value: `₦${outstandingPayments.toLocaleString()}`,
+      subtitle: 'Pending payments',
+      icon: AlertTriangle,
+      gradient: 'from-orange-500 via-orange-600 to-orange-700',
+      bgGradient: 'from-orange-50 to-orange-100',
+      iconBg: 'bg-orange-100',
+      change: `${outstandingPayments > 0 ? '-' : '+'}${((outstandingPayments / (totalRevenue + outstandingPayments)) * 100).toFixed(1)}%`,
+      changePositive: outstandingPayments === 0,
+    },
+    {
+      title: 'Expected Target',
       value: `₦${expectedRevenue.toLocaleString()}`,
+      subtitle: 'Monthly business goal',
       icon: BarChart3,
-      gradient: 'from-brand-orange via-brand-orange-dark to-brand-navy',
-      bgGradient: 'from-brand-orange-50 to-brand-navy-50',
-      iconBg: 'bg-brand-orange-100',
-      change: '+8.2%',
+      gradient: 'from-purple-500 via-purple-600 to-purple-700',
+      bgGradient: 'from-purple-50 to-purple-100',
+      iconBg: 'bg-purple-100',
+      change: `${expectedRevenue > 0 ? '+' : ''}${((expectedRevenue / Math.max(totalRevenue + expectedRevenue, 1)) * 100).toFixed(1)}%`,
       changePositive: true,
     },
     {
@@ -178,8 +209,8 @@ export default function DashboardPage() {
       gradient: 'from-brand-orange via-brand-navy to-brand-orange-dark',
       bgGradient: 'from-brand-orange-50 to-brand-navy-50',
       iconBg: 'bg-brand-orange-100',
-      change: '-5.3%',
-      changePositive: true,
+      change: `${outstandingPayments > 0 ? '-' : '+'}${((outstandingPayments / Math.max(totalRevenue + outstandingPayments, 1)) * 100).toFixed(1)}%`,
+      changePositive: outstandingPayments === 0,
     },
     {
       title: 'Orders This Month',
@@ -188,7 +219,7 @@ export default function DashboardPage() {
       gradient: 'from-brand-navy via-brand-orange to-brand-navy-dark',
       bgGradient: 'from-brand-navy-50 to-brand-orange-50',
       iconBg: 'bg-brand-navy-100',
-      change: '+15.7%',
+      change: `+${ordersCreated}`,
       changePositive: true,
     },
   ];
@@ -507,7 +538,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="relative h-4 md:h-6 bg-gray-200 rounded-full overflow-hidden">
                   <div 
-                    className="absolute top-0 left-0 h-full bg-gradient-to-r from-brand-navy to-brand-orange rounded-full transition-all duration-1000"
+                    className={`absolute top-0 left-0 h-full rounded-full transition-all duration-1000 ${totalMonthRevenue > 0 ? 'bg-gradient-to-r from-brand-navy to-brand-orange' : 'bg-gray-300'}`}
                     style={{ width: `${tailoringPercentage}%` }}
                   ></div>
                 </div>
@@ -525,7 +556,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="relative h-4 md:h-6 bg-gray-200 rounded-full overflow-hidden">
                   <div 
-                    className="absolute top-0 left-0 h-full bg-gradient-to-r from-brand-orange to-brand-navy rounded-full transition-all duration-1000"
+                    className={`absolute top-0 left-0 h-full rounded-full transition-all duration-1000 ${totalMonthRevenue > 0 ? 'bg-gradient-to-r from-brand-orange to-brand-navy' : 'bg-gray-300'}`}
                     style={{ width: `${inventoryPercentage}%` }}
                   ></div>
                 </div>
@@ -552,7 +583,7 @@ export default function DashboardPage() {
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">This Month's Activity</h2>
-                <p className="text-gray-600 text-sm">Orders & Purchase Orders</p>
+                <p className="text-gray-600 text-sm">Orders & POS</p>
               </div>
             </div>
 
@@ -583,7 +614,7 @@ export default function DashboardPage() {
                       <ClipboardList size={28} className="text-brand-orange" />
                     </div>
                     <div>
-                      <p className="text-gray-600 text-sm font-semibold">Purchase Orders</p>
+                      <p className="text-gray-600 text-sm font-semibold">POS</p>
                       <p className="text-3xl font-extrabold text-brand-orange">{posCreated}</p>
                     </div>
                   </div>

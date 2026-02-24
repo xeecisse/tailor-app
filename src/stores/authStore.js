@@ -14,7 +14,7 @@ const authStore = create((set) => ({
   login: async (email, password, role) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await axios.post(`${A                                PI_URL}/auth/login`, {
+      const response = await axios.post(`${API_URL}/auth/login`, {
         email,
         password,
         role,

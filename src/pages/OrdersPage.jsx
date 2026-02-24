@@ -308,6 +308,7 @@ export default function OrdersPage() {
   const completedOrders = orders.filter(o => o.status === 'completed' || o.status === 'delivered').length;
   const totalRevenue = orders.reduce((sum, o) => sum + (o.price || 0), 0);
   const paidAmount = orders.reduce((sum, o) => sum + (o.amountPaid || 0), 0);
+  const expectedRevenue = totalRevenue - paidAmount;
   const outstandingAmount = orders.reduce((sum, o) => sum + (o.amountRemaining || 0), 0);
 
 
@@ -338,15 +339,23 @@ export default function OrdersPage() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6">
           {[
             { 
               label: 'Total Revenue', 
-              value: `₦${totalRevenue.toLocaleString()}`, 
+              value: `₦${paidAmount.toLocaleString()}`, 
               icon: DollarSign,
               gradient: 'from-brand-navy via-brand-orange to-brand-orange-dark',
               bgGradient: 'from-brand-navy-50 to-brand-orange-50',
               iconBg: 'bg-brand-navy-100',
+            },
+            { 
+              label: 'Expected Revenue', 
+              value: `₦${expectedRevenue.toLocaleString()}`, 
+              icon: CreditCard,
+              gradient: 'from-brand-orange via-brand-navy to-brand-orange-dark',
+              bgGradient: 'from-brand-orange-50 to-brand-navy-50',
+              iconBg: 'bg-brand-orange-100',
             },
             { 
               label: 'Pending', 
@@ -396,23 +405,23 @@ export default function OrdersPage() {
 
         {/* Messages */}
         {error && (
-          <div className="p-6 bg-gradient-to-r from-red-50 to-pink-50 border-2 border-red-300 rounded-2xl text-red-700 flex items-center gap-4 shadow-lg">
-            <div className="bg-red-100 p-3 rounded-xl">
-              <AlertTriangle size={24} className="text-red-700" />
+          <div className="p-6 bg-gradient-to-r from-brand-navy/10 to-brand-orange/10 border-2 border-brand-navy rounded-2xl text-brand-navy flex items-center gap-4 shadow-lg">
+            <div className="bg-brand-navy/20 p-3 rounded-xl">
+              <AlertTriangle size={24} className="text-brand-navy" />
             </div>
             <span className="font-semibold text-base flex-1">{error}</span>
-            <button onClick={() => setError('')} className="text-red-700 hover:text-red-900">
+            <button onClick={() => setError('')} className="text-brand-navy hover:text-brand-navy-dark">
               <X size={20} />
             </button>
           </div>
         )}
         {message && (
-          <div className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-2xl text-green-700 flex items-center gap-4 shadow-lg">
-            <div className="bg-green-100 p-3 rounded-xl">
-              <CheckCircle size={24} className="text-green-700" />
+          <div className="p-6 bg-gradient-to-r from-brand-orange/10 to-brand-navy/10 border-2 border-brand-orange rounded-2xl text-brand-navy flex items-center gap-4 shadow-lg">
+            <div className="bg-brand-orange/20 p-3 rounded-xl">
+              <CheckCircle size={24} className="text-brand-orange" />
             </div>
             <span className="font-semibold text-base flex-1">{message}</span>
-            <button onClick={() => setMessage('')} className="text-green-700 hover:text-green-900">
+            <button onClick={() => setMessage('')} className="text-brand-navy hover:text-brand-navy-dark">
               <X size={20} />
             </button>
           </div>
@@ -659,24 +668,24 @@ export default function OrdersPage() {
                   {/* Card Body */}
                   <div className="p-4 md:p-6 space-y-4">
                     {/* Price */}
-                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl md:rounded-2xl p-3 md:p-4 border-2 border-green-200">
+                    <div className="bg-gradient-to-br from-brand-navy/10 to-brand-orange/10 rounded-xl md:rounded-2xl p-3 md:p-4 border-2 border-brand-navy">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <DollarSign size={20} className="text-green-600" />
+                          <DollarSign size={20} className="text-brand-navy" />
                           <span className="text-xs md:text-sm font-semibold text-gray-600">Total Price</span>
                         </div>
-                        <span className="text-xl md:text-2xl font-extrabold text-green-700">
+                        <span className="text-xl md:text-2xl font-extrabold text-brand-navy">
                           ₦{order.price?.toLocaleString()}
                         </span>
                       </div>
                     </div>
 
                     {/* Payment Status */}
-                    <div className={`bg-gradient-to-br ${paymentConfig.bg} rounded-xl md:rounded-2xl p-3 md:p-4 border-2 ${paymentConfig.text.replace('text-', 'border-')}-200`}>
+                    <div className={`bg-gradient-to-br from-brand-orange/10 to-brand-navy/10 rounded-xl md:rounded-2xl p-3 md:p-4 border-2 border-brand-orange`}>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <PaymentIcon size={20} className={paymentConfig.text} />
-                          <span className={`text-xs md:text-sm font-bold ${paymentConfig.text} capitalize`}>
+                          <PaymentIcon size={20} className="text-brand-orange" />
+                          <span className={`text-xs md:text-sm font-bold text-brand-navy capitalize`}>
                             {paymentConfig.label}
                           </span>
                         </div>
@@ -684,7 +693,7 @@ export default function OrdersPage() {
                       {order.amountRemaining > 0 && (
                         <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-200">
                           <span className="text-xs text-gray-600 font-semibold">Amount Due:</span>
-                          <span className="text-base font-bold text-red-600">
+                          <span className="text-base font-bold text-brand-orange">
                             ₦{order.amountRemaining?.toLocaleString()}
                           </span>
                         </div>
@@ -692,7 +701,7 @@ export default function OrdersPage() {
                       {order.amountPaid > 0 && (
                         <div className="flex justify-between items-center mt-1">
                           <span className="text-xs text-gray-600 font-semibold">Paid:</span>
-                          <span className="text-sm font-bold text-green-600">
+                          <span className="text-sm font-bold text-brand-navy">
                             ₦{order.amountPaid?.toLocaleString()}
                           </span>
                         </div>
@@ -726,7 +735,7 @@ export default function OrdersPage() {
                     {order.status === 'pending' && (
                       <button
                         onClick={() => handleStatusChange(order._id, 'in_progress')}
-                        className="flex-1 min-w-[100px] flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-3 py-2 md:py-2.5 rounded-lg md:rounded-xl transition-all text-xs md:text-sm font-bold shadow-md hover:shadow-lg transform hover:scale-105"
+                        className="flex-1 min-w-[100px] flex items-center justify-center gap-2 bg-gradient-to-r from-brand-orange to-brand-orange-dark hover:from-brand-orange-dark hover:to-brand-orange text-white px-3 py-2 md:py-2.5 rounded-lg md:rounded-xl transition-all text-xs md:text-sm font-bold shadow-md hover:shadow-lg transform hover:scale-105"
                       >
                         <Play size={16} /> Start
                       </button>
@@ -735,7 +744,7 @@ export default function OrdersPage() {
                     {order.paymentStatus !== 'paid' && (
                       <button
                         onClick={() => setPaymentForm(order._id)}
-                        className="flex-1 min-w-[100px] flex items-center justify-center gap-2 bg-gradient-to-r from-brand-orange to-brand-orange-dark hover:from-brand-orange-dark hover:to-brand-orange text-white px-3 py-2 md:py-2.5 rounded-lg md:rounded-xl transition-all text-xs md:text-sm font-bold shadow-md hover:shadow-lg transform hover:scale-105"
+                        className="flex-1 min-w-[100px] flex items-center justify-center gap-2 bg-gradient-to-r from-brand-navy/80 to-brand-orange hover:from-brand-navy hover:to-brand-orange-dark text-white px-3 py-2 md:py-2.5 rounded-lg md:rounded-xl transition-all text-xs md:text-sm font-bold shadow-md hover:shadow-lg transform hover:scale-105"
                       >
                         <CreditCard size={16} /> Pay
                       </button>
@@ -743,7 +752,7 @@ export default function OrdersPage() {
                     
                     <button
                       onClick={() => handleDeleteOrder(order._id)}
-                      className="flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-3 py-2 md:py-2.5 rounded-lg md:rounded-xl transition-all text-xs md:text-sm font-bold shadow-md hover:shadow-lg transform hover:scale-105"
+                      className="flex items-center justify-center gap-2 bg-gradient-to-r from-brand-navy/60 to-brand-navy/40 hover:from-brand-navy/80 hover:to-brand-navy/60 text-white px-3 py-2 md:py-2.5 rounded-lg md:rounded-xl transition-all text-xs md:text-sm font-bold shadow-md hover:shadow-lg transform hover:scale-105"
                     >
                       <Trash2 size={16} />
                     </button>

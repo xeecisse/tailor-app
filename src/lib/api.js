@@ -15,8 +15,12 @@ export const getImageUrl = (path) => {
   if (path.startsWith('http://') || path.startsWith('https://')) {
     return path;
   }
-  // Otherwise, construct local server URL
-  return `${BASE_URL}${path}`;
+  // If it's a relative path starting with /uploads, prepend base URL
+  if (path.startsWith('/uploads')) {
+    return `${BASE_URL}${path}`;
+  }
+  // Otherwise, assume it's just a filename and prepend /uploads/
+  return `${BASE_URL}/uploads/${path}`;
 };
 
 // Add token to requests
@@ -25,9 +29,13 @@ client.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-  // Ensure Content-Type is set for all requests
-  if (!config.headers['Content-Type']) {
+  // Only set Content-Type if it's not FormData
+  if (!config.headers['Content-Type'] && !(config.data instanceof FormData)) {
     config.headers['Content-Type'] = 'application/json';
+  }
+  // Remove Content-Type for FormData to let browser set it with boundary
+  if (config.data instanceof FormData) {
+    delete config.headers['Content-Type'];
   }
   return config;
 });

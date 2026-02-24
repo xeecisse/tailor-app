@@ -53,6 +53,7 @@ export default function ReportsPage() {
       const response = activeTab === 'orders'
         ? await reportsAPI.getOrdersReport(period)
         : await reportsAPI.getPOSReport(period);
+      console.log('Report data:', response.data.report);
       setReport(response.data.report);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load report');
@@ -62,6 +63,7 @@ export default function ReportsPage() {
   };
 
   const formatCurrency = (amount) => {
+    if (!amount) return '₦0';
     return `₦${amount.toLocaleString()}`;
   };
 
@@ -175,17 +177,27 @@ export default function ReportsPage() {
       ? ((report.paymentStatus.paid / report.metrics.totalOrders) * 100).toFixed(0)
       : 0;
 
-  const pipelineData = activeTab === 'orders'
-    ? [
-        { label: 'Completed', value: report?.pipeline?.completed || 0 },
-        { label: 'In Progress', value: report?.pipeline?.in_progress || 0 },
-        { label: 'Pending', value: report?.pipeline?.pending || 0 },
-      ]
-    : [
-        { label: 'Delivered', value: report?.pipeline?.delivered || 0 },
-        { label: 'In Transit', value: report?.pipeline?.in_transit || 0 },
-        { label: 'Pending', value: report?.pipeline?.pending || 0 },
-      ];
+  // Calculate pipeline based on order statuses
+  let pipelineData;
+  if (activeTab === 'orders') {
+    const pending = report?.ordersByStatus?.pending || 0;
+    const sewing = report?.ordersByStatus?.sewing || 0;
+    const readyForPickup = report?.ordersByStatus?.ready_for_pickup || 0;
+    
+    pipelineData = [
+      { label: 'Pending', value: pending },
+      { label: 'In Progress', value: sewing },
+      { label: 'Completed', value: readyForPickup },
+    ];
+  } else {
+    pipelineData = [
+      { label: 'Pending', value: report?.pipeline?.pending || 0 },
+      { label: 'In Transit', value: report?.pipeline?.in_transit || 0 },
+      { label: 'Delivered', value: report?.pipeline?.delivered || 0 },
+    ];
+  }
+
+  console.log('Pipeline data:', pipelineData, 'Report:', report);
 
   const totalPipeline = pipelineData.reduce((sum, item) => sum + item.value, 0);
 
@@ -459,7 +471,7 @@ export default function ReportsPage() {
                         {idx + 1}
                       </div>
                       <div>
-                        <h4 className="font-bold text-gray-900">{item.name}</h4>
+                        <h4 className="font-bold text-gray-900">{item.name || item.itemName || `Item ${item._id}`}</h4>
                         <p className="text-sm text-gray-600">{item.count} {activeTab === 'orders' ? 'orders' : 'sold'}</p>
                       </div>
                     </div>

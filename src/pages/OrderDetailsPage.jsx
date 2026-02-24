@@ -250,17 +250,17 @@ export default function OrderDetailsPage() {
 
         {/* Messages */}
         {error && (
-          <div className="p-5 bg-gradient-to-r from-red-50 to-pink-50 border-2 border-red-300 rounded-2xl text-red-700 flex items-center gap-4 shadow-lg">
-            <div className="bg-red-100 p-3 rounded-xl">
-              <AlertTriangle size={24} className="text-red-700" />
+          <div className="p-5 bg-gradient-to-r from-brand-navy/10 to-brand-orange/10 border-2 border-brand-navy rounded-2xl text-brand-navy flex items-center gap-4 shadow-lg">
+            <div className="bg-brand-navy/20 p-3 rounded-xl">
+              <AlertTriangle size={24} className="text-brand-navy" />
             </div>
             <span className="font-semibold text-lg">{error}</span>
           </div>
         )}
         {message && (
-          <div className="p-5 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-2xl text-green-700 flex items-center gap-4 shadow-lg">
-            <div className="bg-green-100 p-3 rounded-xl">
-              <CheckCircle size={24} className="text-green-700" />
+          <div className="p-5 bg-gradient-to-r from-brand-orange/10 to-brand-navy/10 border-2 border-brand-orange rounded-2xl text-brand-navy flex items-center gap-4 shadow-lg">
+            <div className="bg-brand-orange/20 p-3 rounded-xl">
+              <CheckCircle size={24} className="text-brand-orange" />
             </div>
             <span className="font-semibold text-lg">{message}</span>
           </div>
@@ -269,20 +269,20 @@ export default function OrderDetailsPage() {
         {/* Status and Payment Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Status Card */}
-          <div className={`bg-gradient-to-br ${statusConfig.bg} rounded-2xl p-6 shadow-lg border-2 ${statusConfig.text.replace('text-', 'border-')}-200`}>
+          <div className={`bg-gradient-to-br from-brand-navy/10 to-brand-orange/10 rounded-2xl p-6 shadow-lg border-2 border-brand-navy`}>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <div className={`bg-gradient-to-br ${statusConfig.gradient} p-2 rounded-lg shadow-md`}>
+                <div className={`bg-gradient-to-br from-brand-navy to-brand-orange p-2 rounded-lg shadow-md`}>
                   {React.createElement(statusConfig.icon, { size: 24, className: 'text-white' })}
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-gray-600">Order Status</p>
-                  <p className={`text-xl font-extrabold ${statusConfig.text}`}>{statusConfig.label}</p>
+                  <p className={`text-xl font-extrabold text-brand-navy`}>{statusConfig.label}</p>
                 </div>
               </div>
               <button
                 onClick={() => setShowStatusForm(!showStatusForm)}
-                className="bg-white/80 hover:bg-white px-3 py-1 rounded-lg font-bold text-xs transition-all shadow-md hover:shadow-lg text-blue-900"
+                className="bg-white/80 hover:bg-white px-3 py-1 rounded-lg font-bold text-xs transition-all shadow-md hover:shadow-lg text-brand-navy"
               >
                 Change
               </button>
@@ -290,21 +290,21 @@ export default function OrderDetailsPage() {
           </div>
 
           {/* Payment Card */}
-          <div className={`bg-gradient-to-br ${paymentConfig.bg} rounded-2xl p-6 shadow-lg border-2 ${paymentConfig.text.replace('text-', 'border-')}-200`}>
+          <div className={`bg-gradient-to-br from-brand-orange/10 to-brand-navy/10 rounded-2xl p-6 shadow-lg border-2 border-brand-orange`}>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <div className={`bg-gradient-to-br ${paymentConfig.gradient} p-2 rounded-lg shadow-md`}>
+                <div className={`bg-gradient-to-br from-brand-orange to-brand-navy p-2 rounded-lg shadow-md`}>
                   {React.createElement(paymentConfig.icon, { size: 24, className: 'text-white' })}
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-gray-600">Payment Status</p>
-                  <p className={`text-xl font-extrabold ${paymentConfig.text}`}>{paymentConfig.label}</p>
+                  <p className={`text-xl font-extrabold text-brand-orange`}>{paymentConfig.label}</p>
                 </div>
               </div>
               {order?.paymentStatus !== 'paid' && (
                 <button
                   onClick={() => setShowPaymentForm(!showPaymentForm)}
-                  className="bg-white/80 hover:bg-white px-3 py-1 rounded-lg font-bold text-xs transition-all shadow-md hover:shadow-lg text-blue-900"
+                  className="bg-white/80 hover:bg-white px-3 py-1 rounded-lg font-bold text-xs transition-all shadow-md hover:shadow-lg text-brand-navy"
                 >
                   Add Payment
                 </button>
@@ -442,9 +442,9 @@ export default function OrderDetailsPage() {
               </div>
 
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border-2 border-blue-200">
+                <div className="flex items-center justify-between p-3 bg-gradient-to-br from-brand-navy/10 to-brand-orange/10 rounded-lg border-2 border-brand-navy">
                   <div className="flex items-center gap-2">
-                    <User size={18} className="text-blue-900" />
+                    <User size={18} className="text-brand-navy" />
                     <div>
                       <p className="text-xs font-semibold text-gray-600">Name</p>
                       <p className="text-sm font-bold text-gray-900">{order?.clientId?.name || 'N/A'}</p>
@@ -452,9 +452,9 @@ export default function OrderDetailsPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg border-2 border-orange-200">
+                <div className="flex items-center justify-between p-3 bg-gradient-to-br from-brand-orange/10 to-brand-navy/10 rounded-lg border-2 border-brand-orange">
                   <div className="flex items-center gap-2">
-                    <Phone size={18} className="text-orange-700" />
+                    <Phone size={18} className="text-brand-orange" />
                     <div>
                       <p className="text-xs font-semibold text-gray-600">Phone</p>
                       <p className="text-sm font-bold text-gray-900">{order?.clientId?.phone || 'N/A'}</p>
@@ -463,9 +463,9 @@ export default function OrderDetailsPage() {
                 </div>
 
                 {order?.clientId?.email && (
-                  <div className="flex items-center justify-between p-3 bg-gradient-to-br from-green-50 to-emerald-100 rounded-lg border-2 border-green-200">
+                  <div className="flex items-center justify-between p-3 bg-gradient-to-br from-brand-navy/10 to-brand-orange/10 rounded-lg border-2 border-brand-navy">
                     <div className="flex items-center gap-2">
-                      <Mail size={18} className="text-green-700" />
+                      <Mail size={18} className="text-brand-navy" />
                       <div>
                         <p className="text-xs font-semibold text-gray-600">Email</p>
                         <p className="text-sm font-bold text-gray-900">{order.clientId.email}</p>
@@ -486,9 +486,9 @@ export default function OrderDetailsPage() {
               </div>
 
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border-2 border-blue-200">
+                <div className="flex items-center justify-between p-3 bg-gradient-to-br from-brand-navy/10 to-brand-orange/10 rounded-lg border-2 border-brand-navy">
                   <div className="flex items-center gap-2">
-                    <Shirt size={18} className="text-blue-900" />
+                    <Shirt size={18} className="text-brand-navy" />
                     <div>
                       <p className="text-xs font-semibold text-gray-600">Attire Type</p>
                       <p className="text-sm font-bold text-gray-900">{order?.attireType || 'N/A'}</p>
@@ -497,9 +497,9 @@ export default function OrderDetailsPage() {
                 </div>
 
                 {order?.expectedDeliveryDate && (
-                  <div className="flex items-center justify-between p-3 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg border-2 border-orange-200">
+                  <div className="flex items-center justify-between p-3 bg-gradient-to-br from-brand-orange/10 to-brand-navy/10 rounded-lg border-2 border-brand-orange">
                     <div className="flex items-center gap-2">
-                      <Calendar size={18} className="text-orange-700" />
+                      <Calendar size={18} className="text-brand-orange" />
                       <div>
                         <p className="text-xs font-semibold text-gray-600">Expected Delivery</p>
                         <p className="text-sm font-bold text-gray-900">
@@ -515,9 +515,9 @@ export default function OrderDetailsPage() {
                 )}
 
                 {order?.notes && (
-                  <div className="p-3 bg-gradient-to-br from-amber-50 to-yellow-100 rounded-lg border-2 border-amber-200">
+                  <div className="p-3 bg-gradient-to-br from-brand-navy/10 to-brand-orange/10 rounded-lg border-2 border-brand-navy">
                     <div className="flex items-start gap-2">
-                      <MessageSquare size={18} className="text-amber-700" />
+                      <MessageSquare size={18} className="text-brand-navy" />
                       <div>
                         <p className="text-xs font-semibold text-gray-600 mb-1">Notes</p>
                         <p className="text-xs text-gray-700">{order.notes}</p>
@@ -530,9 +530,9 @@ export default function OrderDetailsPage() {
 
             {/* Fabric Images Section */}
             {order?.fabricImages && order.fabricImages.length > 0 && (
-              <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl p-6 border-2 border-orange-200">
+              <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl p-6 border-2 border-brand-orange">
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="bg-gradient-to-br from-orange-500 to-amber-500 p-2 rounded-lg">
+                  <div className="bg-gradient-to-br from-brand-orange to-brand-navy p-2 rounded-lg">
                     <ImageIcon size={20} className="text-white" />
                   </div>
                   <h2 className="text-base font-bold text-gray-900">Fabric Images</h2>
@@ -542,7 +542,7 @@ export default function OrderDetailsPage() {
                   {order.fabricImages.map((imageUrl, idx) => (
                     <div
                       key={idx}
-                      className="relative group cursor-pointer overflow-hidden rounded-lg border-2 border-orange-200 hover:border-orange-500 transition-all duration-300 shadow-lg hover:shadow-xl"
+                      className="relative group cursor-pointer overflow-hidden rounded-lg border-2 border-brand-orange hover:border-brand-navy transition-all duration-300 shadow-lg hover:shadow-xl"
                       onClick={() => setSelectedImage(getImageUrl(imageUrl))}
                     >
                       <img
@@ -562,9 +562,9 @@ export default function OrderDetailsPage() {
                 </div>
 
                 {order.fabricImages.length > 0 && (
-                  <div className="mt-4 p-3 bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg border-2 border-orange-200">
+                  <div className="mt-4 p-3 bg-gradient-to-br from-brand-orange/10 to-brand-navy/10 rounded-lg border-2 border-brand-orange">
                     <p className="text-xs text-gray-700">
-                      <span className="font-bold text-orange-700">{order.fabricImages.length}</span> fabric image{order.fabricImages.length !== 1 ? 's' : ''} uploaded. Click any image to view in full size.
+                      <span className="font-bold text-brand-orange">{order.fabricImages.length}</span> fabric image{order.fabricImages.length !== 1 ? 's' : ''} uploaded. Click any image to view in full size.
                     </p>
                   </div>
                 )}
@@ -584,19 +584,19 @@ export default function OrderDetailsPage() {
               </div>
 
               <div className="space-y-3">
-                <div className="p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border-2 border-blue-200">
+                <div className="p-3 bg-gradient-to-br from-brand-navy/10 to-brand-orange/10 rounded-lg border-2 border-brand-navy">
                   <p className="text-xs font-semibold text-gray-600 mb-1">Total Price</p>
-                  <p className="text-2xl font-extrabold text-blue-900">₦{order?.price?.toLocaleString()}</p>
+                  <p className="text-2xl font-extrabold text-brand-navy">₦{order?.price?.toLocaleString()}</p>
                 </div>
 
-                <div className="p-3 bg-gradient-to-br from-green-50 to-emerald-100 rounded-lg border-2 border-green-200">
+                <div className="p-3 bg-gradient-to-br from-brand-orange/10 to-brand-navy/10 rounded-lg border-2 border-brand-orange">
                   <p className="text-xs font-semibold text-gray-600 mb-1">Amount Paid</p>
-                  <p className="text-2xl font-extrabold text-green-700">₦{order?.amountPaid?.toLocaleString() || 0}</p>
+                  <p className="text-2xl font-extrabold text-brand-orange">₦{order?.amountPaid?.toLocaleString() || 0}</p>
                 </div>
 
-                <div className="p-3 bg-gradient-to-br from-red-50 to-red-100 rounded-lg border-2 border-red-200">
+                <div className="p-3 bg-gradient-to-br from-brand-navy/10 to-brand-orange/10 rounded-lg border-2 border-brand-navy">
                   <p className="text-xs font-semibold text-gray-600 mb-1">Amount Remaining</p>
-                  <p className="text-2xl font-extrabold text-red-700">₦{order?.amountRemaining?.toLocaleString() || 0}</p>
+                  <p className="text-2xl font-extrabold text-brand-navy">₦{order?.amountRemaining?.toLocaleString() || 0}</p>
                 </div>
               </div>
             </div>
@@ -718,20 +718,20 @@ export default function OrderDetailsPage() {
       {/* Notification Confirmation Dialog */}
       {showNotificationDialog && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl p-8 max-w-lg w-full border-2 border-blue-900">
+          <div className="bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl p-8 max-w-lg w-full border-2 border-brand-navy">
             <div className="flex items-center gap-3 mb-6">
-              <div className="bg-gradient-to-br from-green-500 to-emerald-500 p-3 rounded-xl">
+              <div className="bg-gradient-to-br from-brand-navy to-brand-orange p-3 rounded-xl">
                 <PartyPopper size={32} className="text-white" />
               </div>
-              <h3 className="text-lg font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+              <h3 className="text-lg font-bold bg-gradient-to-r from-brand-navy to-brand-orange bg-clip-text text-transparent">
                 Order {pendingStatus === 'ready_for_pickup' ? 'Ready for Pickup' : 'Delivered'}!
               </h3>
             </div>
 
             <div className="space-y-4 mb-6">
-              <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl border-2 border-blue-200">
+              <div className="p-4 bg-gradient-to-br from-brand-navy/10 to-brand-orange/10 rounded-2xl border-2 border-brand-navy">
                 <div className="flex items-start gap-3">
-                  <Phone size={24} className="text-blue-900" />
+                  <Phone size={24} className="text-brand-navy" />
                   <div>
                     <p className="text-sm font-bold text-gray-900 mb-1">Send Client Notification?</p>
                     <p className="text-xs text-gray-600">
@@ -742,12 +742,12 @@ export default function OrderDetailsPage() {
                 </div>
               </div>
 
-              <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-100 rounded-2xl border-2 border-green-200">
+              <div className="p-4 bg-gradient-to-br from-brand-orange/10 to-brand-navy/10 rounded-2xl border-2 border-brand-orange">
                 <div className="flex items-start gap-3">
-                  <MessageSquare size={24} className="text-green-700" />
+                  <MessageSquare size={24} className="text-brand-orange" />
                   <div>
                     <p className="text-sm font-bold text-gray-900 mb-2">Message Preview:</p>
-                    <p className="text-xs text-gray-700 italic bg-white/80 p-3 rounded-lg border border-green-300">
+                    <p className="text-xs text-gray-700 italic bg-white/80 p-3 rounded-lg border border-brand-orange">
                       "Hello {order?.clientId?.name}, great news! Your {order?.attireType} order (#{order?.orderNumber}) is {pendingStatus === 'ready_for_pickup' ? 'ready for pickup' : 'delivered'}. Thank you for your business! 🎉"
                     </p>
                   </div>
@@ -758,13 +758,13 @@ export default function OrderDetailsPage() {
             <div className="flex gap-3">
               <button
                 onClick={() => handleConfirmStatusWithNotification(true)}
-                className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-4 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-brand-navy to-brand-orange hover:from-brand-navy-dark hover:to-brand-orange-dark text-white px-6 py-4 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
               >
                 <Bell size={20} /> Yes, Send Notification
               </button>
               <button
                 onClick={() => handleConfirmStatusWithNotification(false)}
-                className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-gray-400 to-gray-500 hover:from-gray-500 hover:to-gray-600 text-white px-6 py-4 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl"
+                className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-brand-navy/60 to-brand-navy/40 hover:from-brand-navy/80 hover:to-brand-navy/60 text-white px-6 py-4 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl"
               >
                 <PhoneOff size={20} /> Skip Notification
               </button>

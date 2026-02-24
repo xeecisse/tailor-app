@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { inventoryAPI } from '../lib/api';
+import { inventoryAPI, uploadAPI, getImageUrl } from '../lib/api';
 import {
   Package,
   Tag,
@@ -21,8 +21,12 @@ import {
   Gem,
   Box,
   CheckCircle,
-  Plus
+  Plus,
+  Image as ImageIcon,
+  Upload
 } from 'lucide-react';
+
+const BASE_URL = 'https://tailor-app-backend-uh5b.onrender.com';
 
 export default function InventoryPage() {
   const [categories, setCategories] = useState([]);
@@ -35,6 +39,7 @@ export default function InventoryPage() {
   const [showItemForm, setShowItemForm] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [showWelcomeGuide, setShowWelcomeGuide] = useState(false);
+  const [selectedItemImage, setSelectedItemImage] = useState(null);
   const [categoryFormData, setCategoryFormData] = useState({
     name: '',
     categoryType: 'other',
@@ -47,6 +52,8 @@ export default function InventoryPage() {
     costPrice: '',
     sellingPrice: '',
     lowStockThreshold: '5',
+    itemImage: null,
+    itemImagePreview: null,
   });
 
   useEffect(() => {
@@ -123,13 +130,57 @@ export default function InventoryPage() {
     }
 
     try {
-      await inventoryAPI.createItem({
-        ...itemFormData,
-        quantity: parseInt(itemFormData.quantity) || 0,
+      let imageUrl = null;
+      
+      // Upload image if selected
+      if (itemFormData.itemImage) {
+        try {
+          const uploadRes = await uploadAPI.uploadSingle(itemFormData.itemImage);
+          console.log('Upload response:', uploadRes.data);
+          
+          // Extract URL from response
+          imageUrl = uploadRes.data.file?.url;
+          
+          if (!imageUrl) {
+            console.error('No URL in upload response:', uploadRes.data);
+            setError('Failed to get image URL from upload response');
+          } else {
+            console.log('Image uploaded successfully:', imageUrl);
+          }
+        } catch (uploadErr) {
+          console.error('Image upload error:', uploadErr);
+          setError('Failed to upload image. Item will be created without image.');
+        }
+      }
+
+      const itemData = {
+        categoryId: itemFormData.categoryId,
+        name: itemFormData.name,
+        quantity: itemFormData.quantity ? parseInt(itemFormData.quantity) : 0,
+        unit: itemFormData.unit,
         costPrice: parseFloat(itemFormData.costPrice),
         sellingPrice: parseFloat(itemFormData.sellingPrice),
-        lowStockThreshold: parseInt(itemFormData.lowStockThreshold) || 5,
+        lowStockThreshold: itemFormData.lowStockThreshold ? parseInt(itemFormData.lowStockThreshold) : 5,
+      };
+      
+      // Add image URL to item data if uploaded
+      if (imageUrl) {
+        itemData.itemImage = imageUrl;
+        console.log('Adding image to item:', imageUrl);
+      }
+      
+      console.log('Creating item with data:', itemData);
+      console.log('Data types:', {
+        categoryId: typeof itemData.categoryId,
+        name: typeof itemData.name,
+        quantity: typeof itemData.quantity,
+        unit: typeof itemData.unit,
+        costPrice: typeof itemData.costPrice,
+        sellingPrice: typeof itemData.sellingPrice,
+        lowStockThreshold: typeof itemData.lowStockThreshold,
       });
+      const response = await inventoryAPI.createItem(itemData);
+      console.log('Item created:', response.data);
 
       const profit = parseFloat(itemFormData.sellingPrice) - parseFloat(itemFormData.costPrice);
       const profitPercent = ((profit / parseFloat(itemFormData.costPrice)) * 100).toFixed(1);
@@ -143,12 +194,16 @@ export default function InventoryPage() {
         costPrice: '',
         sellingPrice: '',
         lowStockThreshold: '5',
+        itemImage: null,
+        itemImagePreview: null,
       });
       setShowItemForm(false);
       fetchData();
       setTimeout(() => setMessage(''), 6000);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to create item');
+      console.error('Error details:', err.response?.data);
+      console.error('Full error:', err);
+      setError(err.response?.data?.message || err.message || 'Failed to create item');
     }
   };
 
@@ -162,6 +217,31 @@ export default function InventoryPage() {
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to delete item');
       }
+    }
+  };
+
+  const handleImageSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        setError('Please select a valid image file');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        setError('Image size must be less than 5MB');
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setItemFormData(prev => ({
+          ...prev,
+          itemImage: file,
+          itemImagePreview: reader.result
+        }));
+      };
+      reader.readAsDataURL(file);
+      setError('');
     }
   };
 
@@ -661,6 +741,39 @@ export default function InventoryPage() {
                       />
                       <p className="text-xs text-gray-500 mt-1">You'll get a warning when stock falls below this number (default: 5)</p>
                     </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                        <ImageIcon size={20} /> Upload Item Image (Optional)
+                      </label>
+                      <div className="flex gap-4">
+                        <label className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-purple-500 hover:bg-purple-50 transition-all">
+                          <Upload size={20} className="text-gray-600" />
+                          <span className="text-sm font-semibold text-gray-700">Choose Image</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageSelect}
+                            className="hidden"
+                          />
+                        </label>
+                        {itemFormData.itemImagePreview && (
+                          <button
+                            type="button"
+                            onClick={() => setItemFormData(prev => ({ ...prev, itemImage: null, itemImagePreview: null }))}
+                            className="px-4 py-3 bg-red-100 text-red-700 rounded-xl font-semibold hover:bg-red-200 transition-all"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                      {itemFormData.itemImagePreview && (
+                        <div className="mt-3 flex justify-center">
+                          <img src={itemFormData.itemImagePreview} alt="Preview" className="h-32 w-32 object-cover rounded-lg border-2 border-purple-300" />
+                        </div>
+                      )}
+                      <p className="text-xs text-gray-500 mt-1">Max 5MB. Supported: JPG, PNG, GIF</p>
+                    </div>
                   </div>
 
                   <div className="flex gap-4">
@@ -716,79 +829,133 @@ export default function InventoryPage() {
                 )}
               </div>
             ) : (
-              <div className="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden">
-                <table className="w-full">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-brand-navy-600 to-brand-orange-600 text-white">
-                      <th className="px-4 py-3 text-left text-sm font-bold">Item Name</th>
-                      <th className="px-4 py-3 text-left text-sm font-bold">Category</th>
-                      <th className="px-4 py-3 text-center text-sm font-bold">Stock</th>
-                      <th className="px-4 py-3 text-right text-sm font-bold">Cost Price</th>
-                      <th className="px-4 py-3 text-right text-sm font-bold">Selling Price</th>
-                      <th className="px-4 py-3 text-center text-sm font-bold">Profit Margin</th>
-                      <th className="px-4 py-3 text-center text-sm font-bold">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredItems.map((item, idx) => (
-                      <tr 
-                        key={item._id}
-                        className={`border-t border-gray-200 hover:bg-gray-50 transition-all ${
-                          item.isLowStock ? 'bg-red-50' : idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                        }`}
-                      >
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            {item.isLowStock && (
-                              <AlertTriangle size={16} className="text-red-600" />
-                            )}
-                            <div>
-                              <p className="text-sm font-bold text-gray-900">{item.name}</p>
-                              <p className="text-xs text-gray-500">{item.unit}</p>
-                            </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredItems.map((item) => {
+                  const imageUrl = item.itemImage;
+                  return (
+                    <div
+                      key={item._id}
+                      className={`bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border-2 ${
+                        item.isLowStock ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                      }`}
+                    >
+                      {/* Image Section */}
+                      <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden group">
+                        {imageUrl ? (
+                          <>
+                            <img
+                              src={getImageUrl(imageUrl)}
+                              alt={item.name}
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                              onError={(e) => {
+                                console.error('Image failed to load:', imageUrl);
+                                e.target.style.display = 'none';
+                              }}
+                            />
+                            <button
+                              onClick={() => setSelectedItemImage({ name: item.name, url: imageUrl })}
+                              className="absolute inset-0 bg-black/0 hover:bg-black/40 flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100"
+                            >
+                              <div className="flex flex-col items-center gap-2">
+                                <ImageIcon size={32} className="text-white" />
+                                <span className="text-white font-bold text-sm">View Image</span>
+                              </div>
+                            </button>
+                          </>
+                        ) : (
+                          <div className="flex flex-col items-center gap-2 text-gray-400">
+                            <Package size={40} />
+                            <span className="text-sm font-semibold">No Image</span>
                           </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <p className="text-sm text-gray-700">{item.categoryName}</p>
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <span className={`inline-block px-3 py-1 rounded-full text-sm font-bold ${
+                        )}
+                      </div>
+
+                      {/* Content Section */}
+                      <div className="p-4 space-y-3">
+                        {/* Item Name & Category */}
+                        <div>
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            <h3 className="text-sm font-bold text-gray-900 flex-1 line-clamp-2">{item.name}</h3>
+                            {item.isLowStock && (
+                              <AlertTriangle size={16} className="text-red-600 flex-shrink-0" />
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-500">{item.categoryName} • {item.unit}</p>
+                        </div>
+
+                        {/* Stock Status */}
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-gray-600">Stock:</span>
+                          <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
                             item.isLowStock 
                               ? 'bg-red-100 text-red-700' 
-                              : 'bg-brand-navy-100 text-brand-navy-700'
+                              : 'bg-blue-100 text-blue-700'
                           }`}>
-                            {item.quantity}
+                            {item.quantity} {item.unit}
                           </span>
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <p className="text-sm font-semibold text-gray-900">₦{item.costPrice?.toLocaleString()}</p>
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <p className="text-sm font-semibold text-gray-900">₦{item.sellingPrice?.toLocaleString()}</p>
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          {item.profitMargin > 0 ? (
-                            <span className="inline-block px-3 py-1 rounded-full text-sm font-bold bg-green-100 text-green-700">
-                              {item.profitMargin?.toFixed(1)}%
-                            </span>
-                          ) : (
-                            <span className="text-xs text-gray-500">-</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <button
-                            onClick={() => handleDeleteItem(item._id)}
-                            className="inline-flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg transition-all text-xs font-bold"
-                          >
-                            <Trash2 size={14} /> Delete
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                        </div>
+
+                        {/* Pricing Section */}
+                        <div className="bg-gray-50 rounded-lg p-3 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-gray-600">Cost Price:</span>
+                            <span className="text-sm font-semibold text-gray-900">₦{item.costPrice?.toLocaleString()}</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-gray-600">Selling Price:</span>
+                            <span className="text-sm font-semibold text-gray-900">₦{item.sellingPrice?.toLocaleString()}</span>
+                          </div>
+                          <div className="border-t border-gray-200 pt-2 flex items-center justify-between">
+                            <span className="text-xs font-semibold text-gray-600">Profit Margin:</span>
+                            {item.profitMargin > 0 ? (
+                              <span className="text-sm font-bold text-green-700">+{item.profitMargin?.toFixed(1)}%</span>
+                            ) : (
+                              <span className="text-sm font-bold text-red-700">{item.profitMargin?.toFixed(1)}%</span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Action Button */}
+                        <button
+                          onClick={() => handleDeleteItem(item._id)}
+                          className="w-full flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-all font-semibold text-sm"
+                        >
+                          <Trash2 size={16} /> Delete Item
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Image Viewer Modal */}
+        {selectedItemImage && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full">
+              <div className="bg-gradient-to-r from-[#ff6b35] to-[#ff8c42] p-4 text-white flex items-center justify-between">
+                <h2 className="text-lg font-bold">{selectedItemImage.name}</h2>
+                <button
+                  onClick={() => setSelectedItemImage(null)}
+                  className="p-1 hover:bg-white/20 rounded-lg transition-all"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="p-6 flex justify-center">
+                <img 
+                  src={getImageUrl(selectedItemImage.url)}
+                  alt={selectedItemImage.name}
+                  className="max-w-full max-h-96 object-contain rounded-lg"
+                  onError={(e) => {
+                    console.error('Image failed to load:', selectedItemImage.url);
+                    e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%23f0f0f0" width="200" height="200"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999" font-size="14"%3EImage not found%3C/text%3E%3C/svg%3E';
+                  }}
+                />
+              </div>
+            </div>
           </div>
         )}
 
