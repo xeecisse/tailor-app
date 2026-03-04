@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { inventoryAPI } from '../lib/api';
+import { inventoryAPI, uploadAPI, getImageUrl } from '../lib/api';
 import {
   Package,
   Tag,
@@ -21,7 +21,9 @@ import {
   Gem,
   Box,
   CheckCircle,
-  Plus
+  Plus,
+  Image as ImageIcon,
+  Upload
 } from 'lucide-react';
 
 export default function InventoryPage() {
@@ -47,7 +49,10 @@ export default function InventoryPage() {
     costPrice: '',
     sellingPrice: '',
     lowStockThreshold: '5',
+    itemImage: null,
+    itemImagePreview: null,
   });
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -97,6 +102,33 @@ export default function InventoryPage() {
     }
   };
 
+  const handleImageSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setError('Please select a valid image file');
+        return;
+      }
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setError('Image size must be less than 5MB');
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setItemFormData(prev => ({
+          ...prev,
+          itemImage: file,
+          itemImagePreview: reader.result
+        }));
+      };
+      reader.readAsDataURL(file);
+      setError('');
+    }
+  };
+
   const handleAddItem = async (e) => {
     e.preventDefault();
     setError('');
@@ -123,12 +155,31 @@ export default function InventoryPage() {
     }
 
     try {
+      let imageUrl = null;
+      
+      // Upload image if selected
+      if (itemFormData.itemImage) {
+        setUploadingImage(true);
+        try {
+          const uploadRes = await uploadAPI.uploadSingle(itemFormData.itemImage);
+          imageUrl = uploadRes.data.imageUrl;
+        } catch (uploadErr) {
+          setError('Failed to upload image. Item will be created without image.');
+          console.error('Image upload error:', uploadErr);
+        } finally {
+          setUploadingImage(false);
+        }
+      }
+
       await inventoryAPI.createItem({
-        ...itemFormData,
+        categoryId: itemFormData.categoryId,
+        name: itemFormData.name,
         quantity: parseInt(itemFormData.quantity) || 0,
+        unit: itemFormData.unit,
         costPrice: parseFloat(itemFormData.costPrice),
         sellingPrice: parseFloat(itemFormData.sellingPrice),
         lowStockThreshold: parseInt(itemFormData.lowStockThreshold) || 5,
+        itemImage: imageUrl,
       });
 
       const profit = parseFloat(itemFormData.sellingPrice) - parseFloat(itemFormData.costPrice);
@@ -143,6 +194,8 @@ export default function InventoryPage() {
         costPrice: '',
         sellingPrice: '',
         lowStockThreshold: '5',
+        itemImage: null,
+        itemImagePreview: null,
       });
       setShowItemForm(false);
       fetchData();
@@ -661,26 +714,84 @@ export default function InventoryPage() {
                       />
                       <p className="text-xs text-gray-500 mt-1">You'll get a warning when stock falls below this number (default: 5)</p>
                     </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                        <ImageIcon size={20} /> Item Picture (Optional)
+                      </label>
+                      <div className="space-y-3">
+                        {itemFormData.itemImagePreview ? (
+                          <div className="relative">
+                            <img 
+                              src={itemFormData.itemImagePreview} 
+                              alt="Item preview" 
+                              className="w-full h-48 object-cover rounded-xl border-2 border-gray-300"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setItemFormData(prev => ({
+                                ...prev,
+                                itemImage: null,
+                                itemImagePreview: null
+                              }))}
+                              className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg transition-all"
+                            >
+                              <X size={16} />
+                            </button>
+                          </div>
+                        ) : (
+                          <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:bg-gray-50 transition-all">
+                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                              <Upload size={24} className="text-gray-500 mb-2" />
+                              <p className="text-sm text-gray-600 font-semibold">Click to upload image</p>
+                              <p className="text-xs text-gray-500">PNG, JPG up to 5MB</p>
+                            </div>
+                            <input 
+                              type="file" 
+                              accept="image/*" 
+                              onChange={handleImageSelect}
+                              className="hidden"
+                              disabled={uploadingImage}
+                            />
+                          </label>
+                        )}
+                        {itemFormData.itemImage && (
+                          <p className="text-xs text-gray-600">
+                            📸 Image selected: {itemFormData.itemImage.name}
+                          </p>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">Add a picture of the item to help identify it</p>
+                    </div>
                   </div>
 
                   <div className="flex gap-4">
                     <button
                       type="submit"
-                      disabled={categories.length === 0}
-                      className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-4 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed text-lg"
+                      disabled={categories.length === 0 || uploadingImage}
+                      className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-brand-navy to-brand-orange hover:from-brand-navy-dark hover:to-brand-orange-dark text-white px-6 py-4 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed text-lg"
                     >
-                      <Save size={24} /> Save Item
+                      {uploadingImage ? (
+                        <>
+                          <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Save size={24} /> Save Item
+                        </>
+                      )}
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowItemForm(false)}
-                      className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-gray-200 to-gray-300 hover:from-gray-300 hover:to-gray-400 text-gray-700 px-6 py-4 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl text-lg"
+                      disabled={uploadingImage}
+                      className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-brand-navy/40 to-brand-navy/20 hover:from-brand-navy/60 hover:to-brand-navy/40 text-brand-navy px-6 py-4 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl text-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <X size={24} /> Cancel
                     </button>
                   </div>
                 </form>
-              </div>
               </div>
             )}
 
@@ -720,6 +831,7 @@ export default function InventoryPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="bg-gradient-to-r from-brand-navy-600 to-brand-orange-600 text-white">
+                      <th className="px-4 py-3 text-left text-sm font-bold">Image</th>
                       <th className="px-4 py-3 text-left text-sm font-bold">Item Name</th>
                       <th className="px-4 py-3 text-left text-sm font-bold">Category</th>
                       <th className="px-4 py-3 text-center text-sm font-bold">Stock</th>
@@ -737,6 +849,19 @@ export default function InventoryPage() {
                           item.isLowStock ? 'bg-red-50' : idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                         }`}
                       >
+                        <td className="px-4 py-3">
+                          {item.itemImage ? (
+                            <img 
+                              src={getImageUrl(item.itemImage)} 
+                              alt={item.name}
+                              className="w-12 h-12 object-cover rounded-lg border border-gray-300"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
+                              <ImageIcon size={20} className="text-gray-400" />
+                            </div>
+                          )}
+                        </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             {item.isLowStock && (
@@ -778,10 +903,12 @@ export default function InventoryPage() {
                         <td className="px-4 py-3 text-center">
                           <button
                             onClick={() => handleDeleteItem(item._id)}
-                            className="inline-flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg transition-all text-xs font-bold"
+                            className="inline-flex items-center gap-1 bg-gradient-to-r from-brand-navy/60 to-brand-navy/40 hover:from-brand-navy/80 hover:to-brand-navy/60 text-white px-3 py-1 rounded-lg transition-all text-xs font-bold"
                           >
                             <Trash2 size={14} /> Delete
                           </button>
+                        </td>
+                      </tr>
                         </td>
                       </tr>
                     ))}
@@ -927,32 +1054,32 @@ export default function InventoryPage() {
               </div>
             )}
             </div>
+
+            <style>{`
+              @keyframes blob {
+                0%, 100% {
+                  transform: translate(0, 0) scale(1);
+                }
+                33% {
+                  transform: translate(30px, -50px) scale(1.1);
+                }
+                66% {
+                  transform: translate(-20px, 20px) scale(0.9);
+                }
+              }
+              .animate-blob {
+                animation: blob 7s infinite;
+              }
+              .animation-delay-2000 {
+                animation-delay: 2s;
+              }
+              .animation-delay-4000 {
+                animation-delay: 4s;
+              }
+            `}</style>
           </>
         )}
       </div>
-</div>
-      <style>{`
-        @keyframes blob {
-          0%, 100% {
-            transform: translate(0, 0) scale(1);
-          }
-          33% {
-            transform: translate(30px, -50px) scale(1.1);
-          }
-          66% {
-            transform: translate(-20px, 20px) scale(0.9);
-          }
-        }
-        .animate-blob {
-          animation: blob 7s infinite;
-        }
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
-      `}</style>
     </>
   );
 }
