@@ -75,7 +75,7 @@ const authStore = create((set) => ({
     set({ isLoading: true });
     try {
       const response = await axios.get(`${API_URL}/auth/profile`);
-      set({ tailor: response.data.tailor, isLoading: false });
+      set({ user: response.data.user || response.data.tailor, isLoading: false });
       return { success: true };
     } catch (error) {
       set({ error: error.message, isLoading: false });
@@ -88,10 +88,10 @@ const authStore = create((set) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await axios.put(`${API_URL}/auth/profile`, data);
-      set({ tailor: response.data.tailor, isLoading: false });
+      set({ user: response.data.user || response.data.tailor, isLoading: false });
       return { success: true };
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Update failed';
+      const errorMessage = error.response?.data?.details || error.response?.data?.message || 'Update failed';
       set({ error: errorMessage, isLoading: false });
       return { success: false, error: errorMessage };
     }
@@ -119,3 +119,4 @@ const authStore = create((set) => ({
 }));
 
 export default authStore;
+export const useAuthStore = authStore;

@@ -1,15 +1,15 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Eye, Calendar, DollarSign, X, ShoppingBag, Users } from 'lucide-react';
-import { API_URL } from '../lib/api';
+import { customerAPI } from '../lib/api';
 
 export default function CustomerOrdersPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     fetchOrders();
@@ -17,10 +17,12 @@ export default function CustomerOrdersPage() {
 
   const fetchOrders = async () => {
     try {
-      const response = await axios.get(`${API_URL}/orders/customer/my-orders`);
+      setError('');
+      const response = await customerAPI.getMyOrders();
       setOrders(response.data.orders || []);
-    } catch (error) {
-      console.error('Error fetching orders:', error);
+    } catch (err) {
+      console.error('Error fetching orders:', err);
+      setError('Failed to load orders. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -37,7 +39,14 @@ export default function CustomerOrdersPage() {
   };
 
   if (loading) {
-    return <div className="text-center py-8">Loading orders...</div>;
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-brand-navy-200 border-t-brand-navy mb-4"></div>
+          <p className="text-gray-700 font-semibold">Loading your orders...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -48,6 +57,12 @@ export default function CustomerOrdersPage() {
           <p className="text-gray-600 mt-2">Track all your sewing orders</p>
         </div>
       </div>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-700 font-semibold">{error}</p>
+        </div>
+      )}
 
       {orders.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-export const API_URL = 'https://api.sewtrack.co/api';
-// export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// export const API_URL = 'https://api.sewtrack.co/api';
+export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const BASE_URL = API_URL.replace('/api', ''); // Get base URL without /api
 
 const client = axios.create({
@@ -69,6 +69,10 @@ export const authAPI = {
   signup: (data) => client.post('/auth/signup', data),
   getProfile: () => client.get('/auth/profile'),
   updateProfile: (data) => client.put('/auth/profile', data),
+  forgotPassword: (email, role) => client.post('/auth/forgot-password', { email, role }),
+  verifyResetToken: (token, role) => client.post('/auth/verify-reset-token', { token, role }),
+  resetPassword: (token, role, newPassword, confirmPassword) => 
+    client.post('/auth/reset-password', { token, role, newPassword, confirmPassword }),
 };
 
 // ===== CLIENT ENDPOINTS =====
@@ -252,6 +256,13 @@ export const messagesAPI = {
   markAsRead: (clientId) => client.post(`/messages/mark-read/${clientId}`),
   getUnreadCount: () => client.get('/messages/unread-count'),
   deleteConversation: (clientId) => client.delete(`/messages/conversation/${clientId}`),
+};
+
+// ===== CUSTOMER ENDPOINTS =====
+export const customerAPI = {
+  getMyTailors: () => client.get('/customers/my-tailors'),
+  connectToTailor: (businessCode) => client.post('/customers/connect-tailor', { businessCode }),
+  getMyOrders: () => client.get('/orders/customer/my-orders'),
 };
 
 export default client;

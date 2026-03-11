@@ -16,7 +16,6 @@ import {
   Package,
 } from 'lucide-react';
 import axios from 'axios';
-import AdminSidebar from '../../components/AdminSidebar';
 import { API_URL } from '../../lib/api';
 
 export default function AdminDashboardPage() {
@@ -135,23 +134,19 @@ export default function AdminDashboardPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      <AdminSidebar />
-
-      {/* Main Content */}
-      <div className="flex-1 lg:ml-64">
-        {/* Header */}
-        <div className="bg-white shadow-sm border-b border-gray-200">
-          <div className="px-4 sm:px-6 lg:px-8 py-6">
-            <div>
-              <h1 className="text-3xl font-bold text-brand-navy">Admin Dashboard</h1>
-              <p className="text-gray-600 mt-1">Welcome, {adminInfo?.name || 'Administrator'}</p>
-            </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b border-gray-200">
+        <div className="px-4 sm:px-6 lg:px-8 py-6">
+          <div>
+            <h1 className="text-3xl font-bold text-brand-navy">Admin Dashboard</h1>
+            <p className="text-gray-600 mt-1">Welcome, {adminInfo?.name || 'Administrator'}</p>
           </div>
         </div>
+      </div>
 
-        {/* Dashboard Content */}
-        <div className="px-4 sm:px-6 lg:px-8 py-8">
+      {/* Dashboard Content */}
+      <div className="px-4 sm:px-6 lg:px-8 py-8">
         {/* Error Message */}
         {error && (
           <div className="mb-8 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg text-red-700 flex items-center gap-3">
@@ -263,7 +258,6 @@ export default function AdminDashboardPage() {
               </p>
             </div>
           </div>
-        </div>
         </div>
       </div>
     </div>

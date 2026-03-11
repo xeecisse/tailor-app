@@ -73,21 +73,30 @@ export default function CustomerDashboardPage() {
   ];
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-brand-navy">Welcome Back!</h1>
-          <p className="text-gray-600 mt-2">Here's an overview of your sewing orders and measurements</p>
+    <div className="p-8 space-y-8">
+      {loading ? (
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-brand-navy-200 border-t-brand-navy mb-4"></div>
+            <p className="text-gray-700 font-medium">Loading your dashboard...</p>
+          </div>
         </div>
-        <Link
-          to="/connect-tailor"
-          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-brand-navy to-brand-orange text-white font-semibold rounded-xl hover:shadow-lg transition-all"
-        >
-          <Plus size={20} />
-          Connect to Tailor
-        </Link>
-      </div>
+      ) : (
+        <>
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-brand-navy">Welcome Back!</h1>
+              <p className="text-gray-600 mt-2">Here's an overview of your sewing orders and measurements</p>
+            </div>
+            <Link
+              to="/connect-tailor"
+              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-brand-navy to-brand-orange text-white font-semibold rounded-xl hover:shadow-lg transition-all"
+            >
+              <Plus size={20} />
+              Connect to Tailor
+            </Link>
+          </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -165,15 +174,16 @@ export default function CustomerDashboardPage() {
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
         <h2 className="text-xl font-bold text-brand-navy mb-4">Connect to a New Tailor</h2>
         <p className="text-gray-600 text-sm mb-6">Enter the business code provided by your tailor to connect</p>
-        <ConnectTailorForm />
+        <Link
+          to="/connect-tailor"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-brand-navy to-brand-orange text-white font-semibold rounded-xl hover:shadow-lg transition-all"
+        >
+          <Plus size={20} />
+          Connect Now
+        </Link>
       </div>
-
-      {/* Connect to Tailor Card */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h2 className="text-xl font-bold text-brand-navy mb-4">Connect to a New Tailor</h2>
-        <p className="text-gray-600 text-sm mb-6">Enter the business code provided by your tailor to connect</p>
-        <ConnectTailorForm />
-      </div>
+        </>
+      )}
     </div>
   );
 }

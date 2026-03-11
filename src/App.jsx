@@ -7,12 +7,17 @@ import authStore from './stores/authStore';
 // Pages
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import AdminLoginPage from './pages/admin/AdminLoginPage';
+import AdminForgotPasswordPage from './pages/admin/AdminForgotPasswordPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import AdminApplicationsPage from './pages/admin/AdminApplicationsPage';
 import AdminApplicationDetailPage from './pages/admin/AdminApplicationDetailPage';
 import AdminReportsPage from './pages/admin/AdminReportsPage';
 import AdminSubscriptionsPage from './pages/admin/AdminSubscriptionsPage';
+import AdminUsersPage from './pages/admin/AdminUsersPage';
+import AdminSettingsPage from './pages/admin/AdminSettingsPage';
 import DashboardPage from './pages/DashboardPage';
 import CustomerDashboardPage from './pages/CustomerDashboardPage';
 import CustomerOrdersPage from './pages/CustomerOrdersPage';
@@ -40,6 +45,7 @@ import MessagesPage from './pages/MessagesPage';
 // Components
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
+import AdminLayout from './components/AdminLayout';
 import NotificationCenter from './components/NotificationCenter';
 
 function App() {
@@ -57,14 +63,23 @@ function App() {
         <Route path="/" element={<Navigate to="/admin/login" replace />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
 
         {/* Admin routes */}
         <Route path="/admin/login" element={<AdminLoginPage />} />
-        <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
-        <Route path="/admin/applications" element={<AdminApplicationsPage />} />
-        <Route path="/admin/applications/:tailorId" element={<AdminApplicationDetailPage />} />
-        <Route path="/admin/reports" element={<AdminReportsPage />} />
-        <Route path="/admin/subscriptions" element={<AdminSubscriptionsPage />} />
+        <Route path="/admin/forgot-password" element={<AdminForgotPasswordPage />} />
+        
+        {/* Admin protected routes with AdminLayout */}
+        <Route element={<AdminLayout />}>
+          <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+          <Route path="/admin/applications" element={<AdminApplicationsPage />} />
+          <Route path="/admin/applications/:tailorId" element={<AdminApplicationDetailPage />} />
+          <Route path="/admin/reports" element={<AdminReportsPage />} />
+          <Route path="/admin/subscriptions" element={<AdminSubscriptionsPage />} />
+          <Route path="/admin/users" element={<AdminUsersPage />} />
+          <Route path="/admin/settings" element={<AdminSettingsPage />} />
+        </Route>
 
         {/* Protected routes */}
         <Route

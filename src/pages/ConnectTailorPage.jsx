@@ -1,10 +1,7 @@
-'use client';
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { Link2, CheckCircle } from 'lucide-react';
-import { API_URL } from '../lib/api';
+import { customerAPI } from '../lib/api';
 
 export default function ConnectTailorPage() {
   const navigate = useNavigate();
@@ -27,9 +24,7 @@ export default function ConnectTailorPage() {
     setLoading(true);
 
     try {
-      const response = await axios.post(`${API_URL}/customers/connect-tailor`, {
-        businessCode: businessCode.trim(),
-      });
+      const response = await customerAPI.connectToTailor(businessCode.trim());
 
       setSuccess(true);
       setConnectedTailor(response.data.tailor);
