@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { clientAPI } from '../lib/api';
+import ProtectedPage from '../components/ProtectedPage';
 import { 
   Users, 
   CheckCircle, 
@@ -16,7 +17,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 
-export default function ClientsPage() {
+function ClientsPageContent() {
   const navigate = useNavigate();
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -221,5 +222,14 @@ export default function ClientsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+
+export default function ClientsPage() {
+  return (
+    <ProtectedPage pageName="Clients">
+      <ClientsPageContent />
+    </ProtectedPage>
   );
 }

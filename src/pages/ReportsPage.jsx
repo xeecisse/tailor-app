@@ -22,6 +22,7 @@ import {
   Filler,
 } from 'chart.js';
 import { Line, Doughnut } from 'react-chartjs-2';
+import ProtectedPage from '../components/ProtectedPage';
 
 ChartJS.register(
   CategoryScale,
@@ -35,7 +36,7 @@ ChartJS.register(
   Filler
 );
 
-export default function ReportsPage() {
+function ReportsPageContent() {
   const [activeTab, setActiveTab] = useState('orders');
   const [period, setPeriod] = useState('thisMonth');
   const [report, setReport] = useState(null);
@@ -554,3 +555,13 @@ function MetricCard({ title, value, subtitle, icon, color, trend, trendValue }) 
     </div>
   );
 }
+
+function ReportsPage() {
+  return (
+    <ProtectedPage pageName="Reports">
+      <ReportsPageContent />
+    </ProtectedPage>
+  );
+}
+
+export default ReportsPage;

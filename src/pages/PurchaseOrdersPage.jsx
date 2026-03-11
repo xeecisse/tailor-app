@@ -18,8 +18,9 @@ import {
   Receipt,
 } from 'lucide-react';
 import { inventoryAPI, clientAPI, purchaseOrderAPI } from '../lib/api';
+import ProtectedPage from '../components/ProtectedPage';
 
-export default function POSPage() {
+function POSPageContent() {
   // State Management
   const [items, setItems] = useState([]);
   const [clients, setClients] = useState([]);
@@ -744,3 +745,13 @@ export default function POSPage() {
     </div>
   );
 }
+
+function POSPage() {
+  return (
+    <ProtectedPage pageName="Purchase Orders">
+      <POSPageContent />
+    </ProtectedPage>
+  );
+}
+
+export default POSPage;

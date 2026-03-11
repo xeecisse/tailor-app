@@ -11,6 +11,8 @@ export default function ClientDetailsPage() {
   const [client, setClient] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchClientDetails();
@@ -30,13 +32,15 @@ export default function ClientDetailsPage() {
   };
 
   const handleDelete = async () => {
-    if (window.confirm('Are you sure you want to delete this client? This will delete all related measurements and orders.')) {
-      try {
-        await clientAPI.delete(clientId);
-        navigate('/clients');
-      } catch (err) {
-        setError(err.response?.data?.message || 'Failed to delete client');
-      }
+    setDeleting(true);
+    try {
+      await clientAPI.delete(clientId);
+      navigate('/clients');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to delete client');
+      setShowDeleteModal(false);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -135,7 +139,7 @@ export default function ClientDetailsPage() {
                   <Edit2 size={16} /> Edit
                 </button>
                 <button
-                  onClick={handleDelete}
+                  onClick={() => setShowDeleteModal(true)}
                   className="flex items-center gap-2 bg-red-500/80 hover:bg-red-600 px-4 py-2 rounded-lg font-semibold transition-all text-sm"
                 >
                   <Trash2 size={16} /> Delete
@@ -355,6 +359,48 @@ export default function ClientDetailsPage() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl border-2 border-gray-100">
+            <div className="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
+              <Trash2 size={24} className="text-red-600" />
+            </div>
+            
+            <h3 className="text-xl font-bold text-gray-900 text-center mb-2">Delete Client</h3>
+            <p className="text-gray-600 text-center mb-6">
+              Are you sure you want to delete <span className="font-bold text-gray-900">{client?.name}</span>? This will permanently delete all related measurements and orders. This action cannot be undone.
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deleting}
+                className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-lg font-bold text-gray-700 hover:bg-gray-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {deleting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 size={16} /> Delete
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

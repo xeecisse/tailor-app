@@ -33,6 +33,7 @@ export default function ProfilePage() {
     },
   });
   const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -72,6 +73,8 @@ export default function ProfilePage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setMessage('');
     const result = await authStore.getState().updateProfile(formData);
     if (result.success) {
       setMessage('Profile updated successfully');
@@ -79,6 +82,8 @@ export default function ProfilePage() {
         setMessage('');
         setShowAccountModal(false);
       }, 2000);
+    } else {
+      setError(result.error || 'Failed to update profile');
     }
   };
 
@@ -246,6 +251,12 @@ export default function ProfilePage() {
             {message && (
               <div className="mb-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 text-green-700 rounded-xl text-sm font-semibold">
                 {message}
+              </div>
+            )}
+
+            {error && (
+              <div className="mb-4 p-4 bg-gradient-to-r from-red-50 to-pink-50 border-2 border-red-300 text-red-700 rounded-xl text-sm font-semibold">
+                {error}
               </div>
             )}
 

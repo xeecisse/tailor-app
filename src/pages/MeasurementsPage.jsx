@@ -11,23 +11,26 @@ import {
   AlertTriangle 
 } from 'lucide-react';
 import { clientAPI } from '../lib/api';
+import { useDebounce } from '../hooks/useDebounce';
+import ProtectedPage from '../components/ProtectedPage';
 
-export default function MeasurementsPage() {
+function MeasurementsPageContent() {
   const navigate = useNavigate();
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 500);
 
   useEffect(() => {
     fetchClients();
-  }, [search]);
+  }, [debouncedSearch]);
 
   const fetchClients = async () => {
     try {
       setLoading(true);
       setError('');
-      const response = await clientAPI.getAll('active', search, 1, 50);
+      const response = await clientAPI.getAll('active', debouncedSearch, 1, 50);
       setClients(response.data.clients);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load clients');
@@ -179,3 +182,13 @@ export default function MeasurementsPage() {
     </div>
   );
 }
+
+function MeasurementsPage() {
+  return (
+    <ProtectedPage pageName="Measurements">
+      <MeasurementsPageContent />
+    </ProtectedPage>
+  );
+}
+
+export default MeasurementsPage;

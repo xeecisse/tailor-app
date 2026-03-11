@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { inventoryAPI, uploadAPI, getImageUrl } from '../lib/api';
+import ProtectedPage from '../components/ProtectedPage';
 import {
   Package,
   Tag,
@@ -28,7 +29,7 @@ import {
 
 const BASE_URL = 'https://tailor-app-backend-uh5b.onrender.com';
 
-export default function InventoryPage() {
+function InventoryPageContent() {
   const [categories, setCategories] = useState([]);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -118,8 +119,8 @@ export default function InventoryPage() {
       return;
     }
 
-    if (!itemFormData.costPrice || !itemFormData.sellingPrice) {
-      setError('Please enter both cost price and selling price');
+    if (!itemFormData.costPrice) {
+      setError('Please enter cost price');
       return;
     }
 
@@ -677,7 +678,7 @@ export default function InventoryPage() {
 
                     <div>
                       <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                        <DollarSign size={20} /> How much will you sell it for? (Selling Price) *
+                        <DollarSign size={20} /> How much will you sell it for? (Selling Price)
                       </label>
                       <div className="relative">
                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-lg">₦</span>
@@ -685,7 +686,6 @@ export default function InventoryPage() {
                           type="number"
                           step="100"
                           min="0"
-                          required
                           value={itemFormData.sellingPrice}
                           onChange={(e) => setItemFormData({ ...itemFormData, sellingPrice: e.target.value })}
                           className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all bg-white text-lg"
@@ -1123,3 +1123,13 @@ export default function InventoryPage() {
     </>
   );
 }
+
+function InventoryPage() {
+  return (
+    <ProtectedPage pageName="Inventory">
+      <InventoryPageContent />
+    </ProtectedPage>
+  );
+}
+
+export default InventoryPage;

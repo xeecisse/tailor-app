@@ -8,7 +8,10 @@ import authStore from './stores/authStore';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import AdminLoginPage from './pages/admin/AdminLoginPage';
+import AdminForgotPasswordPage from './pages/admin/AdminForgotPasswordPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import AdminApplicationsPage from './pages/admin/AdminApplicationsPage';
 import AdminApplicationDetailPage from './pages/admin/AdminApplicationDetailPage';
@@ -44,11 +47,36 @@ import Layout from './components/Layout';
 import NotificationCenter from './components/NotificationCenter';
 
 function App() {
-  const { token, initializeAuth, role } = authStore();
+  const { token, initializeAuth, role, user, fetchProfile } = authStore();
+  const [isInitializing, setIsInitializing] = React.useState(true);
 
   useEffect(() => {
-    initializeAuth();
+    const initialize = async () => {
+      initializeAuth();
+      
+      // If token exists, fetch user profile
+      const savedToken = localStorage.getItem('sewtrack_token');
+      if (savedToken) {
+        await fetchProfile();
+      }
+      
+      setIsInitializing(false);
+    };
+    
+    initialize();
   }, []);
+
+  // Show loading screen while initializing
+  if (isInitializing) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-brand-navy-200 border-t-brand-navy mb-4"></div>
+          <p className="text-gray-700 font-semibold">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -58,9 +86,12 @@ function App() {
         <Route path="/" element={token ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
 
         {/* Admin routes */}
         <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route path="/admin/forgot-password" element={<AdminForgotPasswordPage />} />
         <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
         <Route path="/admin/applications" element={<AdminApplicationsPage />} />
         <Route path="/admin/applications/:tailorId" element={<AdminApplicationDetailPage />} />

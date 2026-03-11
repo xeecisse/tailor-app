@@ -48,6 +48,11 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Check approval status
+  const isApproved = tailor?.approvalStatus === 'approved';
+  const isPending = tailor?.approvalStatus === 'pending';
+  const isRejected = tailor?.approvalStatus === 'rejected';
+
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
@@ -254,6 +259,46 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Approval Status Banner */}
+        {isPending && (
+          <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border-2 border-yellow-300 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-lg mb-8">
+            <div className="flex items-start gap-4">
+              <div className="bg-yellow-100 p-3 rounded-xl flex-shrink-0">
+                <AlertTriangle size={24} className="text-yellow-700" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-yellow-900 mb-1">Account Pending Approval</h3>
+                <p className="text-yellow-800 text-sm mb-3">
+                  Your account is currently pending admin approval. You can view your profile, but operational features like adding clients, creating orders, and managing inventory will be available once approved.
+                </p>
+                <p className="text-xs text-yellow-700 font-semibold">
+                  ⏱️ We typically review applications within 24-48 hours. Thank you for your patience!
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Rejection Status Banner */}
+        {isRejected && (
+          <div className="bg-gradient-to-r from-red-50 to-pink-50 border-2 border-red-300 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-lg mb-8">
+            <div className="flex items-start gap-4">
+              <div className="bg-red-100 p-3 rounded-xl flex-shrink-0">
+                <AlertTriangle size={24} className="text-red-700" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-red-900 mb-1">Application Rejected</h3>
+                <p className="text-red-800 text-sm mb-2">
+                  {tailor?.rejectionReason || 'Your application has been rejected.'}
+                </p>
+                <p className="text-xs text-red-700 font-semibold">
+                  Please contact support for more information or to reapply.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-5xl font-extrabold bg-gradient-to-r from-brand-navy via-brand-orange to-brand-orange-dark bg-clip-text text-transparent mb-2">
@@ -310,19 +355,35 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
-            <button onClick={() => navigate('/clients')} className="bg-gradient-to-br from-brand-navy to-brand-orange hover:from-brand-navy-dark hover:to-brand-orange-dark text-white rounded-lg md:rounded-2xl p-3 md:p-6 transition-all duration-300 hover:scale-105 transform shadow-lg hover:shadow-xl cursor-pointer">
+            <button 
+              onClick={() => navigate('/clients')} 
+              disabled={!isApproved}
+              className={`bg-gradient-to-br from-brand-navy to-brand-orange hover:from-brand-navy-dark hover:to-brand-orange-dark text-white rounded-lg md:rounded-2xl p-3 md:p-6 transition-all duration-300 hover:scale-105 transform shadow-lg hover:shadow-xl cursor-pointer ${!isApproved ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
               <Users size={24} className="md:w-9 md:h-9 mb-1 md:mb-2 mx-auto" />
               <span className="text-xs md:text-sm font-bold">Add Client</span>
             </button>
-            <button onClick={() => navigate('/orders')} className="bg-gradient-to-br from-brand-orange to-brand-navy hover:from-brand-orange-dark hover:to-brand-navy-dark text-white rounded-lg md:rounded-2xl p-3 md:p-6 transition-all duration-300 hover:scale-105 transform shadow-lg hover:shadow-xl cursor-pointer">
+            <button 
+              onClick={() => navigate('/orders')} 
+              disabled={!isApproved}
+              className={`bg-gradient-to-br from-brand-orange to-brand-navy hover:from-brand-orange-dark hover:to-brand-navy-dark text-white rounded-lg md:rounded-2xl p-3 md:p-6 transition-all duration-300 hover:scale-105 transform shadow-lg hover:shadow-xl cursor-pointer ${!isApproved ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
               <ShoppingBag size={24} className="md:w-9 md:h-9 mb-1 md:mb-2 mx-auto" />
               <span className="text-xs md:text-sm font-bold">New Order</span>
             </button>
-            <button onClick={() => navigate('/measurements')} className="bg-gradient-to-br from-brand-navy to-brand-orange hover:from-brand-navy-dark hover:to-brand-orange-dark text-white rounded-lg md:rounded-2xl p-3 md:p-6 transition-all duration-300 hover:scale-105 transform shadow-lg hover:shadow-xl cursor-pointer">
+            <button 
+              onClick={() => navigate('/measurements')} 
+              disabled={!isApproved}
+              className={`bg-gradient-to-br from-brand-navy to-brand-orange hover:from-brand-navy-dark hover:to-brand-orange-dark text-white rounded-lg md:rounded-2xl p-3 md:p-6 transition-all duration-300 hover:scale-105 transform shadow-lg hover:shadow-xl cursor-pointer ${!isApproved ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
               <Ruler size={24} className="md:w-9 md:h-9 mb-1 md:mb-2 mx-auto" />
               <span className="text-xs md:text-sm font-bold">Take Measurement</span>
             </button>
-            <button onClick={() => navigate('/orders')} className="bg-gradient-to-br from-brand-orange to-brand-navy hover:from-brand-orange-dark hover:to-brand-navy-dark text-white rounded-lg md:rounded-2xl p-3 md:p-6 transition-all duration-300 hover:scale-105 transform shadow-lg hover:shadow-xl cursor-pointer">
+            <button 
+              onClick={() => navigate('/orders')} 
+              disabled={!isApproved}
+              className={`bg-gradient-to-br from-brand-orange to-brand-navy hover:from-brand-orange-dark hover:to-brand-navy-dark text-white rounded-lg md:rounded-2xl p-3 md:p-6 transition-all duration-300 hover:scale-105 transform shadow-lg hover:shadow-xl cursor-pointer ${!isApproved ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
               <Package size={24} className="md:w-9 md:h-9 mb-1 md:mb-2 mx-auto" />
               <span className="text-xs md:text-sm font-bold">Manage Inventory</span>
             </button>

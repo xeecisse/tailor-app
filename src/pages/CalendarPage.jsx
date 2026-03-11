@@ -13,6 +13,7 @@ import {
   Save,
   Package,
 } from 'lucide-react';
+import ProtectedPage from '../components/ProtectedPage';
 
 function EventCard({ order, type, isOverdue, onClick }) {
   const isDeadline = type === 'deadline';
@@ -37,7 +38,7 @@ function EventCard({ order, type, isOverdue, onClick }) {
   );
 }
 
-export default function CalendarPage() {
+function CalendarPageContent() {
   const [orders, setOrders] = useState([]);
   const [clients, setClients] = useState([]);
   const [measurements, setMeasurements] = useState([]);
@@ -766,3 +767,13 @@ export default function CalendarPage() {
   );
 }
 
+
+function CalendarPage() {
+  return (
+    <ProtectedPage pageName="Calendar">
+      <CalendarPageContent />
+    </ProtectedPage>
+  );
+}
+
+export default CalendarPage;

@@ -28,24 +28,24 @@ export default function Layout() {
   const { logout, user, role } = authStore();
 
   const tailorMenuItems = [
-    { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
-    { path: '/clients', icon: Users, label: 'Clients' },
-    { path: '/measurements', icon: Ruler, label: 'Measurements' },
-    { path: '/orders', icon: ShoppingBag, label: 'Tailoring Orders' },
-    { path: '/purchase-orders', icon: ClipboardList, label: 'POS' },
-    { path: '/inventory', icon: Package, label: 'Inventory' },
-    { path: '/expenses', icon: DollarSign, label: 'Expenses' },
-    { path: '/staff', icon: UserCog, label: 'Staff' },
-    { path: '/reports', icon: BarChart3, label: 'Reports' },
-    { path: '/messages', icon: MessageSquare, label: 'Messages' },
-    { path: '/calendar', icon: Calendar, label: 'Calendar' },
+    { path: '/', icon: LayoutDashboard, label: 'Dashboard', requiresApproval: false },
+    { path: '/clients', icon: Users, label: 'Clients', requiresApproval: true },
+    { path: '/measurements', icon: Ruler, label: 'Measurements', requiresApproval: true },
+    { path: '/orders', icon: ShoppingBag, label: 'Tailoring Orders', requiresApproval: true },
+    { path: '/purchase-orders', icon: ClipboardList, label: 'POS', requiresApproval: true },
+    { path: '/inventory', icon: Package, label: 'Inventory', requiresApproval: true },
+    { path: '/expenses', icon: DollarSign, label: 'Expenses', requiresApproval: true },
+    { path: '/staff', icon: UserCog, label: 'Staff', requiresApproval: true },
+    { path: '/reports', icon: BarChart3, label: 'Reports', requiresApproval: true },
+    { path: '/messages', icon: MessageSquare, label: 'Messages', requiresApproval: false },
+    { path: '/calendar', icon: Calendar, label: 'Calendar', requiresApproval: true },
   ];
 
   const customerMenuItems = [
-    { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
-    { path: '/my-orders', icon: ShoppingBag, label: 'My Orders' },
-    { path: '/my-measurements', icon: Ruler, label: 'My Measurements' },
-    { path: '/messages', icon: MessageSquare, label: 'Messages' },
+    { path: '/', icon: LayoutDashboard, label: 'Dashboard', requiresApproval: false },
+    { path: '/my-orders', icon: ShoppingBag, label: 'My Orders', requiresApproval: false },
+    { path: '/my-measurements', icon: Ruler, label: 'My Measurements', requiresApproval: false },
+    { path: '/messages', icon: MessageSquare, label: 'Messages', requiresApproval: false },
   ];
 
   const menuItems = role === 'customer' ? customerMenuItems : tailorMenuItems;
@@ -56,6 +56,10 @@ export default function Layout() {
     }
     return location.pathname.startsWith(path);
   };
+
+  // Check if tailor is approved
+  const isApproved = user?.approvalStatus === 'approved';
+  const isTailor = role === 'tailor';
 
   return (
     <div className="flex flex-col lg:flex-row h-screen bg-gray-50">
@@ -90,19 +94,27 @@ export default function Layout() {
           <ul className="space-y-1">
             {menuItems.map((item) => {
               const Icon = item.icon;
+              // Disable menu item if tailor is not approved and item requires approval
+              const isDisabled = isTailor && !isApproved && item.requiresApproval;
+              
               return (
                 <li key={item.path}>
                   <Link
                     to={item.path}
                     onClick={() => setSidebarOpen(false)}
                     className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-sm ${
-                      isActive(item.path)
+                      isDisabled
+                        ? 'text-gray-500 cursor-not-allowed opacity-50'
+                        : isActive(item.path)
                         ? 'bg-brand-orange text-white'
                         : 'text-gray-300 hover:bg-brand-navy'
                     }`}
+                    style={{ pointerEvents: isDisabled ? 'none' : 'auto' }}
+                    title={isDisabled ? 'Disabled until approval' : ''}
                   >
                     <Icon size={20} />
                     <span>{item.label}</span>
+                    {isDisabled && <span className="ml-auto text-xs">🔒</span>}
                   </Link>
                 </li>
               );

@@ -390,7 +390,10 @@ export default function ClientMeasurementsPage() {
   const handleToggleFavorite = async (measurementId) => {
     try {
       await measurementAPI.toggleFavorite(measurementId);
-      fetchData();
+      // Update local state instead of refetching entire page
+      setMeasurements(measurements.map(m => 
+        m._id === measurementId ? { ...m, isFavorite: !m.isFavorite } : m
+      ));
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to update favorite');
     }

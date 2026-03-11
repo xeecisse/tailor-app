@@ -29,8 +29,9 @@ import {
   Sparkles,
   Play
 } from 'lucide-react';
+import ProtectedPage from '../components/ProtectedPage';
 
-export default function OrdersPage() {
+function OrdersPageContent() {
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [clients, setClients] = useState([]);
@@ -871,3 +872,13 @@ export default function OrdersPage() {
     </div>
   );
 }
+
+function OrdersPage() {
+  return (
+    <ProtectedPage pageName="Orders">
+      <OrdersPageContent />
+    </ProtectedPage>
+  );
+}
+
+export default OrdersPage;

@@ -29,8 +29,9 @@ import {
   Trash2,
   Eye
 } from 'lucide-react';
+import ProtectedPage from '../components/ProtectedPage';
 
-export default function ExpensesPage() {
+function ExpensesPageContent() {
   const [expenses, setExpenses] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -591,3 +592,13 @@ export default function ExpensesPage() {
     </div>
   );
 }
+
+function ExpensesPage() {
+  return (
+    <ProtectedPage pageName="Expenses">
+      <ExpensesPageContent />
+    </ProtectedPage>
+  );
+}
+
+export default ExpensesPage;

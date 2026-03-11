@@ -14,8 +14,9 @@ import {
   Trash2,
   AlertTriangle,
 } from 'lucide-react';
+import ProtectedPage from '../components/ProtectedPage';
 
-export default function StaffPage() {
+function StaffPageContent() {
   const navigate = useNavigate();
   const [staff, setStaff] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -401,3 +402,13 @@ export default function StaffPage() {
     </div>
   );
 }
+
+function StaffPage() {
+  return (
+    <ProtectedPage pageName="Staff">
+      <StaffPageContent />
+    </ProtectedPage>
+  );
+}
+
+export default StaffPage;
