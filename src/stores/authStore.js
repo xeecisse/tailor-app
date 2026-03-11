@@ -4,10 +4,11 @@ import { API_URL } from '../lib/api';
 
 const authStore = create((set) => ({
   user: null,
-  role: null,
+  role: localStorage.getItem('sewtrack_role') || null,
   token: localStorage.getItem('sewtrack_token') || null,
   refreshToken: localStorage.getItem('sewtrack_refresh_token') || null,
   isLoading: false,
+  isInitialized: false,
   error: null,
 
   // Login
@@ -113,7 +114,7 @@ const authStore = create((set) => ({
     const role = localStorage.getItem('sewtrack_role');
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      set({ token, refreshToken, role });
+      set({ token, refreshToken, role, isInitialized: true });
     }
   },
 }));
